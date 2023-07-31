@@ -8,7 +8,7 @@ This is where we define the various css items to fetch as well as the layout of 
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import os
+from utils.settings import cache
 
 # local imports
 from utils.settings import APP_HOST, APP_PORT, APP_DEBUG
@@ -30,7 +30,10 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
     title='Dash app structure'
 )
+
 server = app.server
+# Initialize cache
+cache.init_app(server)
 
 def serve_layout():
     '''Define the layout of the application'''

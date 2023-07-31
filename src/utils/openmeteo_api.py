@@ -1,18 +1,25 @@
 import pandas as pd
 import requests as r
+from .settings import cache
 
 
+@cache.memoize(3600)
 def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
                       variables='temperature_2m,cloudcover,rain,snowfall,precipitation',
                       timezone='auto',
                       model='icon_seamless'):
+    if model == 'icon_seamless':
+        forecast_days = 7
+    else:
+        forecast_days = 14
     payload = {
         "latitude": latitude,
         "longitude": longitude,
         "hourly": variables,
         "timezone": timezone,
-        "models": model
+        "models": model,
+        "forecast_days": forecast_days
     }
 
     resp = r.get("https://ensemble-api.open-meteo.com/v1/ensemble",
@@ -26,6 +33,7 @@ def get_ensemble_data(latitude=53.55,
     return data
 
 
+@cache.memoize(3600)
 def get_locations(name, count=10, language='en'):
     payload = {
         "name": name,
