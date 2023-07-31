@@ -6,8 +6,10 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 '''
 
 # package imports
+import dash
 from dash import html, callback, Output, Input, State
 import dash_bootstrap_components as dbc
+from utils.settings import URL_BASE_PATHNAME
 
 # local imports
 
@@ -22,16 +24,24 @@ navbar = dbc.Navbar(
                         dbc.NavItem(
                             dbc.NavLink(
                                 'Home',
-                                href='/'
+                                href=URL_BASE_PATHNAME
                             )
                         ),
                         dbc.NavItem(
                             dbc.NavLink(
                                 'Ensemble',
-                                href='/ensemble'
+                                href=f'{URL_BASE_PATHNAME}ensemble/'
                             )
                         ),
-                    ]
+                    ],
+                    # [
+                    #     dbc.NavItem(
+                    #         dbc.NavLink(
+                    #                 page['name'],
+                    #                 href=page["path"]
+                    #             )
+                    #     ) for page in dash.page_registry.values()
+                    # ],
                 ),
                 id='navbar-collapse',
                 navbar=True

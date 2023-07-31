@@ -8,14 +8,14 @@ This is where we define the various css items to fetch as well as the layout of 
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-from utils.settings import cache
 
 # local imports
-from utils.settings import APP_HOST, APP_PORT, APP_DEBUG
+from utils.settings import APP_HOST, APP_PORT, APP_DEBUG, URL_BASE_PATHNAME, cache
 from components import navbar, footer
 
 app = dash.Dash(
     __name__,
+    url_base_pathname=URL_BASE_PATHNAME,
     use_pages=True,    # turn on Dash pages
     external_stylesheets=[
         dbc.themes.FLATLY,
