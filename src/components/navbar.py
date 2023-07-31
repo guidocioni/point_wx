@@ -7,50 +7,33 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 
 # package imports
 import dash
-from dash import html, callback, Output, Input, State
+from dash import callback, Output, Input, State
 import dash_bootstrap_components as dbc
-from utils.settings import URL_BASE_PATHNAME
 
-# local imports
-
-# component
-navbar = dbc.Navbar(
-    dbc.Container(
-        [
-            dbc.NavbarToggler(id='navbar-toggler', n_clicks=0),
-            dbc.Collapse(
-                dbc.Nav(
-                    [
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                'Home',
-                                href=URL_BASE_PATHNAME
-                            )
+def navbar():
+    return dbc.Navbar(
+            dbc.Container(
+                [
+                    dbc.NavbarToggler(id='navbar-toggler', n_clicks=0),
+                    dbc.Collapse(
+                        dbc.Nav(
+                            [
+                                dbc.NavItem(
+                                    dbc.NavLink(
+                                            page['title'],
+                                            href=page["relative_path"]
+                                        )
+                                ) for page in dash.page_registry.values()
+                            ],
                         ),
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                'Ensemble',
-                                href=f'{URL_BASE_PATHNAME}ensemble/'
-                            )
-                        ),
-                    ],
-                    # [
-                    #     dbc.NavItem(
-                    #         dbc.NavLink(
-                    #                 page['name'],
-                    #                 href=page["path"]
-                    #             )
-                    #     ) for page in dash.page_registry.values()
-                    # ],
-                ),
-                id='navbar-collapse',
-                navbar=True
+                        id='navbar-collapse',
+                        navbar=True
+                    ),
+                ]
             ),
-        ]
-    ),
-    color='dark',
-    dark=True,
-)
+            color='dark',
+            dark=True,
+        )
 
 # add callback for toggling the collapse on small screens
 @callback(

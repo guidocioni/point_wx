@@ -39,7 +39,7 @@ def serve_layout():
     '''Define the layout of the application'''
     return html.Div(
         [
-            navbar,
+            navbar(),
             dbc.Container(
                 dash.page_container,
                 class_name='my-2'
