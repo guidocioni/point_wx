@@ -43,6 +43,7 @@ def make_heatmap(df, var):
                 xaxis=dict(showgrid=True,
                         range=[df['time'].min(),df['time'].max()]),
                 yaxis=dict(showgrid=True),
+                height=700,
                 margin={"r": 3, "t": 3, "l": 3, "b": 3},
                 template='plotly_white',
             )
