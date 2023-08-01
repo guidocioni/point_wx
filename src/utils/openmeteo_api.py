@@ -104,8 +104,7 @@ def compute_climatology(latitude=53.55,
                         timezone='auto',
                         model='best_match',
                         start_date='1991-01-01',
-                        end_date='2020-12-31',
-                        year=2020):
+                        end_date='2020-12-31'):
     """
     Compute climatology.
     This is a very expensive operation (5-6 seconds for the full 30 years)
@@ -115,14 +114,11 @@ def compute_climatology(latitude=53.55,
                                timezone, model, start_date, end_date)
 
     # Only take 3-hourly data
-    data = data.resample('3H', on='time').first()
+    data = data.resample('3H', on='time').first().reset_index()
     # Add doy not as integer but as string to allow for leap years
     data['doy'] = data.time.dt.strftime("%m%d")
     # Compute mean over day of the year AND hour
     mean = data.groupby([data.doy, data.time.dt.hour]).mean(
         numeric_only=True).rename_axis(['doy', 'hour']).reset_index()
-    # Create a fake date just in case
-    mean['dummy_date'] = pd.to_datetime(
-        mean['doy'] + str(year) + "T" + mean['hour'].astype(str).str.zfill(2) + "00", format='%m%d%YT%H%M')
 
     return mean
