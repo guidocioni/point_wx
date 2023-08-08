@@ -1,4 +1,4 @@
-from dash import html, callback, Output, Input, State, dcc
+from dash import callback, Output, Input, State
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
 from .figures import make_empty_figure, make_subplot_figure
 import pandas as pd
@@ -13,7 +13,7 @@ import pandas as pd
 )
 def get_closest_address(n_clicks, from_address):
     if n_clicks is None:
-        return []
+        return [], "", {}
 
     locations = get_locations(from_address)
 

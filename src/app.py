@@ -6,7 +6,7 @@ This is where we define the various css items to fetch as well as the layout of 
 
 # package imports
 import dash
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 # local imports
@@ -40,6 +40,7 @@ def serve_layout():
     return html.Div(
         [
             navbar(),
+            dcc.Store(id='locations-list', data={}),
             dbc.Container(
                 dash.page_container,
                 class_name='my-2'

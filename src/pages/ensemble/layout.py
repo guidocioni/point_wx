@@ -1,10 +1,10 @@
 import dash
-from dash import html, dcc
+from dash import html
 import dash_bootstrap_components as dbc
-from .location_selector import loc_selector
+from components.location_selector import loc_selector
 from .options_selector import opts_selector
 from .figures import fig_subplots
-from .callbacks import get_closest_address, activate_submit_button, generate_figure
+from .callbacks import *
 
 dash.register_page(
     __name__,
@@ -25,7 +25,6 @@ layout = html.Div(
                 dbc.Col(dbc.Spinner(fig_subplots))
             ]
         ),
-        dcc.Store(id='locations-list')
     ]
 )
 

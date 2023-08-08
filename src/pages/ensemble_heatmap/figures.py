@@ -1,9 +1,6 @@
 import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
-import numpy as np
-from plotly.subplots import make_subplots
-import pandas as pd
 import plotly.express as px
 
 def make_empty_figure(text="No data (yet 😃)"):
