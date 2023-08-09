@@ -119,6 +119,6 @@ def compute_climatology(latitude=53.55,
     data['doy'] = data.time.dt.strftime("%m%d")
     # Compute mean over day of the year AND hour
     mean = data.groupby([data.doy, data.time.dt.hour]).mean(
-        numeric_only=True).rename_axis(['doy', 'hour']).reset_index()
+        numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
 
     return mean
