@@ -2,18 +2,20 @@
 
 This is a Dash application that uses the open-meteo APIs (https://open-meteo.com/en/docs) to show some interesting plots.
 
-![App screen](app_screen.png)
+![alt|300](app_screen.png)
 
 ## Installation
 Install the requirements
 
-- dash
-- dash-bootstrap-components
-- pandas
-- plotly
-- requests
-- flask-cache
+- `dash`
+- `dash-bootstrap-components`
+- `pandas`
+- `plotly`
+- `requests`
+- `flask-cache`
 
+Sorry, no explicit packaging with `yaml` and/or `requirements.txt` is provided for now.
+But since you only need a few packages to make it work, it should be fine. 
 
 ## Configuration
 You can set the options in `src/utils/settings.py`
