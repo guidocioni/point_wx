@@ -149,5 +149,4 @@ fig_subplots = dbc.Card(
         dcc.Graph(id='ensemble-plot')
     ],
     className="mb-2",
-    id='ensemble-fig-card'
 )

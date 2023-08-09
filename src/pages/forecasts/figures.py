@@ -111,5 +111,4 @@ fig_subplots = dbc.Card(
         dcc.Graph(id='forecast-plot')
     ],
     className="mb-2",
-    id='forecast-fig-card'
 )

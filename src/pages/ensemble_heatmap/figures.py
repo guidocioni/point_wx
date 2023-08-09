@@ -66,5 +66,4 @@ fig_subplots = dbc.Card(
         dcc.Graph(id='ensemble-plot-heatmap')
     ],
     className="mb-2",
-    id='ensemble-fig-card-heatmap'
 )
