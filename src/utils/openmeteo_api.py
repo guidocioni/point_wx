@@ -1,6 +1,6 @@
 import pandas as pd
 import requests as r
-from .settings import cache, ENSEMBLE_VARS
+from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
 
 
 @cache.memoize(3600)
@@ -23,12 +23,44 @@ def get_locations(name, count=10, language='en'):
     return data
 
 
+@cache.memoize(1800)
+def get_forecast_data(latitude=53.55,
+                      longitude=9.99,
+                      variables=",".join(DETERMINISTIC_VARS),
+                      timezone='auto',
+                      model=DETERMINISTIC_MODELS[0],
+                      forecast_days=7,
+                      from_now=True):
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "hourly": variables,
+        "timezone": timezone,
+        "models": model,
+        "forecast_days": forecast_days
+    }
+
+    resp = r.get("https://api.open-meteo.com/v1/forecast",
+                 params=payload)
+    data = pd.DataFrame.from_dict(resp.json()['hourly'])
+    data['time'] = pd.to_datetime(
+        data['time']).dt.tz_localize(resp.json()['timezone'])
+
+    data = data.dropna()
+    # Optionally subset data to start only from previous hour
+    if from_now:
+        data = data[data.time >= pd.to_datetime(
+            'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+
+    return data
+
+
 @cache.memoize(3600)
 def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
                       variables=",".join(ENSEMBLE_VARS),
                       timezone='auto',
-                      model='icon_seamless',
+                      model=ENSEMBLE_MODELS[0],
                       from_now=True):
     """
     Get the ensemble data

@@ -6,6 +6,9 @@ APP_PORT = 8080
 APP_DEBUG = False
 URL_BASE_PATHNAME = '/pointwx/'
 
+cache = Cache(config={'CACHE_TYPE': 'filesystem',
+                      'CACHE_DIR': '/tmp'})
+
 # All the models available in the APIs for Ensemble
 ENSEMBLE_MODELS = ["icon_seamless", "gfs_seamless", "ecmwf_ifs04", "gem_global",
                    # additional model which are already included in the previous ones
@@ -23,5 +26,7 @@ DETERMINISTIC_MODELS = ["best_match", "ecmwf_ifs04", "metno_nordic", "gfs_seamle
                         "meteofrance_arpege_europe", "meteofrance_arome_france",
                         "meteofrance_arome_france_hd"]
 
-cache = Cache(config={'CACHE_TYPE': 'filesystem',
-                      'CACHE_DIR': '/tmp'})
+# The variables we download by default for deterministic models
+DETERMINISTIC_VARS = ["temperature_2m", "relativehumidity_2m", "precipitation_probability",
+                      "precipitation", "rain", "showers", "snowfall", "snow_depth",
+                      "cloudcover", "windspeed_10m", "winddirection_10m", "windgusts_10m"]
