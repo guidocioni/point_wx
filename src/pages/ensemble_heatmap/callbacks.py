@@ -33,7 +33,7 @@ def generate_figure(n_clicks, locations, location, model, variable):
     data = get_ensemble_data(latitude=loc['latitude'].item(),
                              longitude=loc['longitude'].item(),
                              model=model)
-    
+
     fig = make_heatmap(data, var=variable)
-    
+
     return fig

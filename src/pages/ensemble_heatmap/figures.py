@@ -3,6 +3,7 @@ from dash import dcc
 import plotly.graph_objects as go
 import plotly.express as px
 
+
 def make_empty_figure(text="No data (yet 😃)"):
     '''Initialize an empty figure with style and a centered text'''
     fig = go.Figure()
@@ -28,24 +29,24 @@ def make_empty_figure(text="No data (yet 😃)"):
 
 def make_heatmap(df, var):
     fig = px.imshow(
-    df.loc[:, df.columns.str.contains(var)].T,
-    x=df['time'],
-                text_auto=True,
-                color_continuous_scale='RdBu_r',
-                origin='lower')
+        df.loc[:, df.columns.str.contains(var)].T,
+        x=df['time'],
+        text_auto=True,
+        color_continuous_scale='RdBu_r',
+        origin='lower')
 
     fig.update_yaxes(visible=False, showticklabels=False)
 
     fig.update_layout(
-                xaxis=dict(showgrid=True,
-                        range=[df['time'].min(),df['time'].max()]),
-                yaxis=dict(showgrid=True),
-                height=700,
-                margin={"r": 3, "t": 3, "l": 3, "b": 3},
-                template='plotly_white',
-            )
+        xaxis=dict(showgrid=True,
+                   range=[df['time'].min(), df['time'].max()]),
+        yaxis=dict(showgrid=True),
+        height=700,
+        margin={"r": 3, "t": 3, "l": 3, "b": 3},
+        template='plotly_white',
+    )
     fig.update_coloraxes(showscale=False)
-    
+
     return fig
 
 

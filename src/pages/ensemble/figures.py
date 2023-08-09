@@ -143,6 +143,7 @@ def make_subplot_figure(data, clima):
 
 # CARDS for layout
 
+
 fig_subplots = dbc.Card(
     [
         dcc.Graph(id='ensemble-plot')

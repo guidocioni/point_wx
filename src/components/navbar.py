@@ -10,32 +10,35 @@ import dash
 from dash import callback, Output, Input, State
 import dash_bootstrap_components as dbc
 
+
 def navbar():
     return dbc.Navbar(
-            dbc.Container(
-                [
-                    dbc.NavbarToggler(id='navbar-toggler', n_clicks=0),
-                    dbc.Collapse(
-                        dbc.Nav(
-                            [
-                                dbc.NavItem(
-                                    dbc.NavLink(
-                                            page['title'],
-                                            href=page["relative_path"]
-                                        )
-                                ) for page in dash.page_registry.values()
-                            ],
-                        ),
-                        id='navbar-collapse',
-                        navbar=True
+        dbc.Container(
+            [
+                dbc.NavbarToggler(id='navbar-toggler', n_clicks=0),
+                dbc.Collapse(
+                    dbc.Nav(
+                        [
+                            dbc.NavItem(
+                                dbc.NavLink(
+                                    page['title'],
+                                    href=page["relative_path"]
+                                )
+                            ) for page in dash.page_registry.values()
+                        ],
                     ),
-                ]
-            ),
-            color='dark',
-            dark=True,
-        )
+                    id='navbar-collapse',
+                    navbar=True
+                ),
+            ]
+        ),
+        color='dark',
+        dark=True,
+    )
 
 # add callback for toggling the collapse on small screens
+
+
 @callback(
     Output('navbar-collapse', 'is_open'),
     Input('navbar-toggler', 'n_clicks'),
