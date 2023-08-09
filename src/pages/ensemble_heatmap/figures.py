@@ -28,11 +28,20 @@ def make_empty_figure(text="No data (yet 😃)"):
 
 
 def make_heatmap(df, var):
+    if var == 'temperature_2m':
+        cmap = 'RdBu_r'
+    elif var == 'cloudcover':
+        cmap = 'YlGnBu_r'
+    elif var in ['rain', 'precipitation']:
+        cmap = 'dense'
+    elif var == 'snowfall':
+        cmap = 'Burgyl'
+
     fig = px.imshow(
         df.loc[:, df.columns.str.contains(var)].T,
         x=df['time'],
         text_auto=True,
-        color_continuous_scale='RdBu_r',
+        color_continuous_scale=cmap,
         origin='lower')
 
     fig.update_yaxes(visible=False, showticklabels=False)

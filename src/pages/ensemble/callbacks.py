@@ -33,11 +33,12 @@ def get_closest_address(n_clicks, from_address):
 @callback(
     Output("submit-button", "disabled"),
     Input("locations", "value"),
-    prevent_initial_call=True
 )
 def activate_submit_button(location):
-    if location:
+    if len(location) >= 2:
         return False
+    else:
+        return True
 
 
 @callback(

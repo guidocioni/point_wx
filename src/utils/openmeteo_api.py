@@ -1,6 +1,6 @@
 import pandas as pd
 import requests as r
-from .settings import cache
+from .settings import cache, ENSEMBLE_VARS
 
 
 @cache.memoize(3600)
@@ -26,7 +26,7 @@ def get_locations(name, count=10, language='en'):
 @cache.memoize(3600)
 def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
-                      variables='temperature_2m,cloudcover,rain,snowfall,precipitation',
+                      variables=",".join(ENSEMBLE_VARS),
                       timezone='auto',
                       model='icon_seamless',
                       from_now=True):

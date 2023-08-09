@@ -58,4 +58,3 @@ if __name__ == "__main__":
         port=APP_PORT,
         debug=APP_DEBUG,
     )
-

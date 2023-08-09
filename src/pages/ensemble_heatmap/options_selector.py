@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-from utils.settings import ENSEMBLE_MODELS
+from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS
 
 opts_selector = dbc.Card(
     [
@@ -19,8 +19,8 @@ opts_selector = dbc.Card(
                 dbc.InputGroupText("Variable"),
                 dbc.Select(
                     id="variable-selection-heatmap",
-                    options=['temperature_2m'],
-                    value='temperature_2m',
+                    options=ENSEMBLE_VARS,
+                    value=ENSEMBLE_VARS[0]
                 ),
             ],
             className="mb-2",
