@@ -34,8 +34,12 @@ def make_heatmap(df, var):
         cmap = 'YlGnBu_r'
     elif var in ['rain', 'precipitation']:
         cmap = 'dense'
-    elif var == 'snowfall':
+    elif var in ['snowfall', 'snow_depth']:
         cmap = 'Burgyl'
+    elif var == 'windgusts_10m':
+        cmap = 'Hot_r'
+    else:
+        cmap = 'RdBu_r'
 
     fig = px.imshow(
         df.loc[:, df.columns.str.contains(var)].T,
