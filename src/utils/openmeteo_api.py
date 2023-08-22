@@ -3,7 +3,7 @@ import requests as r
 from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
 
 
-@cache.memoize(3600)
+@cache.memoize(86400)
 def get_locations(name, count=10, language='en'):
     """
     Get a list of locations based on a name
@@ -46,7 +46,7 @@ def get_forecast_data(latitude=53.55,
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'])
 
-    data = data.dropna()
+    # data = data.dropna()
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
@@ -84,7 +84,7 @@ def get_ensemble_data(latitude=53.55,
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'])
 
-    data = data.dropna()
+    # data = data.dropna()
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
