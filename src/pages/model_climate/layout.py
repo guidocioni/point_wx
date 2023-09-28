@@ -9,7 +9,7 @@ from .callbacks import *
 dash.register_page(
     __name__,
     path='/climate',
-    title='Climate'
+    title='Climate (monthly)'
 )
 
 layout = html.Div(

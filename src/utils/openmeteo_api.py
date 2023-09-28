@@ -130,6 +130,38 @@ def get_historical_data(latitude=53.55,
 
 
 @cache.memoize(0)
+def get_historical_daily_data(latitude=53.55,
+                              longitude=9.99,
+                              variables='precipitation_sum',
+                              timezone='GMT',
+                              model='best_match',
+                              start_date='1991-01-01',
+                              end_date='2020-12-31'):
+    """
+    Get historical data for a point
+    """
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": variables,
+        "timezone": timezone,
+        "models": model,
+        "start_date": start_date,
+        "end_date": end_date
+    }
+
+    resp = r.get("https://archive-api.open-meteo.com/v1/archive",
+                 params=payload)
+    data = pd.DataFrame.from_dict(resp.json()['daily'])
+    data['time'] = pd.to_datetime(
+        data['time'], format='%Y-%m-%dT%H:%M')
+
+    data = data.dropna()
+
+    return data
+
+
+@cache.memoize(0)
 def compute_climatology(latitude=53.55,
                         longitude=9.99,
                         variables='temperature_2m',
@@ -251,3 +283,48 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     stats = monthly.groupby(monthly.index.month).mean().round(1)
 
     return stats
+
+
+@cache.memoize(0)
+def compute_yearly_accumulation(latitude=53.55,
+                                longitude=9.99,
+                                model='era5',
+                                var='precipitation_sum',
+                                year=pd.to_datetime('now', utc=True).year,
+                                q1=0.05,
+                                q2=0.5,
+                                q3=0.95):
+    """Compute cumulative sum of some variable over the year"""
+
+    daily = get_historical_daily_data(
+        latitude=latitude,
+        longitude=longitude,
+        model=model,
+        start_date='1981-01-01',
+        end_date=(pd.to_datetime('now', utc=True) -
+                  pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+        variables=var)
+
+    # Remove leap years
+    daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
+    # Compute cumulative sum
+    daily[f'{var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
+        var].transform(lambda x: x.cumsum())
+
+    quantiles = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
+        f'{var}_yearly_acc'].quantile(q=q1).to_frame().rename(columns={f'{var}_yearly_acc': 'q1'})
+    quantiles['q2'] = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
+        f'{var}_yearly_acc'].quantile(q=q2)
+    quantiles['q3'] = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
+        f'{var}_yearly_acc'].quantile(q=q3)
+
+    quantiles.index.set_names(["day", "month"], inplace=True)
+    quantiles.reset_index(inplace=True)
+    quantiles['dummy_date'] = pd.to_datetime(
+        f'{year}-' + quantiles.month.astype(str) + "-" + quantiles.day.astype(str))
+    quantiles.sort_values(by='dummy_date', inplace=True)
+
+    daily = daily[daily.time.dt.year == year].merge(
+        quantiles, left_on='time', right_on='dummy_date', how='right')
+
+    return daily
