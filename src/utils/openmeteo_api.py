@@ -157,10 +157,10 @@ def compute_climatology(latitude=53.55,
 
 
 @cache.memoize(0)
-def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
-                          start_date='1991-01-01', end_date='2020-12-31'):
-    """Takes a 30 years hourly dataframe as input and compute
-    some monthly statistics by aggregating many times"""
+def compute_daily_stats(latitude=53.55, longitude=9.99, model='era5',
+                        start_date='1991-01-01', end_date='2020-12-31'):
+    """Starting from hourly data compute daily aggregations which are
+    useful for other functions that compute climatologies"""
 
     df = get_historical_data(
         variables='temperature_2m,precipitation,snowfall,cloudcover,windspeed_10m',
@@ -183,6 +183,22 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
                                              cloudcover_mean=(
                                                  'cloudcover', 'mean')  # in %
                                              )
+
+    return daily
+
+
+@cache.memoize(0)
+def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
+                          start_date='1991-01-01', end_date='2020-12-31'):
+    """Takes a 30 years hourly dataframe as input and compute
+    some monthly statistics by aggregating many times"""
+
+    daily = compute_daily_stats(latitude=latitude,
+                                longitude=longitude,
+                                model=model,
+                                start_date=start_date,
+                                end_date=end_date)
+
     daily['overcast'] = daily['cloudcover_mean'] >= 80
     daily['partly_cloudy'] = (daily['cloudcover_mean'] < 80) & (
         daily['cloudcover_mean'] > 20)
@@ -208,13 +224,20 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     daily['p_2_5'] = (daily['daily_rain'] <= 5) & (daily['daily_rain'] > 2)
     daily['p_lt_2'] = (daily['daily_rain'] <= 2) & (daily['daily_rain'] > 1)
     daily['w_gt_61'] = (daily['wind_speed_max'] >= 61)
-    daily['w_gt_50'] = (daily['wind_speed_max'] >= 50) & (daily['wind_speed_max'] < 61)
-    daily['w_gt_38'] = (daily['wind_speed_max'] >= 38) & (daily['wind_speed_max'] < 50)
-    daily['w_gt_28'] = (daily['wind_speed_max'] >= 28) & (daily['wind_speed_max'] < 38)
-    daily['w_gt_19'] = (daily['wind_speed_max'] >= 19) & (daily['wind_speed_max'] < 28)
-    daily['w_gt_12'] = (daily['wind_speed_max'] >= 12) & (daily['wind_speed_max'] < 19)
-    daily['w_gt_5'] = (daily['wind_speed_max'] >= 5) & (daily['wind_speed_max'] < 12)
-    daily['w_gt_1'] = (daily['wind_speed_max'] >= 1) & (daily['wind_speed_max'] < 5)
+    daily['w_gt_50'] = (daily['wind_speed_max'] >= 50) & (
+        daily['wind_speed_max'] < 61)
+    daily['w_gt_38'] = (daily['wind_speed_max'] >= 38) & (
+        daily['wind_speed_max'] < 50)
+    daily['w_gt_28'] = (daily['wind_speed_max'] >= 28) & (
+        daily['wind_speed_max'] < 38)
+    daily['w_gt_19'] = (daily['wind_speed_max'] >= 19) & (
+        daily['wind_speed_max'] < 28)
+    daily['w_gt_12'] = (daily['wind_speed_max'] >= 12) & (
+        daily['wind_speed_max'] < 19)
+    daily['w_gt_5'] = (daily['wind_speed_max'] >= 5) & (
+        daily['wind_speed_max'] < 12)
+    daily['w_gt_1'] = (daily['wind_speed_max'] >= 1) & (
+        daily['wind_speed_max'] < 5)
     daily['w_calm'] = daily['wind_speed_max'] <= 0.1
     #
     bool_cols = daily.dtypes[daily.dtypes == bool].index
