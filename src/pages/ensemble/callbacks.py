@@ -22,7 +22,7 @@ def get_closest_address(n_clicks, from_address):
     for _, row in locations.iterrows():
         options.append(
             {
-                "label": f"{row['name']} ({row['country']} | {row['longitude']:.1f}N, {row['latitude']:.1f}E, {row['elevation']:.0f}m)",
+                "label": f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, {row['latitude']:.1f}N, {row['elevation']:.0f}m)",
                 "value": row['id']
             }
         )

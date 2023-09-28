@@ -99,9 +99,9 @@ def make_temp_prec_climate_figure(df):
         legend=dict(orientation='h')
     )
 
-    fig.update_yaxes(range=[0, 100], row=1, col=1,
+    fig.update_yaxes(row=1, col=1,
                      secondary_y=True, title='mm', showgrid=False)
-    fig.update_yaxes(range=[-10, 40], row=1, col=1,
+    fig.update_yaxes(row=1, col=1,
                      secondary_y=False, title='°C', showgrid=False)
 
     return fig
