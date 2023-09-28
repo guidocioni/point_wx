@@ -94,7 +94,7 @@ def get_ensemble_data(latitude=53.55,
 
 # As historical data is in the past, it never changes
 # so we can safely set these functions to infinite timeout
-# They will only be re-computed if the parameter change
+# They will only be re-computed if the parameters change
 
 
 @cache.memoize(0)
@@ -154,3 +154,77 @@ def compute_climatology(latitude=53.55,
         numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
 
     return mean
+
+
+@cache.memoize(0)
+def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
+                          start_date='1991-01-01', end_date='2020-12-31'):
+    """Takes a 30 years hourly dataframe as input and compute
+    some monthly statistics by aggregating many times"""
+
+    df = get_historical_data(
+        variables='temperature_2m,precipitation,snowfall,cloudcover,windspeed_10m',
+        latitude=latitude,
+        longitude=longitude,
+        timezone='GMT',  # Use UTC to avoid issues with daily computations
+        model=model,
+        start_date=start_date,
+        end_date=end_date)
+
+    daily = df.resample('1D', on='time').agg(t2m_mean=('temperature_2m', 'mean'),
+                                             t2m_min=('temperature_2m', 'min'),
+                                             t2m_max=('temperature_2m', 'max'),
+                                             wind_speed_max=(
+                                                 'windspeed_10m', 'max'),  # in km/h
+                                             daily_rain=(
+                                                 'precipitation', 'sum'),  # in mm
+                                             daily_snow=(
+                                                 'snowfall', 'sum'),  # in cm
+                                             cloudcover_mean=(
+                                                 'cloudcover', 'mean')  # in %
+                                             )
+    daily['overcast'] = daily['cloudcover_mean'] >= 80
+    daily['partly_cloudy'] = (daily['cloudcover_mean'] < 80) & (
+        daily['cloudcover_mean'] > 20)
+    daily['sunny'] = daily['cloudcover_mean'] <= 20
+    daily['t_max_gt_30'] = daily['t2m_max'] > 30
+    daily['t_max_gt_25'] = (daily['t2m_max'] > 25) & (daily['t2m_max'] <= 30)
+    daily['t_max_gt_20'] = (daily['t2m_max'] > 20) & (daily['t2m_max'] <= 25)
+    daily['t_max_gt_15'] = (daily['t2m_max'] > 15) & (daily['t2m_max'] <= 20)
+    daily['t_max_gt_10'] = (daily['t2m_max'] > 10) & (daily['t2m_max'] <= 15)
+    daily['t_max_gt_5'] = (daily['t2m_max'] > 5) & (daily['t2m_max'] <= 10)
+    daily['t_max_gt_0'] = (daily['t2m_max'] >= 0) & (daily['t2m_max'] <= 5)
+    daily['t_max_lt_0'] = (daily['t2m_max'] >= -5) & (daily['t2m_max'] < 0)
+    daily['t_max_lt_m5'] = daily['t2m_max'] < -5
+    daily['frost'] = daily['t2m_min'] <= 0
+    daily['wet'] = daily['daily_rain'] >= 1.0  # mm
+    daily['dry'] = daily['daily_rain'] < 1.0  # mm
+    daily['snow'] = daily['daily_snow'] >= 1.0  # cm
+    daily['p_50_100'] = (daily['daily_rain'] <= 100) & (
+        daily['daily_rain'] > 50)
+    daily['p_20_50'] = (daily['daily_rain'] <= 50) & (daily['daily_rain'] > 20)
+    daily['p_10_20'] = (daily['daily_rain'] <= 20) & (daily['daily_rain'] > 10)
+    daily['p_5_10'] = (daily['daily_rain'] <= 10) & (daily['daily_rain'] > 5)
+    daily['p_2_5'] = (daily['daily_rain'] <= 5) & (daily['daily_rain'] > 2)
+    daily['p_lt_2'] = (daily['daily_rain'] <= 2) & (daily['daily_rain'] > 1)
+    daily['w_gt_61'] = (daily['wind_speed_max'] >= 61)
+    daily['w_gt_50'] = (daily['wind_speed_max'] >= 50) & (daily['wind_speed_max'] < 61)
+    daily['w_gt_38'] = (daily['wind_speed_max'] >= 38) & (daily['wind_speed_max'] < 50)
+    daily['w_gt_28'] = (daily['wind_speed_max'] >= 28) & (daily['wind_speed_max'] < 38)
+    daily['w_gt_19'] = (daily['wind_speed_max'] >= 19) & (daily['wind_speed_max'] < 28)
+    daily['w_gt_12'] = (daily['wind_speed_max'] >= 12) & (daily['wind_speed_max'] < 19)
+    daily['w_gt_5'] = (daily['wind_speed_max'] >= 5) & (daily['wind_speed_max'] < 12)
+    daily['w_gt_1'] = (daily['wind_speed_max'] >= 1) & (daily['wind_speed_max'] < 5)
+    daily['w_calm'] = daily['wind_speed_max'] <= 0.1
+    #
+    bool_cols = daily.dtypes[daily.dtypes == bool].index
+    # Compute monthly stats
+    monthly = daily[bool_cols].resample('1M').sum().add_suffix('_days')
+    monthly['monthly_rain'] = daily['daily_rain'].resample('1M').sum()
+    monthly['t2m_max_mean'] = daily['t2m_max'].resample('1M').mean()
+    monthly['t2m_min_mean'] = daily['t2m_min'].resample('1M').mean()
+    monthly['t2m_min_min'] = daily['t2m_min'].resample('1M').min()
+    monthly['t2m_max_max'] = daily['t2m_max'].resample('1M').max()
+    stats = monthly.groupby(monthly.index.month).mean().round(1)
+
+    return stats

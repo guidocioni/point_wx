@@ -32,3 +32,5 @@ DETERMINISTIC_MODELS = ["best_match", "ecmwf_ifs04", "metno_nordic", "gfs_seamle
 DETERMINISTIC_VARS = ["temperature_2m", "relativehumidity_2m",
                       "precipitation", "rain", "showers", "snowfall", "snow_depth",
                       "cloudcover", "windspeed_10m", "winddirection_10m", "windgusts_10m"]
+
+REANALYSIS_MODELS = ["best_match", "era5", "era5_land", "cerra"]
