@@ -328,3 +328,42 @@ def compute_yearly_accumulation(latitude=53.55,
         quantiles, left_on='time', right_on='dummy_date', how='right')
 
     return daily
+
+
+@cache.memoize(0)
+def compute_yearly_comparison(latitude=53.55,
+                              longitude=9.99,
+                              var='temperature_2m_mean',
+                              model='era5',
+                              year=pd.to_datetime('now', utc=True).year,
+                              q1=0.05,
+                              q2=0.95):
+    """ Based on daily data compute first a daily climatology and then merge with the observed values
+    over a certain year"""
+
+    daily = get_historical_daily_data(
+        latitude=latitude,
+        longitude=longitude,
+        model=model,
+        start_date='1991-01-01',
+        end_date=(pd.to_datetime('now', utc=True) -
+                  pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+        variables=var)
+
+    # Remove leap years
+    daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
+
+    daily['doy'] = daily.time.dt.strftime("%m%d")
+    clima = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
+                      ].groupby('doy').mean(numeric_only=True).add_suffix("_clima")
+    clima['q05'] = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
+                             ].groupby('doy').quantile(q=0.05, numeric_only=True).add_suffix("_q05").values
+    clima['q95'] = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
+                             ].groupby('doy').quantile(q=0.95, numeric_only=True).add_suffix("_q95").values
+
+    clima['dummy_date'] = pd.to_datetime(
+        str(year) + clima.index, format='%Y%m%d')
+    daily = daily.merge(clima, right_on='dummy_date',
+                        left_on='time', how='right')
+
+    return daily

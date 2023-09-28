@@ -92,12 +92,101 @@ def make_prec_figure(df, year, var):
 
     return fig
 
+
+def make_temp_figure(df, year, var):
+    fig = make_subplots()
+
+    mask = df[var] > df[f'{var}_clima']
+
+    df['above'] = np.where(
+        mask, df[var], df[f'{var}_clima'])
+    df['below'] = np.where(
+        mask,  df[f'{var}_clima'], df[var])
+
+    fig.add_trace(
+        go.Scatter(
+            x=df['time'],
+            y=df[f'{var}_clima'],
+            mode='lines',
+            line=dict(width=.01),
+            showlegend=False),
+    )
+    fig.add_trace(
+        go.Scatter(x=df['time'],
+                   y=df['above'],
+                   fill='tonexty',
+                   name='Hotter',
+                   fillcolor='rgba(255, 76, 45, 1)',
+                   mode='none')
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df['time'],
+            y=df[f'{var}_clima'],
+            mode='lines',
+            line=dict(width=.01),
+            showlegend=False),
+    )
+    fig.add_trace(
+        go.Scatter(x=df['time'],
+                   y=df['below'],
+                   fill='tonexty',
+                   name='Colder',
+                   fillcolor='rgba(99, 178, 207, 1)',
+                   mode='none')
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
+            y=df[f'{var}_clima'],
+            mode='lines',
+            name='Mean',
+            line=dict(width=3, color='black'),
+            showlegend=True),
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
+            y=df['q05'],
+            mode='lines',
+            name='5th Percentile',
+            line=dict(width=.1, color='gray'),
+            showlegend=False,),
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
+            y=df['q95'],
+            mode='lines',
+            name='5-95th percentiles range',
+            line=dict(width=.1, color='gray'),
+            fillcolor='rgba(0, 0, 0, 0.2)',
+            showlegend=True,
+            fill='tonexty'),
+    )
+    fig.update_layout(
+        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        template='plotly_white',
+        barmode='stack',
+        legend=dict(orientation='h'),
+        yaxis=dict(showgrid=True),
+    )
+
+    return fig
+
 # CARDS for layout
 
 
 fig_prec_climate_daily = dbc.Card(
     [
         dcc.Graph(id='prec-climate-daily-figure')
+    ],
+    className="mb-2",
+)
+
+fig_temp_climate_daily = dbc.Card(
+    [
+        dcc.Graph(id='temp-climate-daily-figure')
     ],
     className="mb-2",
 )
