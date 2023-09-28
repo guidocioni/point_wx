@@ -17,7 +17,7 @@ def get_locations(name, count=10, language='en'):
 
     resp = r.get("https://geocoding-api.open-meteo.com/v1/search",
                  params=payload)
-
+    resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['results'])
 
     return data
@@ -42,6 +42,7 @@ def get_forecast_data(latitude=53.55,
 
     resp = r.get("https://api.open-meteo.com/v1/forecast",
                  params=payload)
+    resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'])
@@ -80,6 +81,7 @@ def get_ensemble_data(latitude=53.55,
 
     resp = r.get("https://ensemble-api.open-meteo.com/v1/ensemble",
                  params=payload)
+    resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'])
@@ -120,6 +122,7 @@ def get_historical_data(latitude=53.55,
 
     resp = r.get("https://archive-api.open-meteo.com/v1/archive",
                  params=payload)
+    resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time'], format='%Y-%m-%dT%H:%M')
@@ -152,6 +155,7 @@ def get_historical_daily_data(latitude=53.55,
 
     resp = r.get("https://archive-api.open-meteo.com/v1/archive",
                  params=payload)
+    resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['daily'])
     data['time'] = pd.to_datetime(
         data['time'], format='%Y-%m-%dT%H:%M')

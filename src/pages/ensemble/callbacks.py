@@ -1,8 +1,7 @@
-from dash import callback, Output, Input, State
+from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
 from .figures import make_empty_figure, make_subplot_figure
 import pandas as pd
-
 
 @callback(
     [Output("locations", "options"),
@@ -42,7 +41,9 @@ def activate_submit_button(location):
 
 
 @callback(
-    Output("ensemble-plot", "figure"),
+    [Output("ensemble-plot", "figure"),
+     Output("error-message", "children"),
+     Output("error-modal", "is_open")],
     Input("submit-button", "n_clicks"),
     [State("locations-list", "data"),
      State("locations", "value"),
@@ -50,20 +51,22 @@ def activate_submit_button(location):
 )
 def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
-        return make_empty_figure()
+        return make_empty_figure(), no_update, no_update
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split')
     loc = locations[locations['id'] == location['value']]
 
-    data = get_ensemble_data(latitude=loc['latitude'].item(),
-                             longitude=loc['longitude'].item(),
-                             model=model)
+    try:
+        data = get_ensemble_data(latitude=loc['latitude'].item(),
+                                 longitude=loc['longitude'].item(),
+                                 model=model)
 
-    clima = compute_climatology(latitude=loc['latitude'].item(),
-                                longitude=loc['longitude'].item(),
-                                variables='temperature_2m')
+        clima = compute_climatology(latitude=loc['latitude'].item(),
+                                    longitude=loc['longitude'].item(),
+                                    variables='temperature_2m')
 
-    fig = make_subplot_figure(data, clima)
+        return make_subplot_figure(data, clima), None, False
 
-    return fig
+    except Exception as e:
+        return make_empty_figure(), repr(e), True

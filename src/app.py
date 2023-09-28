@@ -41,6 +41,15 @@ def serve_layout():
         [
             navbar(),
             dcc.Store(id='locations-list', data={}),
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Error"),
+                    dbc.ModalBody("", id="error-message"),  # Placeholder for error message
+                ],
+                id="error-modal",
+                size="lg",
+                backdrop="static",
+            ),
             dbc.Container(
                 dash.page_container,
                 class_name='my-2'

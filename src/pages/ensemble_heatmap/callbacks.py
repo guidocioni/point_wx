@@ -1,8 +1,7 @@
-from dash import callback, Output, Input, State
+from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_ensemble_data
 from .figures import make_empty_figure, make_heatmap
 import pandas as pd
-
 
 @callback(
     Output("submit-button-heatmap", "disabled"),
@@ -14,26 +13,32 @@ def activate_submit_button(location):
     else:
         return True
 
+
 @callback(
-    Output("ensemble-plot-heatmap", "figure"),
+    [Output("ensemble-plot-heatmap", "figure"),
+     Output("error-message", "children", allow_duplicate=True),
+     Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-heatmap", "n_clicks"),
     [State("locations-list", "data"),
      State("locations", "value"),
      State("models-selection-heatmap", "value"),
-     State("variable-selection-heatmap", "value")]
+     State("variable-selection-heatmap", "value")],
+    prevent_initial_call=True
 )
 def generate_figure(n_clicks, locations, location, model, variable):
     if n_clicks is None:
-        return make_empty_figure()
+        return make_empty_figure(), no_update, no_update
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split')
     loc = locations[locations['id'] == location['value']]
 
-    data = get_ensemble_data(latitude=loc['latitude'].item(),
-                             longitude=loc['longitude'].item(),
-                             model=model)
+    try:
+        data = get_ensemble_data(latitude=loc['latitude'].item(),
+                                 longitude=loc['longitude'].item(),
+                                 model=model)
 
-    fig = make_heatmap(data, var=variable)
+        return make_heatmap(data, var=variable), None, False
 
-    return fig
+    except Exception as e:
+        return make_empty_figure(), repr(e), True
