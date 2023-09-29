@@ -2,7 +2,6 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
 import numpy as np
-import pandas as pd
 from plotly.subplots import make_subplots
 
 
@@ -87,7 +86,7 @@ def make_prec_figure(df, year, var):
         template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
-        yaxis=dict(showgrid=True),
+        yaxis=dict(showgrid=True, title='Yearly accumulated precipitation [mm]'),
     )
 
     return fig
@@ -101,7 +100,7 @@ def make_temp_figure(df, year, var):
     df['above'] = np.where(
         mask, df[var], df[f'{var}_clima'])
     df['below'] = np.where(
-        mask,  df[f'{var}_clima'], df[var])
+        mask, df[f'{var}_clima'], df[var])
 
     fig.add_trace(
         go.Scatter(
@@ -169,7 +168,7 @@ def make_temp_figure(df, year, var):
         template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
-        yaxis=dict(showgrid=True),
+        yaxis=dict(showgrid=True, title='Temperature [°C]'),
     )
 
     return fig

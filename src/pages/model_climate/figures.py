@@ -1,8 +1,7 @@
 import dash_bootstrap_components as dbc
+from dash import html
 from dash import dcc
 import plotly.graph_objects as go
-import numpy as np
-import pandas as pd
 from plotly.subplots import make_subplots
 
 x = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
@@ -539,6 +538,15 @@ def make_winds_climate_figure(df):
 
 fig_temp_prec_climate = dbc.Card(
     [
+        html.Div([
+            "The typical evolution of average minimum and maximum temperatures for every month ",
+            "are shown in the red and blue solid lines. ",
+            html.Br(),
+            "The dashed lines show instead the extremes that you can expect at this location. ",
+            html.Br(),
+            "The blue bars show the monthly cumulated precipitation as average."
+        ]
+        ),
         dcc.Graph(id='temp-prec-climate-figure')
     ],
     className="mb-2",
@@ -546,6 +554,12 @@ fig_temp_prec_climate = dbc.Card(
 
 fig_clouds_climate = dbc.Card(
     [
+        html.Div([
+            "Here we show the number of days with overcast (>80% cloud cover), "
+            "partly cloudy (20-80%) and sunny (<20%) days.",
+            html.Br(),
+            "The number of precipitation days (>= 1 mm) are also shown."
+        ]),
         dcc.Graph(id='clouds-climate-figure')
     ],
     className="mb-2",
@@ -553,6 +567,12 @@ fig_clouds_climate = dbc.Card(
 
 fig_temperature_climate = dbc.Card(
     [
+        html.Div(
+            ["The number of days that exceed a certain temperature threshold are shown in this plot.",
+             html.Br(),
+             "Snow days (>= 1 cm) are also shown"
+             ]
+        ),
         dcc.Graph(id='temperature-climate-figure')
     ],
     className="mb-2",
@@ -560,6 +580,12 @@ fig_temperature_climate = dbc.Card(
 
 fig_precipitation_climate = dbc.Card(
     [
+        html.Div(
+            ["The number of days that exceed a certain precipitation threshold are shown in this plot.",
+             html.Br(),
+             "Frost days (daily minimum temperature <= 0°C) are also shown"
+             ]
+        ),
         dcc.Graph(id='precipitation-climate-figure')
     ],
     className="mb-2",
@@ -567,6 +593,10 @@ fig_precipitation_climate = dbc.Card(
 
 fig_winds_climate = dbc.Card(
     [
+        html.Div(
+            "The number of days that exceed a certain wind speed threshold are shown in this plot. "
+            "Note that we use the average of maximum wind speed at 10m. "
+        ),
         dcc.Graph(id='winds-climate-figure')
     ],
     className="mb-2",

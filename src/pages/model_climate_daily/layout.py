@@ -14,6 +14,15 @@ dash.register_page(
 
 layout = html.Div(
     [
+        dbc.Card(
+            html.Div(
+                [
+                    "Here you can compare the daily typical climate to a certain year evolution. ",
+                    html.Br(),
+                    "The historical data starts from 1981.",
+                ]
+            ),
+            body=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),
@@ -22,14 +31,12 @@ layout = html.Div(
         ),
         dbc.Row(
             [
-                dbc.Col([html.Div("Monitoring the yearly accumulated sum of precipitation"),
-                         dbc.Spinner(fig_prec_climate_daily)])
+                dbc.Col(dbc.Spinner(fig_prec_climate_daily))
             ]
         ),
         dbc.Row(
             [
-                dbc.Col([html.Div("Annual cycle of temperature with typical values"),
-                         dbc.Spinner(fig_temp_climate_daily)])
+                dbc.Col(dbc.Spinner(fig_temp_climate_daily))
             ]
         ),
     ]

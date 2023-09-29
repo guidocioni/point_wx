@@ -20,12 +20,12 @@ But since you only need a few packages to make it work, it should be fine.
 ## Configuration
 You can set the options in `src/utils/settings.py`
 
-- `APP_HOST`, `APP_PORT` and `APP_DEBUG` will only have effect if you run the `app.py` directly without using another production server like `gunicorn`
+- `APP_HOST`, `APP_PORT` will only have effect if you run the `app.py` directly without using another production server like `gunicorn`
 - `URL_BASE_PATHNAME` specifies the subfolder where the whole site is running
 - `CACHE_TYPE` and `CACHE_DIR` allows you to change the cache behaviour, which is used to save and reuse the results of the function downloading the forecast data in `src/utils/openmeteo_api.py`
 
 ## Running
-To test set `APP_DEBUG = True` and just run `python src/app.py`.
+To test just run `python src/app.py`.
 To deploy in production something like this should work
 
 ```python

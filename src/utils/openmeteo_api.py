@@ -289,7 +289,7 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     return stats
 
 
-@cache.memoize(0)
+@cache.memoize(86400)
 def compute_yearly_accumulation(latitude=53.55,
                                 longitude=9.99,
                                 model='era5',
@@ -334,7 +334,7 @@ def compute_yearly_accumulation(latitude=53.55,
     return daily
 
 
-@cache.memoize(0)
+@cache.memoize(86400)
 def compute_yearly_comparison(latitude=53.55,
                               longitude=9.99,
                               var='temperature_2m_mean',

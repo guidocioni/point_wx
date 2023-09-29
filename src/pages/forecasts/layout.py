@@ -14,6 +14,17 @@ dash.register_page(
 
 layout = html.Div(
     [
+        dbc.Card(
+            html.Div(
+                [
+                    "In this page deterministic forecasts are shown. These are models that do not have different "
+                    "scenarios but only a single one. On the flip side you get higher spatial resolution and thus more"
+                    "details in both space and time.",
+                    html.Br(),
+                    "Note that you can compare different models at the same time to see the spread in the forecast.",
+                ]
+            ),
+            body=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),

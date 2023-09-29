@@ -10,7 +10,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 # local imports
-from utils.settings import APP_HOST, APP_PORT, APP_DEBUG, URL_BASE_PATHNAME, cache
+from utils.settings import APP_HOST, APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
 
 app = dash.Dash(
@@ -28,7 +28,7 @@ app = dash.Dash(
         }
     ],
     suppress_callback_exceptions=True,
-    title='Dash app structure'
+    title='Point WX'
 )
 
 server = app.server
@@ -62,8 +62,7 @@ def serve_layout():
 app.layout = serve_layout   # set the layout to the serve_layout function
 
 if __name__ == "__main__":
-    app.run_server(
+    app.run(
         host=APP_HOST,
         port=APP_PORT,
-        debug=APP_DEBUG,
     )

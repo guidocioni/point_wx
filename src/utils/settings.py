@@ -3,7 +3,6 @@ from flask_caching import Cache
 
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080
-APP_DEBUG = False
 URL_BASE_PATHNAME = '/pointwx/'
 
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
