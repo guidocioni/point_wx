@@ -132,7 +132,7 @@ def get_historical_data(latitude=53.55,
     return data
 
 
-@cache.memoize(0)
+@cache.memoize(86400)
 def get_historical_daily_data(latitude=53.55,
                               longitude=9.99,
                               variables='precipitation_sum',
@@ -339,9 +339,7 @@ def compute_yearly_comparison(latitude=53.55,
                               longitude=9.99,
                               var='temperature_2m_mean',
                               model='era5',
-                              year=pd.to_datetime('now', utc=True).year,
-                              q1=0.05,
-                              q2=0.95):
+                              year=pd.to_datetime('now', utc=True).year):
     """ Based on daily data compute first a daily climatology and then merge with the observed values
     over a certain year"""
 
@@ -349,7 +347,7 @@ def compute_yearly_comparison(latitude=53.55,
         latitude=latitude,
         longitude=longitude,
         model=model,
-        start_date='1991-01-01',
+        start_date='1981-01-01',
         end_date=(pd.to_datetime('now', utc=True) -
                   pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
         variables=var)
