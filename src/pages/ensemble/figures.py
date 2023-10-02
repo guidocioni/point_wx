@@ -85,7 +85,7 @@ def make_lineplot_timeseries(df, clima, var):
     return traces
 
 
-def make_barplot_timeseries(df, var):
+def make_barplot_timeseries(df, var, color='cadetblue'):
     # Do some pre-processing on the precipitation input
     members = len(df.iloc[:, df.columns.str.contains(var)].columns)
 
@@ -103,14 +103,15 @@ def make_barplot_timeseries(df, var):
         name=var,
         textposition='outside',
         showlegend=False,
-        marker_color='cadetblue')
+        marker_color=color)
 
     return trace
 
 
 def make_subplot_figure(data, clima):
     traces_temp = make_lineplot_timeseries(data, clima, 'temperature_2m')
-    trace_rain = make_barplot_timeseries(data, 'rain')
+    trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
+    trace_snow = make_barplot_timeseries(data, 'snowfall', color='rebeccapurple')
 
     fig = make_subplots(
         rows=2,
@@ -122,19 +123,21 @@ def make_subplot_figure(data, clima):
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
     fig.add_trace(trace_rain, row=2, col=1)
+    fig.add_trace(trace_snow, row=2, col=1)
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
                    range=[data['time'].min(),
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
-        height=800,
+        height=900,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         template='plotly_white',
+        barmode='stack'
     )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="Prec. [mm] and prob. [%]", row=2, col=1)
+    fig.update_yaxes(title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=2, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
                      gridwidth=3), showgrid=True, gridwidth=4)

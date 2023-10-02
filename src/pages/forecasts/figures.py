@@ -87,7 +87,7 @@ def make_subplot_figure(data):
                    range=[data['time'].min(),
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
-        height=800,
+        height=1000,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         template='plotly_white',
         barmode='overlay'
