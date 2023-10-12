@@ -3,6 +3,7 @@ from dash import dcc
 import plotly.graph_objects as go
 import numpy as np
 from plotly.subplots import make_subplots
+import pandas as pd
 
 
 def make_empty_figure(text="No data (yet 😃)"):
@@ -55,31 +56,25 @@ def make_prec_figure(df, year, var):
     fig.add_trace(
         go.Scatter(
             x=df.dummy_date,
+            y=df['q2'],
+            mode='lines',
+            name='50th Percentile',
+            line=dict(width=.5, color='gray'),
+            showlegend=True,),
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
             y=df[f'{var}_yearly_acc'],
             mode='lines',
             name=year,
             line=dict(width=3, color='black'),
             showlegend=True,),
     )
-    fig.add_trace(
-        go.Scatter(
-            x=[df.time.max()],
-            y=[df[f'{var}_yearly_acc'].max()],
-            mode='markers',
-            name='Latest',
-            marker=dict(size=15, color='black'),
-            showlegend=False,),
-    )
 
-    fig.add_trace(
-        go.Scatter(
-            x=df.dummy_date,
-            y=df['q2'],
-            mode='lines',
-            name='50th Percentile',
-            line=dict(width=1, color='gray', dash='dash'),
-            showlegend=True,),
-    )
+    fig.add_vline(x=pd.to_datetime('now', utc=True),
+                  line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
@@ -163,6 +158,10 @@ def make_temp_figure(df, year, var):
             showlegend=True,
             fill='tonexty'),
     )
+
+    fig.add_vline(x=pd.to_datetime('now', utc=True),
+                  line_width=2, line_dash="dash", line_color="gray")
+
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         template='plotly_white',

@@ -30,7 +30,8 @@ def get_forecast_data(latitude=53.55,
                       timezone='auto',
                       model=DETERMINISTIC_MODELS[0],
                       forecast_days=7,
-                      from_now=True):
+                      from_now=True,
+                      past_days=None):
     payload = {
         "latitude": latitude,
         "longitude": longitude,
@@ -39,6 +40,9 @@ def get_forecast_data(latitude=53.55,
         "models": model,
         "forecast_days": forecast_days
     }
+
+    if past_days:
+        payload['past_days'] = past_days
 
     resp = r.get("https://api.open-meteo.com/v1/forecast",
                  params=payload)
@@ -52,6 +56,36 @@ def get_forecast_data(latitude=53.55,
     if from_now:
         data = data[data.time >= pd.to_datetime(
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+
+    return data
+
+
+@cache.memoize(1800)
+def get_forecast_daily_data(latitude=53.55,
+                            longitude=9.99,
+                            variables="precipitation_sum",
+                            timezone='auto',
+                            model=DETERMINISTIC_MODELS[0],
+                            forecast_days=7,
+                            past_days=None):
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": variables,
+        "timezone": timezone,
+        "models": model,
+        "forecast_days": forecast_days
+    }
+
+    if past_days:
+        payload['past_days'] = past_days
+
+    resp = r.get("https://api.open-meteo.com/v1/forecast",
+                 params=payload)
+    resp.raise_for_status()
+    data = pd.DataFrame.from_dict(resp.json()['daily'])
+    data['time'] = pd.to_datetime(
+        data['time']).dt.tz_localize(resp.json()['timezone'])
 
     return data
 
@@ -309,6 +343,19 @@ def compute_yearly_accumulation(latitude=53.55,
                   pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
         variables=var)
 
+    # Add missing dates and forecasts
+    additional = get_forecast_daily_data(
+        latitude=latitude,
+        longitude=longitude,
+        variables='precipitation_sum',
+        model='ecmwf_ifs04',
+        forecast_days=14,
+        past_days=7)
+    additional['time'] = additional['time'].dt.tz_localize(None)
+    additional = additional[additional.time > daily.time.max()]
+
+    daily = pd.concat([daily, additional])
+
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
     # Compute cumulative sum
@@ -351,6 +398,20 @@ def compute_yearly_comparison(latitude=53.55,
         end_date=(pd.to_datetime('now', utc=True) -
                   pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
         variables=var)
+
+    # Add missing dates and forecasts
+    additional = get_forecast_data(
+        latitude=latitude,
+        longitude=longitude,
+        variables='temperature_2m',
+        model='ecmwf_ifs04',
+        from_now=False,
+        forecast_days=14,
+        past_days=7).resample('1D', on='time').mean().reset_index().rename(columns={'temperature_2m': 'temperature_2m_mean'})
+    additional['time'] = additional['time'].dt.tz_localize(None)
+    additional = additional[additional.time > daily.time.max()]
+
+    daily = pd.concat([daily, additional])
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
