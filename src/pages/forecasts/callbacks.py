@@ -35,7 +35,8 @@ def generate_figure(n_clicks, locations, location, models):
     try:
         data = get_forecast_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
-                                 model=",".join(models))
+                                 model=",".join(models),
+                                 forecast_days=14)
 
         return make_subplot_figure(data), None, False
     except Exception as e:
