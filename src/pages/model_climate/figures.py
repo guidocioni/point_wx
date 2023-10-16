@@ -3,6 +3,8 @@ from dash import html
 from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from utils.settings import images_config
+
 
 x = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
      'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
@@ -586,7 +588,7 @@ fig_precipitation_climate = dbc.Card(
              "Frost days (daily minimum temperature <= 0°C) are also shown"
              ]
         ),
-        dcc.Graph(id='precipitation-climate-figure')
+        dcc.Graph(id='precipitation-climate-figure', config=images_config)
     ],
     className="mb-2",
 )
@@ -597,7 +599,7 @@ fig_winds_climate = dbc.Card(
             "The number of days that exceed a certain wind speed threshold are shown in this plot. "
             "Note that we use the average of maximum wind speed at 10m. "
         ),
-        dcc.Graph(id='winds-climate-figure')
+        dcc.Graph(id='winds-climate-figure', config=images_config)
     ],
     className="mb-2",
 )

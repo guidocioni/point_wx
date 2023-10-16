@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
 import plotly.express as px
+from utils.settings import images_config
 
 
 def make_empty_figure(text="No data (yet 😃)"):
@@ -67,7 +68,7 @@ def make_heatmap(df, var):
 
 fig_subplots = dbc.Card(
     [
-        dcc.Graph(id='ensemble-plot-heatmap')
+        dcc.Graph(id='ensemble-plot-heatmap', config=images_config)
     ],
     className="mb-2",
 )

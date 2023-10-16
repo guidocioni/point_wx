@@ -2,7 +2,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+from utils.settings import images_config
 
 def make_empty_figure(text="No data (yet 😃)"):
     '''Initialize an empty figure with style and a centered text'''
@@ -108,7 +108,7 @@ def make_subplot_figure(data):
 
 fig_subplots = dbc.Card(
     [
-        dcc.Graph(id='forecast-plot')
+        dcc.Graph(id='forecast-plot', config=images_config)
     ],
     className="mb-2",
 )

@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
+from utils.settings import images_config
 
 
 def make_empty_figure(text="No data (yet 😃)"):
@@ -149,7 +150,7 @@ def make_subplot_figure(data, clima):
 
 fig_subplots = dbc.Card(
     [
-        dcc.Graph(id='ensemble-plot')
+        dcc.Graph(id='ensemble-plot', config=images_config)
     ],
     className="mb-2",
 )

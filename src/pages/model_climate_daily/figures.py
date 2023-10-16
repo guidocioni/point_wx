@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
+from utils.settings import images_config
 
 
 def make_empty_figure(text="No data (yet 😃)"):
@@ -177,14 +178,14 @@ def make_temp_figure(df, year, var):
 
 fig_prec_climate_daily = dbc.Card(
     [
-        dcc.Graph(id='prec-climate-daily-figure')
+        dcc.Graph(id='prec-climate-daily-figure', config=images_config)
     ],
     className="mb-2",
 )
 
 fig_temp_climate_daily = dbc.Card(
     [
-        dcc.Graph(id='temp-climate-daily-figure')
+        dcc.Graph(id='temp-climate-daily-figure', config=images_config)
     ],
     className="mb-2",
 )

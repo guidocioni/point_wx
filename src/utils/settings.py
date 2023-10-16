@@ -8,6 +8,15 @@ URL_BASE_PATHNAME = '/pointwx/'
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
                       'CACHE_DIR': '/tmp'})
 
+images_config = {
+    'toImageButtonOptions': {
+        'format': 'png',  # one of png, svg, jpeg, webp
+        'height': None,
+        'width': None,
+        'scale': 1.5  # Multiply title/legend/axis/canvas sizes by this factor
+    }
+}
+
 # All the models available in the APIs for Ensemble
 ENSEMBLE_MODELS = ["icon_seamless", "gfs_seamless", "ecmwf_ifs04", "gem_global",
                    # additional model which are already included in the previous ones
