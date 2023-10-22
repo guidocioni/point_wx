@@ -32,13 +32,19 @@ def generate_figure(n_clicks, locations, location, model, variable):
     # unpack locations data
     locations = pd.read_json(locations, orient='split')
     loc = locations[locations['id'] == location['value']]
+    loc_label = (
+            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude']):.1f}E"
+            f", {float(loc['latitude']):.1f}N, {float(loc['elevation']):.0f}m)  -  "
+            f"{variable}  -  "
+            f"{model.upper()}"
+    )
 
     try:
         data = get_ensemble_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
                                  model=model)
 
-        return make_heatmap(data, var=variable), None, False
+        return make_heatmap(data, var=variable, title=loc_label), None, False
 
     except Exception as e:
         return make_empty_figure(), repr(e), True

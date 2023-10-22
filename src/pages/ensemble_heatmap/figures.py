@@ -28,7 +28,7 @@ def make_empty_figure(text="No data (yet 😃)"):
     return fig
 
 
-def make_heatmap(df, var):
+def make_heatmap(df, var, title=None):
     if var == 'temperature_2m':
         cmap = 'RdBu_r'
     elif var == 'cloudcover':
@@ -53,13 +53,17 @@ def make_heatmap(df, var):
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
-                   range=[df['time'].min(), df['time'].max()]),
+                   range=[df['time'].min(), df['time'].max()],
+                   tickformat='%a %d %b\n%H:%M'),
         yaxis=dict(showgrid=True),
         height=700,
-        margin={"r": 3, "t": 3, "l": 3, "b": 3},
+        margin={"r": 5, "t": 30, "l": 5, "b": 5},
         template='plotly_white',
     )
+        
     fig.update_coloraxes(showscale=False)
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 

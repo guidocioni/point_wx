@@ -3,6 +3,7 @@ from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climat
 from .figures import make_empty_figure, make_subplot_figure
 import pandas as pd
 
+
 @callback(
     [Output("locations", "options"),
      Output("locations", "value"),
@@ -56,6 +57,11 @@ def generate_figure(n_clicks, locations, location, model):
     # unpack locations data
     locations = pd.read_json(locations, orient='split')
     loc = locations[locations['id'] == location['value']]
+    loc_label = (
+            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude']):.1f}E"
+            f", {float(loc['latitude']):.1f}N, {float(loc['elevation']):.0f}m)  -  "
+            f"{model.upper()}"
+    )
 
     try:
         data = get_ensemble_data(latitude=loc['latitude'].item(),
@@ -66,7 +72,7 @@ def generate_figure(n_clicks, locations, location, model):
                                     longitude=loc['longitude'].item(),
                                     variables='temperature_2m')
 
-        return make_subplot_figure(data, clima), None, False
+        return make_subplot_figure(data, clima, loc_label), None, False
 
     except Exception as e:
         return make_empty_figure(), repr(e), True

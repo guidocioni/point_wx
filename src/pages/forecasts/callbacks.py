@@ -31,6 +31,11 @@ def generate_figure(n_clicks, locations, location, models):
     # unpack locations data
     locations = pd.read_json(locations, orient='split')
     loc = locations[locations['id'] == location['value']]
+    loc_label = (
+            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude']):.1f}E"
+            f", {float(loc['latitude']):.1f}N, {float(loc['elevation']):.0f}m)  -  "
+            f'{",".join(models)}'
+    )
 
     try:
         data = get_forecast_data(latitude=loc['latitude'].item(),
@@ -38,6 +43,6 @@ def generate_figure(n_clicks, locations, location, models):
                                  model=",".join(models),
                                  forecast_days=14)
 
-        return make_subplot_figure(data), None, False
+        return make_subplot_figure(data, loc_label), None, False
     except Exception as e:
         return make_empty_figure(), repr(e), True

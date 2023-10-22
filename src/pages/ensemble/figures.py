@@ -30,7 +30,7 @@ def make_empty_figure(text="No data (yet 😃)"):
     return fig
 
 
-def make_lineplot_timeseries(df, clima, var):
+def make_lineplot_timeseries(df, var, clima=None):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
         # First do the first 48 hrs
@@ -66,22 +66,23 @@ def make_lineplot_timeseries(df, clima, var):
         name='Maximum',
         showlegend=False
     ))
-    # Now add climatology
-    df['doy'] = df['time'].dt.strftime("%m%d")
-    df['hour'] = df['time'].dt.hour
-    clima = clima.merge(df[['doy', 'hour', 'time']],
-                        left_on=['doy', 'hour'],
-                        right_on=['doy', 'hour'])
+    if clima is not None:
+        # Now add climatology
+        df['doy'] = df['time'].dt.strftime("%m%d")
+        df['hour'] = df['time'].dt.hour
+        clima = clima.merge(df[['doy', 'hour', 'time']],
+                            left_on=['doy', 'hour'],
+                            right_on=['doy', 'hour'])
 
-    traces.append(
-        go.Scatter(
-            x=clima['time'],
-            y=clima[var],
-            mode='lines',
-            name='climatology',
-            line=dict(width=4, color='rgba(0, 0, 0, 0.2)', dash='dot'),
-            showlegend=False)
-    )
+        traces.append(
+            go.Scatter(
+                x=clima['time'],
+                y=clima[var],
+                mode='lines',
+                name='climatology',
+                line=dict(width=4, color='rgba(0, 0, 0, 0.2)', dash='dot'),
+                showlegend=False)
+        )
 
     return traces
 
@@ -109,8 +110,8 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
     return trace
 
 
-def make_subplot_figure(data, clima):
-    traces_temp = make_lineplot_timeseries(data, clima, 'temperature_2m')
+def make_subplot_figure(data, clima, title=None):
+    traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(data, 'snowfall', color='rebeccapurple')
 
@@ -119,7 +120,7 @@ def make_subplot_figure(data, clima):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.05,
-        row_heights=[0.6, 0.4])
+        row_heights=[0.5, 0.4])
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
@@ -132,7 +133,7 @@ def make_subplot_figure(data, clima):
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
         height=900,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         template='plotly_white',
         barmode='stack'
     )
@@ -140,8 +141,12 @@ def make_subplot_figure(data, clima):
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
     fig.update_yaxes(title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=2, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
-    fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
-                     gridwidth=3), showgrid=True, gridwidth=4)
+    fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,gridwidth=3),
+                     showgrid=True,
+                     gridwidth=4,
+                     tickformat='%a %d %b\n%H:%M')
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 

@@ -60,7 +60,7 @@ def make_barplot_timeseries(df, var):
 
     return traces
 
-def make_subplot_figure(data):
+def make_subplot_figure(data, title=None):
     traces_temp = make_lineplot_timeseries(data, 'temperature_2m')
     traces_precipitation = make_barplot_timeseries(data, 'precipitation')
     traces_wind = make_lineplot_timeseries(data, 'windspeed_10m')
@@ -88,7 +88,7 @@ def make_subplot_figure(data):
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
         height=1000,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         template='plotly_white',
         barmode='overlay'
     )
@@ -99,7 +99,9 @@ def make_subplot_figure(data):
     fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
-                     gridwidth=3), showgrid=True, gridwidth=4)
+                     gridwidth=3), tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 
