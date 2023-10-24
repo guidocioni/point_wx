@@ -14,7 +14,8 @@ dash.register_page(
 
 layout = html.Div(
     [
-        dbc.Card(
+        dbc.Accordion([
+            dbc.AccordionItem(
             html.Div(
                 [
                     "In this page deterministic forecasts are shown. These are models that do not have different "
@@ -24,7 +25,8 @@ layout = html.Div(
                     "Note that you can compare different models at the same time to see the spread in the forecast.",
                 ]
             ),
-            body=True, className="mb-2"),
+            title='Description (click to show)')
+            ], start_collapsed=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),

@@ -14,15 +14,17 @@ dash.register_page(
 
 layout = html.Div(
     [
-        dbc.Card(
-            html.Div(
-                [
-                    "Here you can compare the daily typical climate to a certain year evolution. ",
-                    html.Br(),
-                    "The historical data starts from 1981.",
-                ]
-            ),
-            body=True, className="mb-2"),
+        dbc.Accordion([
+            dbc.AccordionItem(
+                html.Div(
+                    [
+                        "Here you can compare the daily typical climate to a certain year evolution. ",
+                        html.Br(),
+                        "The historical data starts from 1981.",
+                    ]
+                ),
+                title='Description (click to show)')],
+                start_collapsed=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),
