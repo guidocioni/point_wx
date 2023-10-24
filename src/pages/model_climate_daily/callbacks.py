@@ -32,8 +32,8 @@ def generate_figure(n_clicks, locations, location, model, year):
                 no_update, no_update]
 
     # unpack locations data
-    locations = pd.read_json(locations, orient='split')
-    loc = locations[locations['id'] == location['value']]
+    locations = pd.read_json(locations, orient='split', dtype={"id": str})
+    loc = locations[locations['id'] == location]
 
     try:
         data = compute_yearly_accumulation(

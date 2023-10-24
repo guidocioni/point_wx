@@ -23,11 +23,11 @@ def get_closest_address(n_clicks, from_address):
         options.append(
             {
                 "label": f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, {row['latitude']:.1f}N, {row['elevation']:.0f}m)",
-                "value": row['id']
+                "value": str(row['id'])
             }
         )
 
-    return options, options[0], locations.to_json(orient='split')
+    return options, options[0]['value'], locations.to_json(orient='split')
 
 
 @callback(
@@ -55,8 +55,8 @@ def generate_figure(n_clicks, locations, location, model):
         return make_empty_figure(), no_update, no_update
 
     # unpack locations data
-    locations = pd.read_json(locations, orient='split')
-    loc = locations[locations['id'] == location['value']]
+    locations = pd.read_json(locations, orient='split', dtype={"id": str})
+    loc = locations[locations['id'] == location]
     loc_label = (
             f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude']):.1f}E"
             f", {float(loc['latitude']):.1f}N, {float(loc['elevation']):.0f}m)  -  "
