@@ -42,6 +42,16 @@ def activate_submit_button(location):
 
 
 @callback(
+    Output("fade-ensemble", "is_in"),
+    [Input("submit-button", "n_clicks")],
+)
+def toggle_fade(n):
+    if not n:
+        # Button has never been clicked
+        return False
+    return True
+
+@callback(
     [Output("ensemble-plot", "figure"),
      Output("error-message", "children"),
      Output("error-modal", "is_open")],

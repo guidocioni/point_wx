@@ -39,7 +39,12 @@ layout = html.Div(
         ),
         dbc.Row(
             [
-                dbc.Col(dbc.Spinner(fig_subplots))
+                dbc.Fade(
+                    dbc.Col(
+                        dbc.Spinner(fig_subplots)),
+                    id="fade-ensemble",
+                    is_in=False,
+                    appear=False)
             ]
         ),
     ]

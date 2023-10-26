@@ -34,30 +34,35 @@ layout = html.Div(
                 dbc.Col(opts_selector),
             ]
         ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_temp_prec_climate))
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_clouds_climate))
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_precipitation_climate))
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_temperature_climate))
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_winds_climate))
-            ]
-        ),
+        dbc.Fade([
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_temp_prec_climate))
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_clouds_climate))
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_precipitation_climate))
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_temperature_climate))
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_winds_climate))
+                ]
+            ),
+        ], id="fade-climate",
+            is_in=False,
+            appear=False
+        )
     ]
 )

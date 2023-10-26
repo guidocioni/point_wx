@@ -16,17 +16,17 @@ layout = html.Div(
     [
         dbc.Accordion([
             dbc.AccordionItem(
-            html.Div(
-                [
-                    "In this page deterministic forecasts are shown. These are models that do not have different "
-                    "scenarios but only a single one. On the flip side you get higher spatial resolution and thus more"
-                    "details in both space and time.",
-                    html.Br(),
-                    "Note that you can compare different models at the same time to see the spread in the forecast.",
-                ]
-            ),
-            title='Description (click to show)')
-            ], start_collapsed=True, className="mb-2"),
+                html.Div(
+                    [
+                        "In this page deterministic forecasts are shown. These are models that do not have different "
+                        "scenarios but only a single one. On the flip side you get higher spatial resolution and thus more"
+                        "details in both space and time.",
+                        html.Br(),
+                        "Note that you can compare different models at the same time to see the spread in the forecast.",
+                    ]
+                ),
+                title='Description (click to show)')
+        ], start_collapsed=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),
@@ -35,7 +35,12 @@ layout = html.Div(
         ),
         dbc.Row(
             [
-                dbc.Col(dbc.Spinner(fig_subplots))
+                dbc.Fade(
+                    dbc.Col(
+                        dbc.Spinner(fig_subplots)),
+                    id="fade-deterministic",
+                    is_in=False,
+                    appear=False)
             ]
         ),
     ]

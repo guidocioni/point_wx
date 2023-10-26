@@ -13,6 +13,15 @@ def activate_submit_button(location):
     else:
         return True
 
+@callback(
+    Output("fade-heatmap", "is_in"),
+    [Input("submit-button-heatmap", "n_clicks")],
+)
+def toggle_fade(n):
+    if not n:
+        # Button has never been clicked
+        return False
+    return True
 
 @callback(
     [Output("ensemble-plot-heatmap", "figure"),

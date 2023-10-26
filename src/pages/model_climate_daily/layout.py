@@ -24,22 +24,29 @@ layout = html.Div(
                     ]
                 ),
                 title='Description (click to show)')],
-                start_collapsed=True, className="mb-2"),
+            start_collapsed=True, className="mb-2"),
         dbc.Row(
             [
                 dbc.Col(loc_selector),
                 dbc.Col(opts_selector),
             ]
         ),
-        dbc.Row(
+        dbc.Fade(
             [
-                dbc.Col(dbc.Spinner(fig_prec_climate_daily))
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(dbc.Spinner(fig_temp_climate_daily))
-            ]
-        ),
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Spinner(fig_prec_climate_daily))
+                    ]
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Spinner(fig_temp_climate_daily))
+                    ]
+                ),
+            ], id="fade-climate-daily",
+            is_in=False,
+            appear=False
+        )
+
     ]
 )

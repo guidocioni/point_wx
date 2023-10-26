@@ -15,6 +15,17 @@ def activate_submit_button(location):
 
 
 @callback(
+    Output("fade-deterministic", "is_in"),
+    [Input("submit-button-deterministic", "n_clicks")],
+)
+def toggle_fade(n):
+    if not n:
+        # Button has never been clicked
+        return False
+    return True
+
+
+@callback(
     [Output("forecast-plot", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],

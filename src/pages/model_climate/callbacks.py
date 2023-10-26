@@ -19,6 +19,16 @@ def activate_submit_button(location):
 
 
 @callback(
+    Output("fade-climate", "is_in"),
+    [Input("submit-button-climate", "n_clicks")],
+)
+def toggle_fade(n):
+    if not n:
+        # Button has never been clicked
+        return False
+    return True
+
+@callback(
     [Output("temp-prec-climate-figure", "figure"),
      Output("clouds-climate-figure", "figure"),
      Output("temperature-climate-figure", "figure"),
