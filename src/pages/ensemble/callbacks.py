@@ -58,8 +58,8 @@ def generate_figure(n_clicks, locations, location, model):
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
     loc_label = (
-            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude']):.1f}E"
-            f", {float(loc['latitude']):.1f}N, {float(loc['elevation']):.0f}m)  -  "
+            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
+            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
             f"{model.upper()}"
     )
 

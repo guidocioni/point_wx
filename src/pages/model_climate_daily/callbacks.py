@@ -34,6 +34,11 @@ def generate_figure(n_clicks, locations, location, model, year):
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
+    loc_label = (
+            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
+            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
+            f"{model.upper()}"
+    )
 
     try:
         data = compute_yearly_accumulation(
@@ -52,8 +57,8 @@ def generate_figure(n_clicks, locations, location, model, year):
             year=year,
         )
 
-        fig_prec = make_prec_figure(data, year=year, var='precipitation_sum')
-        fig_temp = make_temp_figure(data_2, year=year, var='temperature_2m_mean')
+        fig_prec = make_prec_figure(data, year=year, var='precipitation_sum', title=loc_label)
+        fig_temp = make_temp_figure(data_2, var='temperature_2m_mean', title=loc_label)
 
         return [fig_prec, fig_temp, None, False]
 

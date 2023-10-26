@@ -30,7 +30,7 @@ def make_empty_figure(text="No data (yet 😃)"):
     return fig
 
 
-def make_prec_figure(df, year, var):
+def make_prec_figure(df, year, var, title=None):
     fig = make_subplots()
 
     fig.add_trace(
@@ -78,17 +78,19 @@ def make_prec_figure(df, year, var):
                   line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
         yaxis=dict(showgrid=True, title='Yearly accumulated precipitation [mm]'),
     )
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 
 
-def make_temp_figure(df, year, var):
+def make_temp_figure(df, var, title=None):
     fig = make_subplots()
 
     mask = df[var] > df[f'{var}_clima']
@@ -164,12 +166,14 @@ def make_temp_figure(df, year, var):
                   line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
         yaxis=dict(showgrid=True, title='Temperature [°C]'),
     )
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 

@@ -191,8 +191,7 @@ def get_historical_daily_data(latitude=53.55,
                  params=payload)
     resp.raise_for_status()
     data = pd.DataFrame.from_dict(resp.json()['daily'])
-    data['time'] = pd.to_datetime(
-        data['time'], format='%Y-%m-%dT%H:%M')
+    data['time'] = pd.to_datetime(data['time'])
 
     data = data.dropna()
 
