@@ -14,6 +14,28 @@ opts_selector = dbc.Card(
             ],
             className="mb-2",
         ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("Start date"),
+                dbc.Input(
+                    id="date-start-climate",
+                    value='1991-01-01',
+                    type='text'
+                ),
+            ],
+            className="mb-2",
+        ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText("End date"),
+                dbc.Input(
+                    id="date-end-climate",
+                    value='2020-12-31',
+                    type='text'
+                ),
+            ],
+            className="mb-2",
+        ),
         dbc.Row(
             [
                 dbc.Button("Submit",

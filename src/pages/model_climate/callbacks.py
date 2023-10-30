@@ -39,10 +39,12 @@ def toggle_fade(n):
     Input("submit-button-climate", "n_clicks"),
     [State("locations-list", "data"),
      State("locations", "value"),
-     State("models-selection-climate", "value")],
+     State("models-selection-climate", "value"),
+     State("date-start-climate", "value"),
+     State("date-end-climate", "value")],
     prevent_initial_call=True
 )
-def generate_figure(n_clicks, locations, location, model):
+def generate_figure(n_clicks, locations, location, model, ds, de):
     if n_clicks is None:
         return [make_empty_figure(), make_empty_figure(),
                 make_empty_figure(), make_empty_figure(),
@@ -56,7 +58,9 @@ def generate_figure(n_clicks, locations, location, model):
         data = compute_monthly_clima(
             latitude=loc['latitude'].item(),
             longitude=loc['longitude'].item(),
-            model=model)
+            model=model,
+            start_date=ds,
+            end_date=de)
 
         fig_temp_prec = make_temp_prec_climate_figure(data)
         fig_temperature = make_temperature_climate_figure(data)
