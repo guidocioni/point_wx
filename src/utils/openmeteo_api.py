@@ -51,7 +51,8 @@ def get_forecast_data(latitude=53.55,
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT')
 
-    # data = data.dropna()
+    data = data.dropna(subset=data.columns[data.columns != 'time'],
+                       how='all')
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
@@ -120,7 +121,8 @@ def get_ensemble_data(latitude=53.55,
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
 
-    # data = data.dropna()
+    data = data.dropna(subset=data.columns[data.columns != 'time'],
+                       how='all')
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
@@ -350,7 +352,8 @@ def compute_yearly_accumulation(latitude=53.55,
         model='ecmwf_ifs04',
         forecast_days=14,
         past_days=7)
-    additional['time'] = additional['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
+    additional['time'] = additional['time'].dt.tz_localize(
+        None, ambiguous='NaT', nonexistent='NaT')
     additional = additional[additional.time > daily.time.max()]
 
     daily = pd.concat([daily, additional])
@@ -407,7 +410,8 @@ def compute_yearly_comparison(latitude=53.55,
         from_now=False,
         forecast_days=14,
         past_days=7).resample('1D', on='time').mean().reset_index().rename(columns={'temperature_2m': 'temperature_2m_mean'})
-    additional['time'] = additional['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
+    additional['time'] = additional['time'].dt.tz_localize(
+        None, ambiguous='NaT', nonexistent='NaT')
     additional = additional[additional.time > daily.time.max()]
 
     daily = pd.concat([daily, additional])
