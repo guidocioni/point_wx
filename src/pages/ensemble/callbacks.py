@@ -1,6 +1,6 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
-from .figures import make_empty_figure, make_subplot_figure
+from .figures import make_empty_figure, make_subplot_figure, make_barpolar_figure
 import pandas as pd
 
 
@@ -53,6 +53,7 @@ def toggle_fade(n):
 
 @callback(
     [Output("ensemble-plot", "figure"),
+     Output("polar-plot", "figure"),
      Output("error-message", "children"),
      Output("error-modal", "is_open")],
     Input("submit-button", "n_clicks"),
@@ -62,7 +63,7 @@ def toggle_fade(n):
 )
 def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
-        return make_empty_figure(), no_update, no_update
+        return make_empty_figure(), make_empty_figure(), no_update, no_update
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
@@ -82,7 +83,7 @@ def generate_figure(n_clicks, locations, location, model):
                                     longitude=loc['longitude'].item(),
                                     variables='temperature_2m')
 
-        return make_subplot_figure(data, clima, loc_label), None, False
+        return make_subplot_figure(data, clima, loc_label), make_barpolar_figure(data), None, False
 
     except Exception as e:
-        return make_empty_figure(), repr(e), True
+        return make_empty_figure(), make_empty_figure(), repr(e), True

@@ -124,6 +124,7 @@ def make_scatterplot_timeseries(df, var):
 
     return traces
 
+
 def make_barplot_timeseries(df, var, color='cadetblue'):
     # Do some pre-processing on the precipitation input
     members = len(df.iloc[:, df.columns.str.contains(var)].columns)
@@ -147,10 +148,43 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
     return trace
 
 
+def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
+    timeSpan = (df.time.iloc[-1]-df.time.iloc[0])
+    rule = int((timeSpan.total_seconds()/3600.)/n_partitions)
+    subset = df.resample(str(rule)+"H", on='time').first()
+    subset = subset.loc[:, subset.columns.str.contains('wind_direction')]
+
+    out = []
+    for i, row in subset.iterrows():
+        out.append(pd.cut(row.values, bins=bins).value_counts().values)
+    # Convert to normalized percentage
+    for i, o in enumerate(out):
+        out[i] = (o / len(subset.columns)) * 100.
+    n_plots = len(out) - 1
+    fig = make_subplots(rows=1,
+                        cols=n_plots,
+                        specs=[[{'type': 'polar'} for _ in range(n_plots)]],
+                        horizontal_spacing=0)
+    for i in range(n_plots):
+        fig.add_trace(go.Barpolar(
+            r=out[i-1],
+            theta=bins,
+            marker_color='rgb(106,81,163)',
+            showlegend=False), row=1, col=i+1)
+    fig.update_polars(radialaxis_showticklabels=False,
+                      angularaxis_showticklabels=False)
+    fig.update_layout(margin={"r": 2, "t": 1, "l": 2, "b": 0.1},
+                      height=100,
+                      )
+
+    return fig
+
+
 def make_subplot_figure(data, clima, title=None):
     traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
-    trace_snow = make_barplot_timeseries(data, 'snowfall', color='rebeccapurple')
+    trace_snow = make_barplot_timeseries(
+        data, 'snowfall', color='rebeccapurple')
     traces_clouds = make_scatterplot_timeseries(data, 'cloudcover')
 
     fig = make_subplots(
@@ -179,10 +213,11 @@ def make_subplot_figure(data, clima, title=None):
     )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=2, col=1)
+    fig.update_yaxes(
+        title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=2, col=1)
     fig.update_yaxes(title_text="Cloud Cover", row=3, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
-    fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,gridwidth=3),
+    fig.update_xaxes(minor=dict(ticks="inside", showgrid=True, gridwidth=3),
                      showgrid=True,
                      gridwidth=4,
                      tickformat='%a %d %b\n%H:%M')
@@ -197,6 +232,14 @@ def make_subplot_figure(data, clima, title=None):
 fig_subplots = dbc.Card(
     [
         dcc.Graph(id='ensemble-plot', config=images_config)
+    ],
+    className="mb-2",
+)
+
+fig_polar = dbc.Card(
+    [
+        dcc.Graph(id='polar-plot',
+                  config={**images_config, 'displayModeBar': False})
     ],
     className="mb-2",
 )
