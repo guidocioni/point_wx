@@ -10,7 +10,7 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection-climate-daily",
                     options=REANALYSIS_MODELS,
-                    value=REANALYSIS_MODELS[1],
+                    value=REANALYSIS_MODELS[1]["value"],
                 ),
             ],
             className="mb-2",

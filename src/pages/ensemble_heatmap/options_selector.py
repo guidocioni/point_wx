@@ -9,7 +9,7 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection-heatmap",
                     options=ENSEMBLE_MODELS,
-                    value=ENSEMBLE_MODELS[0],
+                    value=ENSEMBLE_MODELS[0]['value'],
                 ),
             ],
             className="mb-2",

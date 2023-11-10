@@ -7,9 +7,7 @@ opts_selector = dbc.Card(
         dbc.Row(
             [
                 dcc.Dropdown(
-                    options=[
-                        {"label": i, "value": i} for i in DETERMINISTIC_MODELS
-                    ],
+                    options=DETERMINISTIC_MODELS,
                     multi=True,
                     value=["best_match"],
                     id="models-selection-deterministic"

@@ -549,7 +549,7 @@ fig_temp_prec_climate = dbc.Card(
             "The blue bars show the monthly cumulated precipitation as average."
         ]
         ),
-        dcc.Graph(id='temp-prec-climate-figure')
+        dcc.Graph(id='temp-prec-climate-figure', config=images_config)
     ],
     className="mb-2",
 )
@@ -562,7 +562,7 @@ fig_clouds_climate = dbc.Card(
             html.Br(),
             "The number of precipitation days (>= 1 mm) are also shown."
         ]),
-        dcc.Graph(id='clouds-climate-figure')
+        dcc.Graph(id='clouds-climate-figure', config=images_config)
     ],
     className="mb-2",
 )
@@ -575,7 +575,7 @@ fig_temperature_climate = dbc.Card(
              "Snow days (>= 1 cm) are also shown"
              ]
         ),
-        dcc.Graph(id='temperature-climate-figure')
+        dcc.Graph(id='temperature-climate-figure', config=images_config)
     ],
     className="mb-2",
 )

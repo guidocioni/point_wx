@@ -60,7 +60,7 @@ def make_heatmap(df, var, title=None):
         margin={"r": 5, "t": 30, "l": 5, "b": 5},
         template='plotly_white',
     )
-        
+
     fig.update_coloraxes(showscale=False)
     if title is not None:
         fig.update_layout(title_text=title)
