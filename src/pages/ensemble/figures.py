@@ -30,38 +30,48 @@ def make_empty_figure(text="No data (yet 😃)"):
     return fig
 
 
-def make_lineplot_timeseries(df, var, clima=None):
+def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
-        # First do the first 48 hrs
         traces.append(
             go.Scatter(
                 x=df.loc[df.time <= df.time.iloc[0] +
-                         pd.to_timedelta('48H'), 'time'],
+                         pd.to_timedelta(break_hours), 'time'],
                 y=df.loc[df.time <= df.time.iloc[0] +
-                         pd.to_timedelta('48H'), col],
+                         pd.to_timedelta(break_hours), col],
                 mode='lines+markers',
                 name=col,
                 marker=dict(size=4),
                 line=dict(width=1),
                 showlegend=False),
         )
-    # Then the remaining as shade
+    for col in df.columns[df.columns.str.contains(var)]:
+        traces.append(
+            go.Scatter(
+                x=df.loc[df.time >= df.time.iloc[0] +
+                         pd.to_timedelta(break_hours), 'time'],
+                y=df.loc[df.time >= df.time.iloc[0] +
+                         pd.to_timedelta(break_hours), col],
+                mode='lines',
+                name=col,
+                line=dict(width=1),
+                showlegend=False),
+        )
+    # Additional shading
     traces.append(go.Scatter(
-        x=df.loc[df.time >= df.time.iloc[0] + pd.to_timedelta('48H'), 'time'],
-        y=df.loc[df.time >= df.time.iloc[0] +
-                 pd.to_timedelta('48H'), df.columns.str.contains(var)].min(axis=1),
+        x=df.loc[:, 'time'],
+        y=df.loc[:, df.columns.str.contains(var)].min(axis=1),
         mode='lines',
-        line=dict(color='grey'),
+        line=dict(color='rgba(0, 0, 0, 0)'),
         name='Minimum',
         showlegend=False
     ))
     traces.append(go.Scatter(
-        x=df.loc[df.time >= df.time.iloc[0] + pd.to_timedelta('48H'), 'time'],
-        y=df.loc[df.time >= df.time.iloc[0] +
-                 pd.to_timedelta('48H'), df.columns.str.contains(var)].max(axis=1),
+        x=df.loc[:, 'time'],
+        y=df.loc[:, df.columns.str.contains(var)].max(axis=1),
         mode='lines',
-        line=dict(color='grey'),
+        line=dict(color='rgba(0, 0, 0, 0)'),
+        fillcolor='rgba(0, 0, 0, 0.1)',
         fill='tonexty',
         name='Maximum',
         showlegend=False
@@ -80,7 +90,7 @@ def make_lineplot_timeseries(df, var, clima=None):
                 y=clima[var],
                 mode='lines',
                 name='climatology',
-                line=dict(width=4, color='rgba(0, 0, 0, 0.2)', dash='dot'),
+                line=dict(width=4, color='rgba(0, 0, 0, 0.4)', dash='dot'),
                 showlegend=False)
         )
 
