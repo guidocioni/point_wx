@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
-from .figures import make_empty_figure, make_subplot_figure, make_barpolar_figure
+from utils.figures_utils import make_empty_figure
+from .figures import make_subplot_figure, make_barpolar_figure
 import pandas as pd
 
 

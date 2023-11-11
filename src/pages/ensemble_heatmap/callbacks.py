@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_ensemble_data
-from .figures import make_empty_figure, make_heatmap
+from utils.figures_utils import make_empty_figure
+from .figures import make_heatmap
 import pandas as pd
 
 @callback(

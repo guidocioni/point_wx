@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
-from .figures import (make_empty_figure, make_prec_figure, make_temp_figure)
+from utils.figures_utils import make_empty_figure
+from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
 
 @callback(
