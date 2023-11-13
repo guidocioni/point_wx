@@ -7,6 +7,37 @@ import pandas as pd
 from utils.settings import images_config
 
 
+def make_boxplot_timeseries(df, var, clima=None):
+    tmp = df.loc[:, df.columns.str.contains(f'{var}|time')].set_index('time')
+    traces = []
+    for index, row in tmp.iterrows():
+        traces.append(go.Box(
+            x=[index] * len(row),
+            y=row,
+            showlegend=False,
+            boxpoints=False,
+            marker_color='gray',
+        ))
+
+    if clima is not None:
+        # Now add climatology
+        df['doy'] = df['time'].dt.strftime("%m%d")
+        df['hour'] = df['time'].dt.hour
+        clima = clima.merge(df[['doy', 'hour', 'time']],
+                            left_on=['doy', 'hour'],
+                            right_on=['doy', 'hour'])
+        traces.append(
+            go.Scatter(
+                x=clima['time'],
+                y=clima[var],
+                mode='lines',
+                name='climatology',
+                line=dict(width=4, color='rgba(0, 0, 0, 0.4)', dash='dot'),
+                showlegend=False)
+        )
+
+    return traces
+
 def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
@@ -158,7 +189,8 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
 
 
 def make_subplot_figure(data, clima, title=None):
-    traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
+    # traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
+    traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
         data, 'snowfall', color='rebeccapurple')
