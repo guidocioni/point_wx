@@ -10,6 +10,7 @@ opts_selector = dbc.Card(
                     id="models-selection-climate",
                     options=REANALYSIS_MODELS,
                     value=REANALYSIS_MODELS[1]["value"],
+                    persistence=True
                 ),
             ],
             className="mb-2",
@@ -20,7 +21,8 @@ opts_selector = dbc.Card(
                 dbc.Input(
                     id="date-start-climate",
                     value='1991-01-01',
-                    type='text'
+                    type='text',
+                    persistence=True
                 ),
             ],
             className="mb-2",
@@ -31,7 +33,8 @@ opts_selector = dbc.Card(
                 dbc.Input(
                     id="date-end-climate",
                     value='2020-12-31',
-                    type='text'
+                    type='text',
+                    persistence=True
                 ),
             ],
             className="mb-2",

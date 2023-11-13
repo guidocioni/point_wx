@@ -8,7 +8,8 @@ loc_selector = dbc.Card(
                 dbc.Input(placeholder="Where are you?",
                           id='from_address',
                           type='text',
-                          autoComplete=True),
+                          autoComplete=True,
+                          persistence=True),
             ],
             className="mb-2",
         ),
@@ -27,6 +28,7 @@ loc_selector = dbc.Card(
                     id="locations",
                     options=[],
                     value=[],
+                    persistence=True
                 ),
             ],
             className="mb-2",

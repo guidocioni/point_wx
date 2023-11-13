@@ -11,6 +11,7 @@ opts_selector = dbc.Card(
                     id="models-selection-climate-daily",
                     options=REANALYSIS_MODELS,
                     value=REANALYSIS_MODELS[1]["value"],
+                    persistence=True
                 ),
             ],
             className="mb-2",
@@ -22,7 +23,8 @@ opts_selector = dbc.Card(
                     id="year-selection-climate",
                     value=pd.to_datetime('now', utc=True).year,
                     autocomplete=True,
-                    type='number'
+                    type='number',
+                    persistence=True
                 ),
             ],
             className="mb-2",

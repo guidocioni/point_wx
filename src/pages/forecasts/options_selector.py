@@ -10,7 +10,8 @@ opts_selector = dbc.Card(
                     options=DETERMINISTIC_MODELS,
                     multi=True,
                     value=["best_match"],
-                    id="models-selection-deterministic"
+                    id="models-selection-deterministic",
+                    persistence=True
                 ),
             ],
             className="mb-2",

@@ -10,6 +10,7 @@ opts_selector = dbc.Card(
                     id="models-selection",
                     options=ENSEMBLE_MODELS,
                     value=ENSEMBLE_MODELS[0]['value'],
+                    persistence=True
                 ),
             ],
             className="mb-2",

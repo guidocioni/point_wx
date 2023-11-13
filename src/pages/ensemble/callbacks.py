@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
 from utils.figures_utils import make_empty_figure
+from dash.exceptions import PreventUpdate
 from .figures import make_subplot_figure, make_barpolar_figure
 import pandas as pd
 
@@ -15,8 +16,7 @@ import pandas as pd
 )
 def get_closest_address(n_clicks, from_address):
     if n_clicks is None:
-        return [], "", {}
-
+        raise PreventUpdate
     locations = get_locations(from_address)
 
     options = []

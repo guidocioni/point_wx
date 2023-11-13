@@ -10,6 +10,7 @@ opts_selector = dbc.Card(
                     id="models-selection-heatmap",
                     options=ENSEMBLE_MODELS,
                     value=ENSEMBLE_MODELS[0]['value'],
+                    persistence=True
                 ),
             ],
             className="mb-2",
@@ -20,7 +21,8 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="variable-selection-heatmap",
                     options=ENSEMBLE_VARS,
-                    value=ENSEMBLE_VARS[0]
+                    value=ENSEMBLE_VARS[0],
+                    persistence=True
                 ),
             ],
             className="mb-2",
