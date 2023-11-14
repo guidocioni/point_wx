@@ -1,8 +1,9 @@
 from dash import callback, Output, Input, State, no_update
-from utils.openmeteo_api import get_forecast_data
+from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
 from utils.figures_utils import make_empty_figure
 from .figures import make_subplot_figure
 import pandas as pd
+
 
 @callback(
     Output("submit-button-deterministic", "disabled"),
@@ -44,9 +45,9 @@ def generate_figure(n_clicks, locations, location, models):
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
     loc_label = (
-            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-            f'{",".join(models)}'
+        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
+        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
+        f'{",".join(models)}'
     )
 
     try:
@@ -54,7 +55,11 @@ def generate_figure(n_clicks, locations, location, models):
                                  longitude=loc['longitude'].item(),
                                  model=",".join(models),
                                  forecast_days=14)
+        sun = get_forecast_daily_data(latitude=loc['latitude'].item(),
+                                      longitude=loc['longitude'].item(),
+                                      variables='sunrise,sunset',
+                                      forecast_days=14)
 
-        return make_subplot_figure(data, loc_label), None, False
+        return make_subplot_figure(data, loc_label, sun), None, False
     except Exception as e:
         return make_empty_figure(), repr(e), True

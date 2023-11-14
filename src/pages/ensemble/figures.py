@@ -188,7 +188,7 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     return fig
 
 
-def make_subplot_figure(data, clima, title=None):
+def make_subplot_figure(data, clima, title=None, sun=None):
     # traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
@@ -219,6 +219,17 @@ def make_subplot_figure(data, clima, title=None):
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack'
     )
+
+    if sun is not None:
+        for i, s in sun.iterrows():
+            fig.add_vrect(
+                x0=s['sunrise'],
+                x1=s['sunset'],
+                fillcolor="rgba(255, 255, 0, 0.3)",
+                layer="below",
+                line=dict(width=0),
+                row=1, col=1
+            )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
     fig.update_yaxes(

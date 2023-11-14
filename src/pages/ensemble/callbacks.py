@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update
-from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
+from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology, get_forecast_daily_data
 from utils.figures_utils import make_empty_figure
 from dash.exceptions import PreventUpdate
 from .figures import make_subplot_figure, make_barpolar_figure
@@ -84,7 +84,12 @@ def generate_figure(n_clicks, locations, location, model):
                                     longitude=loc['longitude'].item(),
                                     variables='temperature_2m')
 
-        return make_subplot_figure(data, clima, loc_label), make_barpolar_figure(data), None, False
+        sun = get_forecast_daily_data(latitude=loc['latitude'].item(),
+                                      longitude=loc['longitude'].item(),
+                                      variables='sunrise,sunset',
+                                      forecast_days=14)
+
+        return make_subplot_figure(data, clima, loc_label, sun), make_barpolar_figure(data), None, False
 
     except Exception as e:
         return make_empty_figure(), make_empty_figure(), repr(e), True

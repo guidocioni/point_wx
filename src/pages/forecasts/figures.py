@@ -16,13 +16,14 @@ def make_lineplot_timeseries(df, var, mode='lines+markers', showlegend=False):
                 x=df.loc[:, 'time'],
                 y=df.loc[:, col],
                 mode=mode,
-                name=col.replace(var+"_",''),
+                name=col.replace(var+"_", ''),
                 marker=dict(size=5, color=colors[i]),
                 line=dict(width=2, color=colors[i]),
                 showlegend=showlegend),
         )
 
     return traces
+
 
 def make_barplot_timeseries(df, var):
     traces = []
@@ -33,7 +34,7 @@ def make_barplot_timeseries(df, var):
             go.Bar(
                 x=df['time'],
                 y=df[col],
-                name=col.replace(var+"_",''),
+                name=col.replace(var+"_", ''),
                 opacity=0.6,
                 marker=dict(color='rgb(26, 118, 255)'),
                 showlegend=False),
@@ -43,16 +44,17 @@ def make_barplot_timeseries(df, var):
                 x=df.loc[df[col] >= 0.1, 'time'],
                 y=df.loc[df[col] >= 0.1, col],
                 mode='markers',
-                name=col.replace(var+"_",''),
+                name=col.replace(var+"_", ''),
                 marker=dict(size=3, color=colors[i]),
                 showlegend=False),
         )
-    
 
     return traces
 
-def make_subplot_figure(data, title=None):
-    traces_temp = make_lineplot_timeseries(data, 'temperature_2m', showlegend=True)
+
+def make_subplot_figure(data, title=None, sun=None):
+    traces_temp = make_lineplot_timeseries(
+        data, 'temperature_2m', showlegend=True)
     traces_precipitation = make_barplot_timeseries(data, 'precipitation')
     traces_wind = make_lineplot_timeseries(data, 'windspeed_10m')
     traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers')
@@ -81,8 +83,19 @@ def make_subplot_figure(data, title=None):
         height=1000,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         barmode='overlay',
-        legend=dict(orientation='h',y=-0.04),
+        legend=dict(orientation='h', y=-0.04),
     )
+
+    if sun is not None:
+        for i, s in sun.iterrows():
+            fig.add_vrect(
+                x0=s['sunrise'],
+                x1=s['sunset'],
+                fillcolor="rgba(255, 255, 0, 0.3)",
+                layer="below",
+                line=dict(width=0),
+                row=1, col=1
+            )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
     fig.update_yaxes(title_text="Prec. [mm]", row=2, col=1)
@@ -90,7 +103,7 @@ def make_subplot_figure(data, title=None):
     fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
-                     gridwidth=3),
+                     gridwidth=1),
                      tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)
     if title is not None:
         fig.update_layout(title_text=title)
