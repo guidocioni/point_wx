@@ -2,6 +2,9 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import plotly.express as px
 
+# This is a copy of plotly_white with some custom modifications
+# It is registered as a new template "custom" which can then be used
+# in every figure
 pio.templates["custom"] = go.layout.Template(layout={
     'annotationdefaults': {'arrowcolor': '#2a3f5f', 'arrowhead': 0, 'arrowwidth': 1},
     'autotypenumbers': 'strict',

@@ -7,6 +7,8 @@ APP_HOST = "0.0.0.0"
 APP_PORT = 8080
 URL_BASE_PATHNAME = '/pointwx/'
 
+# This is imported from utils.custom_theme
+# You have to change the theme settings there
 pio.templates.default = "custom"
 
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
