@@ -72,7 +72,6 @@ def make_temp_prec_climate_figure(df):
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -140,7 +139,6 @@ def make_clouds_climate_figure(df):
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -272,7 +270,6 @@ def make_temperature_climate_figure(df):
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -382,7 +379,6 @@ def make_precipitation_climate_figure(df):
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -502,7 +498,6 @@ def make_winds_climate_figure(df):
 
     fig.update_layout(
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h')
     )

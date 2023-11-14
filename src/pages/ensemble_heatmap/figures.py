@@ -35,7 +35,6 @@ def make_heatmap(df, var, title=None):
         yaxis=dict(showgrid=True),
         height=700,
         margin={"r": 5, "t": 30, "l": 5, "b": 5},
-        template='plotly_white',
     )
 
     fig.update_coloraxes(showscale=False)

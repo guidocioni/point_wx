@@ -56,7 +56,6 @@ def make_prec_figure(df, year, var, title=None):
 
     fig.update_layout(
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
         yaxis=dict(showgrid=True, title='Yearly accumulated precipitation [mm]'),
@@ -144,7 +143,6 @@ def make_temp_figure(df, var, title=None):
 
     fig.update_layout(
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='stack',
         legend=dict(orientation='h'),
         yaxis=dict(showgrid=True, title='Temperature [°C]'),

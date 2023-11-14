@@ -67,7 +67,6 @@ def make_subplot_figure(data, title=None):
         yaxis=dict(showgrid=True,),
         height=1000,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
-        template='plotly_white',
         barmode='overlay'
     )
 

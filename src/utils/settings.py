@@ -1,5 +1,7 @@
 # package imports
 from flask_caching import Cache
+import plotly.io as pio
+pio.templates.default = "plotly_white"
 
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080
