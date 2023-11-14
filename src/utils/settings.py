@@ -1,11 +1,13 @@
 # package imports
 from flask_caching import Cache
 import plotly.io as pio
-pio.templates.default = "plotly_white"
+import utils.custom_theme
 
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080
 URL_BASE_PATHNAME = '/pointwx/'
+
+pio.templates.default = "custom"
 
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
                       'CACHE_DIR': '/tmp'})
