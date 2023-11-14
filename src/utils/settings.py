@@ -9,7 +9,9 @@ URL_BASE_PATHNAME = '/pointwx/'
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
-pio.templates.default = "custom"
+DEFAULT_TEMPLATE = "custom"
+# Now we set the default template throughout the application
+pio.templates.default = DEFAULT_TEMPLATE
 
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
                       'CACHE_DIR': '/tmp'})
