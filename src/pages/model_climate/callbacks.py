@@ -10,9 +10,10 @@ import pandas as pd
 
 @callback(
     Output("submit-button-climate", "disabled"),
-    Input("locations", "value"),
+    [Input("locations", "value"),
+     Input("search-button", "n_clicks")],
 )
-def activate_submit_button(location):
+def activate_submit_button(location, _nouse):
     if len(location) >= 2:
         return False
     else:

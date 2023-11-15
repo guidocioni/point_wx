@@ -55,9 +55,10 @@ def get_closest_address(n_clicks, from_address, locations):
 
 @callback(
     Output("submit-button", "disabled"),
-    Input("locations", "value"),
+    [Input("locations", "value"),
+     Input("search-button", "n_clicks")],
 )
-def activate_submit_button(location):
+def activate_submit_button(location, _nouse):
     if len(location) >= 2:
         return False
     else:
