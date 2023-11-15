@@ -11,24 +11,46 @@ import pandas as pd
      Output("locations", "value"),
      Output("locations-list", "data")],
     Input("search-button", "n_clicks"),
-    State("from_address", "value"),
-    prevent_initial_call=True
+    [State("from_address", "value"),
+     State("locations-list", "data")]
 )
-def get_closest_address(n_clicks, from_address):
+def get_closest_address(n_clicks, from_address, locations):
     if n_clicks is None:
-        raise PreventUpdate
-    locations = get_locations(from_address)
+        # In this case it means that the button has not been clicked
+        # so we first check if there are already some locations
+        # saved in the cache
+        # If there is no data in the cache, locations will be an empty dict
+        if len(locations) > 0:
+            locations = pd.read_json(
+                locations, orient='split', dtype={"id": str})
+        else:
+            # In this case it means the button has not been clicked AND
+            # there is no data in the Store component
+            raise PreventUpdate
+    else:
+        # In this case the button has been clicked so we load the data
+        locations = get_locations(from_address)
 
     options = []
     for _, row in locations.iterrows():
         options.append(
             {
-                "label": f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, {row['latitude']:.1f}N, {row['elevation']:.0f}m)",
+                "label": (
+                    f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                    f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
+                ),
                 "value": str(row['id'])
             }
         )
-
-    return options, options[0]['value'], locations.to_json(orient='split')
+    if n_clicks is None:
+        # In this case we need to update everything besides the value
+        # because it is persisted, so if the user already selected something
+        # it will be there
+        return options, no_update, locations.to_json(orient='split')
+    else:
+        # If we're here, it means the button has been clicked, so we need
+        # to update everything, and set the value as the first option (default)
+        return options, options[0]['value'], locations.to_json(orient='split')
 
 
 @callback(
@@ -52,6 +74,7 @@ def toggle_fade(n):
         return False
     return True
 
+
 @callback(
     [Output("ensemble-plot", "figure"),
      Output("polar-plot", "figure"),
@@ -70,9 +93,9 @@ def generate_figure(n_clicks, locations, location, model):
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
     loc_label = (
-            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-            f"{model.upper()}"
+        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
+        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
+        f"{model.upper()}"
     )
 
     try:

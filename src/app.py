@@ -40,7 +40,7 @@ def serve_layout():
     return html.Div(
         [
             navbar(),
-            dcc.Store(id='locations-list', data={}),
+            dcc.Store(id='locations-list', data={}, storage_type='local'),
             dbc.Modal(
                 [
                     dbc.ModalHeader("Error"),
