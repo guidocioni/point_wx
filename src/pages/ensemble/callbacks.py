@@ -44,7 +44,7 @@ def get_closest_address(n_clicks, from_address, locations, locations_sel):
                 "value": str(row['id'])
             }
         )
-    if len(locations_sel) > 0:
+    if len(locations_sel) > 0 and n_clicks is None:
         # there was something already selected
         return options, locations_sel['value'], locations.to_json(orient='split'), no_update
     else:
