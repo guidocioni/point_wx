@@ -8,7 +8,7 @@ loc_selector = dbc.Card(
                 dbc.Input(placeholder="Where are you?",
                           id='from_address',
                           type='text',
-                          autoComplete=True,
+                          autocomplete="true",
                           persistence=True),
             ],
             className="mb-2",

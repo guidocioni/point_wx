@@ -22,7 +22,7 @@ opts_selector = dbc.Card(
                 dbc.Input(
                     id="year-selection-climate",
                     value=pd.to_datetime('now', utc=True).year,
-                    autocomplete=True,
+                    autocomplete="true",
                     type='number',
                     persistence=True
                 ),
