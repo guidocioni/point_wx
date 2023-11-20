@@ -41,6 +41,7 @@ def serve_layout():
         [
             navbar(),
             dcc.Store(id='locations-list', data={}, storage_type='local'),
+            dcc.Store(id='locations-selected', data={}, storage_type='local'),
             dbc.Modal(
                 [
                     dbc.ModalHeader("Error"),

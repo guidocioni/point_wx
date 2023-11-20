@@ -9,12 +9,14 @@ import pandas as pd
 @callback(
     [Output("locations", "options"),
      Output("locations", "value"),
-     Output("locations-list", "data")],
+     Output("locations-list", "data"),
+     Output("locations-selected", "data")],
     Input("search-button", "n_clicks"),
     [State("from_address", "value"),
-     State("locations-list", "data")]
+     State("locations-list", "data"),
+     State("locations-selected", "data")]
 )
-def get_closest_address(n_clicks, from_address, locations):
+def get_closest_address(n_clicks, from_address, locations, locations_sel):
     if n_clicks is None:
         # In this case it means that the button has not been clicked
         # so we first check if there are already some locations
@@ -42,15 +44,21 @@ def get_closest_address(n_clicks, from_address, locations):
                 "value": str(row['id'])
             }
         )
-    if n_clicks is None:
-        # In this case we need to update everything besides the value
-        # because it is persisted, so if the user already selected something
-        # it will be there
-        return options, no_update, locations.to_json(orient='split')
+    if len(locations_sel) > 0:
+        # there was something already selected
+        return options, locations_sel['value'], locations.to_json(orient='split'), no_update
     else:
-        # If we're here, it means the button has been clicked, so we need
-        # to update everything, and set the value as the first option (default)
-        return options, options[0]['value'], locations.to_json(orient='split')
+        # there was nothing in the cache so we revert to the first value, and save it
+        return options, options[0]['value'], locations.to_json(orient='split'), {'value': options[0]['value']}
+
+
+@callback(
+    Output("locations-selected", "data", allow_duplicate=True),
+    Input("locations", "value"),
+    prevent_initial_call=True
+)
+def update_locations_value_selected(value):
+    return {'value': value}
 
 
 @callback(
