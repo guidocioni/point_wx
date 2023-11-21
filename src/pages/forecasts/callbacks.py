@@ -59,7 +59,9 @@ def generate_figure(n_clicks, locations, location, models):
         sun = get_forecast_daily_data(latitude=loc['latitude'].item(),
                                       longitude=loc['longitude'].item(),
                                       variables='sunrise,sunset',
-                                      forecast_days=14)
+                                      forecast_days=None,
+                                      start_date=data.time.min().strftime('%Y-%m-%d'),
+                                      end_date=data.time.max().strftime('%Y-%m-%d'))
 
         return make_subplot_figure(data, loc_label, sun), None, False
     except Exception as e:

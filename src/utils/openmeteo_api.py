@@ -31,18 +31,25 @@ def get_forecast_data(latitude=53.55,
                       model=DETERMINISTIC_MODELS[0]['value'],
                       forecast_days=7,
                       from_now=True,
-                      past_days=None):
+                      past_days=None,
+                      start_date=None,
+                      end_date=None):
     payload = {
         "latitude": latitude,
         "longitude": longitude,
         "hourly": variables,
         "timezone": timezone,
         "models": model,
-        "forecast_days": forecast_days
     }
 
     if past_days:
         payload['past_days'] = past_days
+    if forecast_days:
+        payload['forecast_days'] = forecast_days
+    if start_date:
+        payload['start_date'] = start_date
+    if end_date:
+        payload['end_date'] = end_date
 
     resp = r.get("https://api.open-meteo.com/v1/forecast",
                  params=payload)
@@ -68,18 +75,25 @@ def get_forecast_daily_data(latitude=53.55,
                             timezone='auto',
                             model=DETERMINISTIC_MODELS[0]['value'],
                             forecast_days=7,
-                            past_days=None):
+                            past_days=None,
+                            start_date=None,
+                            end_date=None):
     payload = {
         "latitude": latitude,
         "longitude": longitude,
         "daily": variables,
         "timezone": timezone,
         "models": model,
-        "forecast_days": forecast_days
     }
 
     if past_days:
         payload['past_days'] = past_days
+    if forecast_days:
+        payload['forecast_days'] = forecast_days
+    if start_date:
+        payload['start_date'] = start_date
+    if end_date:
+        payload['end_date'] = end_date
 
     resp = r.get("https://api.open-meteo.com/v1/forecast",
                  params=payload)
