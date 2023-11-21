@@ -18,7 +18,10 @@ def get_locations(name, count=10, language='en'):
     resp = r.get("https://geocoding-api.open-meteo.com/v1/search",
                  params=payload)
     resp.raise_for_status()
-    data = pd.DataFrame.from_dict(resp.json()['results'])
+    if 'results' in resp.json():
+        data = pd.DataFrame.from_dict(resp.json()['results'])
+    else:
+        data = pd.DataFrame()
 
     return data
 

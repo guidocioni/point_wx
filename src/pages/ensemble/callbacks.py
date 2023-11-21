@@ -10,7 +10,9 @@ import pandas as pd
     [Output("locations", "options"),
      Output("locations", "value"),
      Output("locations-list", "data"),
-     Output("locations-selected", "data")],
+     Output("locations-selected", "data"),
+     Output("error-message", "children"),
+     Output("error-modal", "is_open")],
     Input("search-button", "n_clicks"),
     [State("from_address", "value"),
      State("locations-list", "data"),
@@ -32,6 +34,13 @@ def get_closest_address(n_clicks, from_address, locations, locations_sel):
     else:
         # In this case the button has been clicked so we load the data
         locations = get_locations(from_address)
+        # If no location has been found raise an error
+        if len(locations) < 1:
+            return (
+                no_update, no_update, no_update, no_update,
+                "No location found, change the input!",  # Error message
+                True
+            )
 
     options = []
     for _, row in locations.iterrows():
@@ -46,10 +55,23 @@ def get_closest_address(n_clicks, from_address, locations, locations_sel):
         )
     if len(locations_sel) > 0 and n_clicks is None:
         # there was something already selected
-        return options, locations_sel['value'], locations.to_json(orient='split'), no_update
+        return (
+            options,
+            # Set the dropdown on the value saved in the Store cache
+            locations_sel['value'],
+            # locations saved in Store cache
+            locations.to_json(orient='split'),
+            no_update,  # DO not update the value saved in Store cache
+            None, False  # Deactivate error popup
+        )
     else:
         # there was nothing in the cache so we revert to the first value, and save it
-        return options, options[0]['value'], locations.to_json(orient='split'), {'value': options[0]['value']}
+        return (
+            options, options[0]['value'],
+            locations.to_json(orient='split'),  # locations saved in Store
+            {'value': options[0]['value']},  # selected location saved in Store
+            None, False  # Deactivate error popup
+        )
 
 
 @callback(
@@ -87,12 +109,13 @@ def toggle_fade(n):
 @callback(
     [Output("ensemble-plot", "figure"),
      Output("polar-plot", "figure"),
-     Output("error-message", "children"),
-     Output("error-modal", "is_open")],
+     Output("error-message", "children", allow_duplicate=True),
+     Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button", "n_clicks"),
     [State("locations-list", "data"),
      State("locations", "value"),
-     State("models-selection", "value")]
+     State("models-selection", "value")],
+    prevent_initial_call=True
 )
 def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
@@ -123,7 +146,14 @@ def generate_figure(n_clicks, locations, location, model):
                                       start_date=data.time.min().strftime('%Y-%m-%d'),
                                       end_date=data.time.max().strftime('%Y-%m-%d'))
 
-        return make_subplot_figure(data, clima, loc_label, sun), make_barpolar_figure(data), None, False
+        return (
+            make_subplot_figure(data, clima, loc_label, sun),
+            make_barpolar_figure(data),
+            None, False  # deactivate error popup
+        )
 
     except Exception as e:
-        return make_empty_figure(), make_empty_figure(), repr(e), True
+        return (
+            make_empty_figure(), make_empty_figure(),
+            repr(e), True  # Error message
+        )
