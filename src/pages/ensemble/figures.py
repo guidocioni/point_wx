@@ -189,8 +189,8 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
 
 
 def make_subplot_figure(data, clima, title=None, sun=None):
-    # traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
-    traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
+    traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
+    # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
         data, 'snowfall', color='rebeccapurple')
