@@ -25,6 +25,33 @@ def make_lineplot_timeseries(df, var, mode='lines+markers', showlegend=False):
     return traces
 
 
+def make_windarrow_timeseries(df, var_speed='windgusts_10m',
+                              var_dir='winddirection_10m', showlegend=False):
+    df = df[::6].copy()
+    traces = []
+    # Define cyclical colors to be used
+    colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
+
+    i = 0
+    for col_speed, col_dir in zip(df.columns[df.columns.str.contains(var_speed)], df.columns[df.columns.str.contains(var_dir)]):
+        traces.append(
+            go.Scatter(
+                x=df.loc[:, 'time'],
+                y=df.loc[:, col_speed],
+                mode='markers',
+                name='',
+                marker=dict(size=10, color=colors[i],
+                            symbol='arrow',
+                            angle=df.loc[:, col_dir],
+                            line=dict(width=1, color="DarkSlateGrey"),
+                            ),
+                showlegend=showlegend),
+        )
+        i += 1
+
+    return traces
+
+
 def make_barplot_timeseries(df, var):
     traces = []
     # Define cyclical colors to be used
@@ -56,7 +83,8 @@ def make_subplot_figure(data, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True)
     traces_precipitation = make_barplot_timeseries(data, 'precipitation')
-    traces_wind = make_lineplot_timeseries(data, 'windspeed_10m')
+    traces_wind = make_lineplot_timeseries(data, 'windgusts_10m', mode='lines')
+    traces_wind_dir = make_windarrow_timeseries(data)
     traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers')
 
     fig = make_subplots(
@@ -72,6 +100,8 @@ def make_subplot_figure(data, title=None, sun=None):
         fig.add_trace(trace_precipitation, row=2, col=1)
     for trace_wind in traces_wind:
         fig.add_trace(trace_wind, row=3, col=1)
+    for trace_wind_dir in traces_wind_dir:
+        fig.add_trace(trace_wind_dir, row=3, col=1)
     for trace_cloud in traces_cloud:
         fig.add_trace(trace_cloud, row=4, col=1)
 
