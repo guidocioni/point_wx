@@ -365,7 +365,7 @@ def compute_yearly_accumulation(latitude=53.55,
     additional = get_forecast_daily_data(
         latitude=latitude,
         longitude=longitude,
-        variables='precipitation_sum',
+        variables=var,
         model='ecmwf_ifs04',
         forecast_days=14,
         past_days=7)
@@ -422,11 +422,11 @@ def compute_yearly_comparison(latitude=53.55,
     additional = get_forecast_data(
         latitude=latitude,
         longitude=longitude,
-        variables='temperature_2m',
+        variables=var,
         model='ecmwf_ifs04',
         from_now=False,
         forecast_days=14,
-        past_days=7).resample('1D', on='time').mean().reset_index().rename(columns={'temperature_2m': 'temperature_2m_mean'})
+        past_days=7).resample('1D', on='time').mean().reset_index().rename(columns={var: f'{var}_mean'})
     additional['time'] = additional['time'].dt.tz_localize(
         None, ambiguous='NaT', nonexistent='NaT')
     additional = additional[additional.time > daily.time.max()]
