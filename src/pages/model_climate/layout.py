@@ -14,24 +14,26 @@ dash.register_page(
 
 layout = html.Div(
     [
-        dbc.Accordion([
-            dbc.AccordionItem(
-                html.Div(
-                    [
-                        "In this page you can reconstruct the climate of a certain area with high detail. ",
-                        html.Br(),
-                        "Data is based on reanalysis for the period 1991-2020",
-                        html.Br(),
-                        "Notice that if results are cached but, if the cliamte for a certain place has not been "
-                        "computed before, it will take a while (15 seconds) before results appear",
-                    ]
-                ),
-                title='Description (click to show)')],
-            start_collapsed=True, className="mb-2"),
+        dbc.Row(
+            dbc.Accordion([
+                dbc.AccordionItem(
+                    html.Div(
+                        [
+                            "In this page you can reconstruct the climate of a certain area with high detail. ",
+                            html.Br(),
+                            "Data is based on reanalysis for the period 1991-2020",
+                            html.Br(),
+                            "Notice that if results are cached but, if the cliamte for a certain place has not been "
+                            "computed before, it will take a while (15 seconds) before results appear",
+                        ]
+                    ),
+                    title='Description (click to show)')],
+                start_collapsed=True, className="mb-2")
+        ),
         dbc.Row(
             [
-                dbc.Col(loc_selector),
-                dbc.Col(opts_selector),
+                dbc.Col(loc_selector, sm=12, md=12, lg=6),
+                dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
         dbc.Fade([

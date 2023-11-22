@@ -14,24 +14,26 @@ dash.register_page(
 
 layout = html.Div(
     [
-        dbc.Accordion([
-            dbc.AccordionItem(
-                html.Div(
-                    [
-                        "This page also uses Ensemble forecast data but present a different visualisation.",
-                        html.Br(),
-                        "A so-called heatmap shows the variation of a certain variable (that you can choose) "
-                        "over time (x axis) among the ensemble members (y axis).",
-                        html.Br(),
-                        "This way it is easier to see the spread of different ensemble members for a certain variable. "
-                    ]
-                ),
-                title='Description (click to show)')
-        ], start_collapsed=True, className="mb-2"),
+        dbc.Row(
+            dbc.Accordion([
+                dbc.AccordionItem(
+                    html.Div(
+                        [
+                            "This page also uses Ensemble forecast data but present a different visualisation.",
+                            html.Br(),
+                            "A so-called heatmap shows the variation of a certain variable (that you can choose) "
+                            "over time (x axis) among the ensemble members (y axis).",
+                            html.Br(),
+                            "This way it is easier to see the spread of different ensemble members for a certain variable. "
+                        ]
+                    ),
+                    title='Description (click to show)')
+            ], start_collapsed=True, className="mb-2")
+        ),
         dbc.Row(
             [
-                dbc.Col(loc_selector),
-                dbc.Col(opts_selector),
+                dbc.Col(loc_selector, sm=12, md=12, lg=6),
+                dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
         dbc.Row(

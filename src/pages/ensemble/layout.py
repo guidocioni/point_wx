@@ -14,39 +14,42 @@ dash.register_page(
 
 layout = html.Div(
     [
-        dbc.Accordion([
-            dbc.AccordionItem(
-                html.Div(
-                    [
-                        "Usually in weather prediction model you only get one realization for every variable. "
-                        "Instead, ensemble is a special tecnique of weather forecasting which combines "
-                        "different scenarios with the same probability. This makes it easier to estimate "
-                        "the uncertainty associated with a variable forecast. ",
-                        html.Br(),
-                        "In this page you can see all the ensemble members of temperature at 2m as colored lines. "
-                        "The precipitation plot contains instead an average of the expected precipitation amount "
-                        "together with a precipitation probability.",
-                        html.Br(),
-                    ]
-                ),
-                title='Description (click to show)')
-        ], start_collapsed=True, className="mb-2"),
         dbc.Row(
-            [
-                dbc.Col(loc_selector),
-                dbc.Col(opts_selector),
-            ]
+            dbc.Accordion([
+                dbc.AccordionItem(
+                    html.Div(
+                        [
+                            "Usually in weather prediction model you only get one realization for every variable. "
+                            "Instead, ensemble is a special tecnique of weather forecasting which combines "
+                            "different scenarios with the same probability. This makes it easier to estimate "
+                            "the uncertainty associated with a variable forecast. ",
+                            html.Br(),
+                            "In this page you can see all the ensemble members of temperature at 2m as colored lines. "
+                            "The precipitation plot contains instead an average of the expected precipitation amount "
+                            "together with a precipitation probability.",
+                            html.Br(),
+                        ]
+                    ),
+                    title='Description (click to show)')
+            ], start_collapsed=True, className="mb-2")
         ),
         dbc.Row(
             [
-                dbc.Fade(
-                    dbc.Col(
-                        [dbc.Spinner(fig_subplots), dbc.Spinner(fig_polar)]
-                    ),
-                    id="fade-ensemble",
-                    is_in=False,
-                    appear=False)
+                dbc.Col(loc_selector, sm=12, md=12, lg=6),
+                dbc.Col(opts_selector, sm=12, md=12, lg=6)
             ]
+        ),
+        dbc.Row(
+            dbc.Fade(
+                dbc.Col(
+                    [
+                        dbc.Spinner(fig_subplots),
+                        dbc.Spinner(fig_polar)
+                    ]
+                ),
+                id="fade-ensemble",
+                is_in=False,
+                appear=False)
         ),
     ]
 )

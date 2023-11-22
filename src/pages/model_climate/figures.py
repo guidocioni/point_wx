@@ -544,7 +544,7 @@ fig_temperature_climate = dbc.Card(
         html.Div(
             ["The number of days that exceed a certain temperature threshold are shown in this plot.",
              html.Br(),
-             "Snow days (>= 1 cm) are also shown"
+             "Frost days (daily minimum temperature <= 0°C) are also shown"
              ]
         ),
         dcc.Graph(id='temperature-climate-figure', config=images_config)
@@ -557,7 +557,7 @@ fig_precipitation_climate = dbc.Card(
         html.Div(
             ["The number of days that exceed a certain precipitation threshold are shown in this plot.",
              html.Br(),
-             "Frost days (daily minimum temperature <= 0°C) are also shown"
+             "Snow days (>= 1 cm) are also shown"
              ]
         ),
         dcc.Graph(id='precipitation-climate-figure', config=images_config)

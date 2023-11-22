@@ -27,8 +27,8 @@ layout = html.Div(
             start_collapsed=True, className="mb-2"),
         dbc.Row(
             [
-                dbc.Col(loc_selector),
-                dbc.Col(opts_selector),
+                dbc.Col(loc_selector, sm=12, md=12, lg=6),
+                dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
         dbc.Fade(
