@@ -69,8 +69,7 @@ DETERMINISTIC_MODELS = [
 ]
 
 # The variables we download by default for deterministic models
-DETERMINISTIC_VARS = ["temperature_2m", "relativehumidity_2m",
-                      "precipitation", "rain", "showers", "snowfall", "snow_depth",
+DETERMINISTIC_VARS = ["temperature_2m", "precipitation", "rain", "snowfall", "snow_depth",
                       "cloudcover", "windspeed_10m", "winddirection_10m", "windgusts_10m"]
 
 REANALYSIS_MODELS = [
