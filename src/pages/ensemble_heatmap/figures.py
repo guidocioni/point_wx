@@ -6,7 +6,7 @@ from utils.settings import images_config
 
 
 def make_heatmap(df, var, title=None):
-    if var == 'temperature_2m':
+    if var in ['temperature_2m', 'temperature_850hPa']:
         cmap = 'RdBu_r'
     elif var == 'cloudcover':
         cmap = 'YlGnBu_r'

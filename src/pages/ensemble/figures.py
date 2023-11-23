@@ -191,24 +191,31 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
 def make_subplot_figure(data, clima, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
+    height_graph = 0.0
+    if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
+        traces_temp_850 = make_lineplot_timeseries(data, 'temperature_850hPa', break_hours='1H')
+        height_graph = 0.4
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
         data, 'snowfall', color='rebeccapurple')
     traces_clouds = make_scatterplot_timeseries(data, 'cloudcover')
 
     fig = make_subplots(
-        rows=3,
+        rows=4,
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.05,
-        row_heights=[0.5, 0.4, 0.3])
+        row_heights=[0.35, height_graph, 0.3, 0.25])
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
-    fig.add_trace(trace_rain, row=2, col=1)
-    fig.add_trace(trace_snow, row=2, col=1)
+    if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
+        for trace_temp_850 in traces_temp_850:
+            fig.add_trace(trace_temp_850, row=2, col=1)
+    fig.add_trace(trace_rain, row=3, col=1)
+    fig.add_trace(trace_snow, row=3, col=1)
     for trace_clouds in traces_clouds:
-        fig.add_trace(trace_clouds, row=3, col=1)
+        fig.add_trace(trace_clouds, row=4, col=1)
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
@@ -231,10 +238,11 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                 row=1, col=1
             )
 
-    fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
+    fig.update_yaxes(title_text="2m T [°C]", row=1, col=1)
+    fig.update_yaxes(title_text="850 hPa T [°C]", row=2, col=1)
     fig.update_yaxes(
-        title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=2, col=1)
-    fig.update_yaxes(title_text="Cloud Cover", row=3, col=1)
+        title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=3, col=1)
+    fig.update_yaxes(title_text="Cloud Cover", row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True, gridwidth=3),
                      showgrid=True,

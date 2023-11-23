@@ -40,7 +40,8 @@ ENSEMBLE_MODELS = [
 # The variables we download by default for ensemble models
 ENSEMBLE_VARS = ["temperature_2m", "cloudcover", "rain",
                  "snowfall", "precipitation", "freezinglevel_height",
-                 "snow_depth", "windgusts_10m", "wind_direction_10m"]
+                 "snow_depth", "windgusts_10m", "wind_direction_10m",
+                 "temperature_850hPa"]
 
 # All the models available in the APIs for Forecasts
 DETERMINISTIC_MODELS = [
