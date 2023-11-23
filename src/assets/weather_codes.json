@@ -1,0 +1,282 @@
+{
+	"0":{
+		"day":{
+			"description":"Sunny",
+			"image":"00d.png"
+		},
+		"night":{
+			"description":"Clear",
+			"image":"00n.png"
+		}
+	},
+	"1":{
+		"day":{
+			"description":"Mainly Sunny",
+			"image":"01d.png"
+		},
+		"night":{
+			"description":"Mainly Clear",
+			"image":"01n.png"
+		}
+	},
+	"2":{
+		"day":{
+			"description":"Partly Cloudy",
+			"image":"02d.png"
+		},
+		"night":{
+			"description":"Partly Cloudy",
+			"image":"02n.png"
+		}
+	},
+	"3":{
+		"day":{
+			"description":"Cloudy",
+			"image":"03.png"
+		},
+		"night":{
+			"description":"Cloudy",
+			"image":"03.png"
+		}
+	},
+	"45":{
+		"day":{
+			"description":"Foggy",
+			"image":"45.png"
+		},
+		"night":{
+			"description":"Foggy",
+			"image":"45.png"
+		}
+	},
+	"48":{
+		"day":{
+			"description":"Rime Fog",
+			"image":"45.png"
+		},
+		"night":{
+			"description":"Rime Fog",
+			"image":"45.png"
+		}
+	},
+	"51":{
+		"day":{
+			"description":"Light Drizzle",
+			"image":"46.1.png"
+		},
+		"night":{
+			"description":"Light Drizzle",
+			"image":"46.1.png"
+		}
+	},
+	"53":{
+		"day":{
+			"description":"Drizzle",
+			"image":"46.1.png"
+		},
+		"night":{
+			"description":"Drizzle",
+			"image":"46.1.png"
+		}
+	},
+	"55":{
+		"day":{
+			"description":"Heavy Drizzle",
+			"image":"46.1.png"
+		},
+		"night":{
+			"description":"Heavy Drizzle",
+			"image":"46.1.png"
+		}
+	},
+	"56":{
+		"day":{
+			"description":"Light Freezing Drizzle",
+			"image":"46.1.png"
+		},
+		"night":{
+			"description":"Light Freezing Drizzle",
+			"image":"46.1.png"
+		}
+	},
+	"57":{
+		"day":{
+			"description":"Freezing Drizzle",
+			"image":"46.1.png"
+		},
+		"night":{
+			"description":"Freezing Drizzle",
+			"image":"46.1.png"
+		}
+	},
+	"61":{
+		"day":{
+			"description":"Light Rain",
+			"image":"05d.png"
+		},
+		"night":{
+			"description":"Light Rain",
+			"image":"05n.png"
+		}
+	},
+	"63":{
+		"day":{
+			"description":"Rain",
+			"image":"09.png"
+		},
+		"night":{
+			"description":"Rain",
+			"image":"09.png"
+		}
+	},
+	"65":{
+		"day":{
+			"description":"Heavy Rain",
+			"image":"10.png"
+		},
+		"night":{
+			"description":"Heavy Rain",
+			"image":"10.png"
+		}
+	},
+	"66":{
+		"day":{
+			"description":"Light Freezing Rain",
+			"image":"05d.png"
+		},
+		"night":{
+			"description":"Light Freezing Rain",
+			"image":"05n.png"
+		}
+	},
+	"67":{
+		"day":{
+			"description":"Freezing Rain",
+			"image":"05d.png"
+		},
+		"night":{
+			"description":"Freezing Rain",
+			"image":"05n.png"
+		}
+	},
+	"71":{
+		"day":{
+			"description":"Light Snow",
+			"image":"49.png"
+		},
+		"night":{
+			"description":"Light Snow",
+			"image":"49.png"
+		}
+	},
+	"73":{
+		"day":{
+			"description":"Snow",
+			"image":"13.png"
+		},
+		"night":{
+			"description":"Snow",
+			"image":"13.png"
+		}
+	},
+	"75":{
+		"day":{
+			"description":"Heavy Snow",
+			"image":"50.png"
+		},
+		"night":{
+			"description":"Heavy Snow",
+			"image":"50.png"
+		}
+	},
+	"77":{
+		"day":{
+			"description":"Snow Grains",
+			"image":"49.png"
+		},
+		"night":{
+			"description":"Snow Grains",
+			"image":"49.png"
+		}
+	},
+	"80":{
+		"day":{
+			"description":"Light Showers",
+			"image":"30.png"
+		},
+		"night":{
+			"description":"Light Showers",
+			"image":"30.png"
+		}
+	},
+	"81":{
+		"day":{
+			"description":"Showers",
+			"image":"22.png"
+		},
+		"night":{
+			"description":"Showers",
+			"image":"22.png"
+		}
+	},
+	"82":{
+		"day":{
+			"description":"Heavy Showers",
+			"image":"11.png"
+		},
+		"night":{
+			"description":"Heavy Showers",
+			"image":"11.png"
+		}
+	},
+	"85":{
+		"day":{
+			"description":"Light Snow Showers",
+			"image":"33.png"
+		},
+		"night":{
+			"description":"Light Snow Showers",
+			"image":"33.png"
+		}
+	},
+	"86":{
+		"day":{
+			"description":"Snow Showers",
+			"image":"14.png"
+		},
+		"night":{
+			"description":"Snow Showers",
+			"image":"14.png"
+		}
+	},
+	"95":{
+		"day":{
+			"description":"Thunderstorm",
+			"image":"06d.png"
+		},
+		"night":{
+			"description":"Thunderstorm",
+			"image":"06n.png"
+		}
+	},
+	"96":{
+		"day":{
+			"description":"Light Thunderstorms With Hail",
+			"image":"26d.png"
+		},
+		"night":{
+			"description":"Light Thunderstorms With Hail",
+			"image":"26n.png"
+		}
+	},
+	"99":{
+		"day":{
+			"description":"Thunderstorm With Hail",
+			"image":"27d.png"
+		},
+		"night":{
+			"description":"Thunderstorm With Hail",
+			"image":"27n.png"
+		}
+	}
+}
