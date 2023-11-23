@@ -63,6 +63,6 @@ def generate_figure(n_clicks, locations, location, models):
                                       start_date=data.time.min().strftime('%Y-%m-%d'),
                                       end_date=data.time.max().strftime('%Y-%m-%d'))
 
-        return make_subplot_figure(data, loc_label, sun), None, False
+        return make_subplot_figure(data=data, title=loc_label, sun=sun, models=models), None, False
     except Exception as e:
         return make_empty_figure(), repr(e), True

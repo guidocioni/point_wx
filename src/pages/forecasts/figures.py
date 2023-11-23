@@ -6,18 +6,16 @@ from plotly.subplots import make_subplots
 from utils.settings import images_config, DEFAULT_TEMPLATE
 
 
-def make_lineplot_timeseries(df, var, mode='lines+markers', showlegend=False):
-    # Workaround to get an ordered list of models present
-    # We use the temperature because it should always be defined
-    # TODO, find a better way
-    models = df.columns[df.columns.str.contains('temperature_2m')].str.replace(
-        "temperature_2m_", "").to_list()
+def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=False):
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
     i = 0
     for model in models:
-        var_model = var + "_" + model
+        if len(models) > 1:
+            var_model = var + "_" + model
+        else:
+            var_model = var
         if var_model in df.columns:
             traces.append(
                 go.Scatter(
@@ -34,48 +32,49 @@ def make_lineplot_timeseries(df, var, mode='lines+markers', showlegend=False):
     return traces
 
 
-def make_windarrow_timeseries(df, var_speed='windgusts_10m', var_dir='winddirection_10m', showlegend=False):
+def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='winddirection_10m', showlegend=False):
     df = df[::6].copy()
-    traces = []
-    # Define cyclical colors to be used
-    colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
-
-    i = 0
-    for col_dir in df.columns[df.columns.str.contains(var_dir)]:
-        # We use the direction because it should always be defined (hopefully)
-        col_speed = col_dir.replace(var_dir, var_speed)
-        if col_dir in df.columns and col_speed in df.columns:
-            traces.append(
-                go.Scatter(
-                    x=df.loc[:, 'time'],
-                    y=df.loc[:, col_speed],
-                    mode='markers',
-                    name='',
-                    marker=dict(size=10, color=colors[i],
-                                symbol='arrow',
-                                angle=df.loc[:, col_dir],
-                                line=dict(width=1, color="DarkSlateGrey"),
-                                ),
-                    showlegend=showlegend),
-            )
-        # we always add to respect the colors order
-        i += 1
-
-    return traces
-
-
-def make_barplot_timeseries(df, var):
-    # Workaround to get an ordered list of models present
-    # We use the temperature because it should always be defined
-    # TODO, find a better way
-    models = df.columns[df.columns.str.contains('temperature_2m')].str.replace(
-        "temperature_2m_", "").to_list()
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
     i = 0
     for model in models:
-        var_model = var + "_" + model
+        if len(models) > 1:
+            var_speed_model = var_speed + "_" + model
+            var_dir_model = var_dir + "_" + model
+        else:
+            var_speed_model = var_speed
+            var_dir_model = var_dir
+        if var_speed_model in df.columns and var_dir_model in df.columns:
+            traces.append(
+                go.Scatter(
+                    x=df.loc[:, 'time'],
+                    y=df.loc[:, var_speed_model],
+                    mode='markers',
+                    name=model,
+                    marker=dict(size=10, color=colors[i],
+                                symbol='arrow',
+                                angle=df.loc[:, var_dir_model],
+                                line=dict(width=1, color="DarkSlateGrey"),
+                                ),
+                    showlegend=showlegend),
+            )
+            # we always add to respect the colors order
+        i += 1
+
+    return traces
+
+
+def make_barplot_timeseries(df, var, models):
+    traces = []
+    # Define cyclical colors to be used
+    colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
+    i = 0
+    for model in models:
+        if len(models) > 1:
+            var_model = var + "_" + model
+        else:
+            var_model = var
         if var_model in df.columns:
             traces.append(
                 go.Bar(
@@ -100,13 +99,13 @@ def make_barplot_timeseries(df, var):
     return traces
 
 
-def make_subplot_figure(data, title=None, sun=None):
+def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
-        data, 'temperature_2m', showlegend=True)
-    traces_precipitation = make_barplot_timeseries(data, 'precipitation')
-    traces_wind = make_lineplot_timeseries(data, 'windgusts_10m', mode='lines')
-    traces_wind_dir = make_windarrow_timeseries(data)
-    traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers')
+        data, 'temperature_2m', showlegend=True, models=models)
+    traces_precipitation = make_barplot_timeseries(data, 'precipitation', models=models)
+    traces_wind = make_lineplot_timeseries(data, 'windgusts_10m', mode='lines', models=models)
+    traces_wind_dir = make_windarrow_timeseries(data, models=models)
+    traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers', models=models)
 
     fig = make_subplots(
         rows=4,
