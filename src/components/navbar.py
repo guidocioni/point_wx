@@ -7,7 +7,7 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 
 # package imports
 import dash
-from dash import callback, Output, Input, State, ALL
+from dash import callback, Output, Input, State, ALL, clientside_callback
 import dash_bootstrap_components as dbc
 
 
@@ -51,11 +51,25 @@ def toggle_navbar_collapse(n, is_open):
     return is_open
 
 
-@callback(
+clientside_callback(
+    """
+    function toggleCollapse(n_clicks, is_open) {
+        // Check the viewport width
+        var viewportWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
+        // Set a threshold for the viewport width when collapse should not happen
+        var threshold = 768;  // Adjust this threshold as needed
+
+        // Conditionally toggle the collapse based on viewport size
+        if (n_clicks && viewportWidth <= threshold) {
+            return !is_open;
+        } else {
+            return is_open;
+        }
+    }
+    """,
     Output('navbar-collapse', 'is_open', allow_duplicate=True),
-    Input({'type': 'navbar-link', 'index': ALL}, 'n_clicks'),
-    State('navbar-collapse', 'is_open'),
+    [Input({'type': 'navbar-link', 'index': ALL}, 'n_clicks')],
+    [State('navbar-collapse', 'is_open')],
     prevent_initial_call=True
 )
-def toggle_navbar_collapse_from_navlink(navlink_clicks, is_open):
-    return False if is_open else any(navlink_clicks)
