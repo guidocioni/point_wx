@@ -65,7 +65,7 @@ def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='wi
     return traces
 
 
-def make_barplot_timeseries(df, var, models):
+def make_barplot_timeseries(df, var, models, color='rgb(26, 118, 255)'):
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
@@ -82,7 +82,7 @@ def make_barplot_timeseries(df, var, models):
                     y=df[var_model],
                     name=model,
                     opacity=0.6,
-                    marker=dict(color='rgb(26, 118, 255)'),
+                    marker=dict(color=color),
                     showlegend=False),
             )
             traces.append(
@@ -103,6 +103,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
     traces_precipitation = make_barplot_timeseries(data, 'precipitation', models=models)
+    traces_snow = make_barplot_timeseries(data, 'snowfall', models=models, color='rgb(214, 138, 219)')
     traces_wind = make_lineplot_timeseries(data, 'windgusts_10m', mode='lines', models=models)
     traces_wind_dir = make_windarrow_timeseries(data, models=models)
     traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers', models=models)
@@ -112,12 +113,18 @@ def make_subplot_figure(data, models, title=None, sun=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        row_heights=[0.5, 0.3, 0.3, 0.3])
+        row_heights=[0.5, 0.3, 0.3, 0.3],
+        specs=[[{"secondary_y": False}],
+               [{"secondary_y": True}],
+               [{"secondary_y": False}],
+               [{"secondary_y": False}]])
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
+    for trace_snow in traces_snow:
+        fig.add_trace(trace_snow, row=2, col=1, secondary_y=True)
     for trace_wind in traces_wind:
         fig.add_trace(trace_wind, row=3, col=1)
     for trace_wind_dir in traces_wind_dir:
@@ -131,13 +138,13 @@ def make_subplot_figure(data, models, title=None, sun=None):
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
         height=1000,
-        margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
+        margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
         barmode='overlay',
         legend=dict(orientation='h', y=-0.04),
     )
 
     if sun is not None:
-        for i, s in sun.iterrows():
+        for _, s in sun.iterrows():
             fig.add_vrect(
                 x0=s['sunrise'],
                 x1=s['sunset'],
@@ -148,10 +155,13 @@ def make_subplot_figure(data, models, title=None, sun=None):
             )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="Prec. [mm]", row=2, col=1)
+    fig.update_yaxes(title_text="Prec. [mm]", row=2, col=1, secondary_y=False)
     fig.update_yaxes(title_text="Wind Gusts [kph]", row=3, col=1)
     fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
-    fig.update_yaxes(showgrid=True, gridwidth=4)
+    fig.update_yaxes(showgrid=True, gridwidth=2)
+    fig.update_yaxes(title_text="Snowfall [cm]", row=2, col=1,
+                     secondary_y=True, autorange="reversed",
+                     showgrid=False)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
                      gridwidth=1),
                      tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)
