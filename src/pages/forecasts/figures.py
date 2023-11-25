@@ -33,7 +33,7 @@ def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=F
 
 
 def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='winddirection_10m', showlegend=False):
-    df = df[::6].copy()
+    df = df.resample('3H', on='time').mean().reset_index()
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
@@ -54,7 +54,7 @@ def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='wi
                     name=model,
                     marker=dict(size=10, color=colors[i],
                                 symbol='arrow',
-                                angle=df.loc[:, var_dir_model],
+                                angle=df.loc[:, var_dir_model] - 180.,
                                 line=dict(width=1, color="DarkSlateGrey"),
                                 ),
                     showlegend=showlegend),
