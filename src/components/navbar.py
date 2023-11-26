@@ -53,7 +53,7 @@ def toggle_navbar_collapse(n, is_open):
 
 clientside_callback(
     """
-    function toggleCollapse(n_clicks, is_open) {
+    function toggleCollapse(n_clicks) {
         // Check the viewport width
         var viewportWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
@@ -61,15 +61,14 @@ clientside_callback(
         var threshold = 768;  // Adjust this threshold as needed
 
         // Conditionally toggle the collapse based on viewport size
-        if (n_clicks && viewportWidth <= threshold) {
-            return !is_open;
+        if (viewportWidth <= threshold) {
+            return false;
         } else {
-            return is_open;
+            return window.dash_clientside.no_update;
         }
     }
     """,
     Output('navbar-collapse', 'is_open', allow_duplicate=True),
     [Input({'type': 'navbar-link', 'index': ALL}, 'n_clicks')],
-    [State('navbar-collapse', 'is_open')],
     prevent_initial_call=True
 )
