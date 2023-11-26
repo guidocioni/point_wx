@@ -99,6 +99,34 @@ def make_barplot_timeseries(df, var, models, color='rgb(26, 118, 255)'):
     return traces
 
 
+def add_weather_icons(data, fig, row_fig, col_fig, var, models):
+    from PIL import Image
+    from utils.figures_utils import get_weather_icons
+    for model in models:
+        if len(models) > 1:
+            var_model = var + "_" + model
+            var_weather_model = "weather_code_" + model
+        else:
+            var_weather_model = 'weather_code'
+            var_model = var
+        if var_weather_model in data:
+            data = data.resample('12H', on='time').max().reset_index()
+            data = get_weather_icons(data,
+                                     var=var_weather_model,
+                                     icons_path="../../assets/yrno_png/",
+                                     mapping_path="../../assets/weather_codes.json")
+            for _, row in data.iterrows():
+                fig.add_layout_image(dict(
+                    source=Image.open(row['icons']),
+                    xref='x',
+                    x=row['time'],
+                    yref='y',
+                    y=row[var_model],
+                    sizex=12*24*10*60*1000,
+                    sizey=1
+                ),row=row_fig, col=col_fig)
+
+
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
@@ -121,6 +149,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
+        # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
     for trace_snow in traces_snow:

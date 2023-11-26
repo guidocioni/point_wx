@@ -27,7 +27,8 @@ def make_empty_figure(text="No data (yet 😃)"):
 
 def get_weather_icons(df,
                       icons_path="../src/assets/yrno_png/",
-                      mapping_path="../src/assets/weather_codes.json"):
+                      mapping_path="../src/assets/weather_codes.json",
+                      var='weather_code'):
     """
     Given an input dataframe with columns 'weather_code' and 'is_day'
     creates two new columns containing the path to the image describing
@@ -45,8 +46,8 @@ def get_weather_icons(df,
                 time_day = 'day'
             else:
                 time_day = 'night'
-        icons.append(icons_path+j[str(int(row['weather_code']))][time_day]['image'])
-        descriptions.append(j[str(int(row['weather_code']))][time_day]['description'])
+        icons.append(icons_path+j[str(int(row[var]))][time_day]['image'])
+        descriptions.append(j[str(int(row[var]))][time_day]['description'])
 
     df['icons'] = icons
     df['weather_descriptions'] = descriptions
