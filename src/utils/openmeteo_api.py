@@ -474,7 +474,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
 
     daily_tmin = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').min()
     daily_tmax = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').max()
-    dail_wcode = data.loc[:,data.columns.str.contains('weather_code|time')].resample('1D', on='time').median()
+    daily_wcode = data.loc[:,data.columns.str.contains('weather_code|time')].resample('1D', on='time').median()
     daily_prec = data.loc[:,data.columns.str.contains('precipitation|time')].resample('1D', on='time').sum()
 
     daily = daily_tmin.mean(axis=1).to_frame(name='t_min_mean')\
@@ -483,10 +483,10 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_tmin.max(axis=1).to_frame(name='t_min_max'), left_index=True, right_index=True)\
         .merge(daily_tmax.max(axis=1).to_frame(name='t_max_max'), left_index=True, right_index=True)\
         .merge(daily_tmax.min(axis=1).to_frame(name='t_max_min'), left_index=True, right_index=True)\
-        .merge(dail_wcode.mode(axis=1).astype(int).rename(columns={0:'weather_code'}), left_index=True, right_index=True)\
+        .merge(daily_wcode.mode(axis=1)[0].to_frame(name='weather_code').astype(int), left_index=True, right_index=True)\
         .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.25,axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.75,axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
-        .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
+        .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)
 
     return daily
