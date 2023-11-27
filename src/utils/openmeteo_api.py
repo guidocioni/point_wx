@@ -369,19 +369,19 @@ def compute_yearly_accumulation(latitude=53.55,
                   pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
         variables=var)
 
-    # Add missing dates and forecasts
-    additional = get_forecast_daily_data(
-        latitude=latitude,
-        longitude=longitude,
-        variables=var,
-        model='ecmwf_ifs04',
-        forecast_days=14,
-        past_days=7)
-    additional['time'] = additional['time'].dt.tz_localize(
-        None, ambiguous='NaT', nonexistent='NaT')
-    additional = additional[additional.time > daily.time.max()]
-
-    daily = pd.concat([daily, additional])
+    if year == pd.to_datetime('now', utc=True).year:
+        # Add missing dates and forecasts
+        additional = get_forecast_daily_data(
+            latitude=latitude,
+            longitude=longitude,
+            variables=var,
+            model='ecmwf_ifs04',
+            forecast_days=14,
+            past_days=7)
+        additional['time'] = additional['time'].dt.tz_localize(
+            None, ambiguous='NaT', nonexistent='NaT')
+        additional = additional[additional.time > daily.time.max()]
+        daily = pd.concat([daily, additional])
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
@@ -427,19 +427,18 @@ def compute_yearly_comparison(latitude=53.55,
         variables=var)
 
     # Add missing dates and forecasts
-    additional = get_forecast_data(
-        latitude=latitude,
-        longitude=longitude,
-        variables=var,
-        model='ecmwf_ifs04',
-        from_now=False,
-        forecast_days=14,
-        past_days=7).resample('1D', on='time').mean().reset_index().rename(columns={var: f'{var}_mean'})
-    additional['time'] = additional['time'].dt.tz_localize(
-        None, ambiguous='NaT', nonexistent='NaT')
-    additional = additional[additional.time > daily.time.max()]
-
-    daily = pd.concat([daily, additional])
+    if year == pd.to_datetime('now', utc=True).year:
+        additional = get_forecast_daily_data(
+            latitude=latitude,
+            longitude=longitude,
+            variables=var,
+            model='ecmwf_ifs04',
+            forecast_days=14,
+            past_days=7)
+        additional['time'] = additional['time'].dt.tz_localize(
+            None, ambiguous='NaT', nonexistent='NaT')
+        additional = additional[additional.time > daily.time.max()]
+        daily = pd.concat([daily, additional])
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
