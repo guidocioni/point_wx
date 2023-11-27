@@ -2,6 +2,10 @@
 from flask_caching import Cache
 import plotly.io as pio
 import utils.custom_theme
+import os
+
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
+ASSETS_DIR = os.path.join(ROOT_DIR, 'src', 'assets')
 
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080

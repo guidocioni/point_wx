@@ -3,7 +3,7 @@ from dash import dcc
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
-from utils.settings import images_config, DEFAULT_TEMPLATE
+from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
 
 
 def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=False):
@@ -113,8 +113,8 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
             data = data.resample('12H', on='time').max().reset_index()
             data = get_weather_icons(data,
                                      var=var_weather_model,
-                                     icons_path="../../assets/yrno_png/",
-                                     mapping_path="../../assets/weather_codes.json")
+                                     icons_path=f"{ASSETS_DIR}/yrno_png/",
+                                     mapping_path=f"{ASSETS_DIR}/weather_codes.json")
             for _, row in data.iterrows():
                 fig.add_layout_image(dict(
                     source=Image.open(row['icons']),
