@@ -38,6 +38,7 @@ def make_boxplot_timeseries(df, var, clima=None):
 
     return traces
 
+
 def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
@@ -193,7 +194,8 @@ def make_subplot_figure(data, clima, title=None, sun=None):
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     height_graph = 0.0
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
-        traces_temp_850 = make_lineplot_timeseries(data, 'temperature_850hPa', break_hours='1H')
+        traces_temp_850 = make_lineplot_timeseries(
+            data, 'temperature_850hPa', break_hours='1H')
         height_graph = 0.4
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
@@ -209,8 +211,8 @@ def make_subplot_figure(data, clima, title=None, sun=None):
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
-        fig.add_hline(y=0, line_width=3, row=1, col=1,
-                      line_color="rgba(0,0,0,0.05)")  # 0 isotherm
+    fig.add_hline(y=0, line_width=3, row=1, col=1,
+                  line_color="rgba(0,0,0,0.2)")  # 0 isotherm
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
         for trace_temp_850 in traces_temp_850:
             fig.add_trace(trace_temp_850, row=2, col=1)

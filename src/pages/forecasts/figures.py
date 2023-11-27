@@ -124,17 +124,21 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
                     y=row[var_model],
                     sizex=12*24*10*60*1000,
                     sizey=1
-                ),row=row_fig, col=col_fig)
+                ), row=row_fig, col=col_fig)
 
 
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
-    traces_precipitation = make_barplot_timeseries(data, 'precipitation', models=models)
-    traces_snow = make_barplot_timeseries(data, 'snowfall', models=models, color='rgb(214, 138, 219)')
-    traces_wind = make_lineplot_timeseries(data, 'windgusts_10m', mode='lines', models=models)
+    traces_precipitation = make_barplot_timeseries(
+        data, 'precipitation', models=models)
+    traces_snow = make_barplot_timeseries(
+        data, 'snowfall', models=models, color='rgb(214, 138, 219)')
+    traces_wind = make_lineplot_timeseries(
+        data, 'windgusts_10m', mode='lines', models=models)
     traces_wind_dir = make_windarrow_timeseries(data, models=models)
-    traces_cloud = make_lineplot_timeseries(data, 'cloudcover', mode='markers', models=models)
+    traces_cloud = make_lineplot_timeseries(
+        data, 'cloudcover', mode='markers', models=models)
 
     fig = make_subplots(
         rows=4,
@@ -150,8 +154,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
-        fig.add_hline(y=0, line_width=3, row=1, col=1,
-                      line_color="rgba(0,0,0,0.05)")  # 0 isotherm
+    fig.add_hline(y=0, line_width=3, row=1, col=1,
+                  line_color="rgba(0,0,0,0.2)")  # 0 isotherm
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
     for trace_snow in traces_snow:

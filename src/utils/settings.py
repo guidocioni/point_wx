@@ -26,7 +26,9 @@ images_config = {
         'height': None,
         'width': None,
         'scale': 1.5  # Multiply title/legend/axis/canvas sizes by this factor
-    }
+    },
+    'modeBarButtonsToRemove': ['select','lasso2d','zoomIn','zoomOut','resetScale'],
+    'displaylogo': False
 }
 
 ENSEMBLE_MODELS = [
