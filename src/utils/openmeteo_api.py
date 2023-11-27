@@ -69,8 +69,8 @@ def get_forecast_data(latitude=53.55,
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
 
     # Units conversion
-    if 'snow_depth' in data.columns:
-        data['snow_depth'] = data['snow_depth'] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
 
     return data
 
@@ -150,8 +150,8 @@ def get_ensemble_data(latitude=53.55,
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
 
     # Units conversion
-    if 'snow_depth' in data.columns:
-        data['snow_depth'] = data['snow_depth'] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
 
     return data
 
