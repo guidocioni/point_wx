@@ -70,7 +70,7 @@ def generate_figure(n_clicks, locations, location, model, year):
         )
 
         fig_prec = make_prec_figure(data, year=year, var='precipitation_sum', title=loc_label)
-        fig_temp = make_temp_figure(data_2, var='temperature_2m_mean', title=loc_label)
+        fig_temp = make_temp_figure(data_2, year=year, var='temperature_2m_mean', title=loc_label)
 
         return [fig_prec, fig_temp, None, False]
 

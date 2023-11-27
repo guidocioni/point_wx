@@ -51,8 +51,10 @@ def make_prec_figure(df, year, var, title=None):
             showlegend=True,),
     )
 
-    fig.add_vline(x=pd.to_datetime('now', utc=True),
-                  line_width=2, line_dash="dash", line_color="gray")
+    if year == pd.to_datetime('now', utc=True).year:
+        fig.add_vline(x=pd.to_datetime('now', utc=True),
+                      line_width=2, line_dash="dash",
+                      line_color="gray")
 
     fig.update_layout(
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
@@ -66,7 +68,7 @@ def make_prec_figure(df, year, var, title=None):
     return fig
 
 
-def make_temp_figure(df, var, title=None):
+def make_temp_figure(df, year, var, title=None):
     fig = make_subplots()
 
     mask = df[var] > df[f'{var}_clima']
@@ -138,8 +140,9 @@ def make_temp_figure(df, var, title=None):
             fill='tonexty'),
     )
 
-    fig.add_vline(x=pd.to_datetime('now', utc=True),
-                  line_width=2, line_dash="dash", line_color="gray")
+    if year == pd.to_datetime('now', utc=True).year:
+        fig.add_vline(x=pd.to_datetime('now', utc=True),
+                    line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
