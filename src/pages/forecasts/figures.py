@@ -141,7 +141,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        row_heights=[0.5, 0.3, 0.3, 0.3],
+        row_heights=[0.45, 0.3, 0.3, 0.25],
         specs=[[{"secondary_y": False}],
                [{"secondary_y": True}],
                [{"secondary_y": False}],
@@ -150,6 +150,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
+        fig.add_hline(y=0, line_width=3, row=1, col=1,
+                      line_color="rgba(0,0,0,0.05)")  # 0 isotherm
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
     for trace_snow in traces_snow:

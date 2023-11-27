@@ -209,6 +209,8 @@ def make_subplot_figure(data, clima, title=None, sun=None):
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
+        fig.add_hline(y=0, line_width=3, row=1, col=1,
+                      line_color="rgba(0,0,0,0.05)")  # 0 isotherm
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
         for trace_temp_850 in traces_temp_850:
             fig.add_trace(trace_temp_850, row=2, col=1)
@@ -228,7 +230,7 @@ def make_subplot_figure(data, clima, title=None, sun=None):
     )
 
     if sun is not None:
-        for i, s in sun.iterrows():
+        for _, s in sun.iterrows():
             fig.add_vrect(
                 x0=s['sunrise'],
                 x1=s['sunset'],
