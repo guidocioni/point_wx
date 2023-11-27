@@ -68,6 +68,10 @@ def get_forecast_data(latitude=53.55,
         data = data[data.time >= pd.to_datetime(
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
 
+    # Units conversion
+    if 'snow_depth' in data.columns:
+        data['snow_depth'] = data['snow_depth'] * 100.  # m to cm
+
     return data
 
 
@@ -144,6 +148,10 @@ def get_ensemble_data(latitude=53.55,
     if from_now:
         data = data[data.time >= pd.to_datetime(
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+
+    # Units conversion
+    if 'snow_depth' in data.columns:
+        data['snow_depth'] = data['snow_depth'] * 100.  # m to cm
 
     return data
 
