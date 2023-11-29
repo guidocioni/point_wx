@@ -1,6 +1,19 @@
 import pandas as pd
 import requests as r
-from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
+from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS, logging
+import time
+
+
+def make_request(url, payload):
+    start_time = time.time()
+    logging.info(f"Sending request with payload {payload} to url {url}")
+
+    resp = r.get(url=url, params=payload)
+    resp.raise_for_status()
+    end_time = time.time()
+    logging.info(f"Request took {end_time-start_time:.2f} seconds")
+
+    return resp
 
 
 @cache.memoize(86400)
@@ -15,9 +28,10 @@ def get_locations(name, count=10, language='en'):
         "format": 'json'
     }
 
-    resp = r.get("https://geocoding-api.open-meteo.com/v1/search",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://geocoding-api.open-meteo.com/v1/search",
+        payload)
+
     if 'results' in resp.json():
         data = pd.DataFrame.from_dict(resp.json()['results'])
     else:
@@ -54,9 +68,10 @@ def get_forecast_data(latitude=53.55,
     if end_date:
         payload['end_date'] = end_date
 
-    resp = r.get("https://api.open-meteo.com/v1/forecast",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://api.open-meteo.com/v1/forecast",
+        payload)
+
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT')
@@ -102,9 +117,10 @@ def get_forecast_daily_data(latitude=53.55,
     if end_date:
         payload['end_date'] = end_date
 
-    resp = r.get("https://api.open-meteo.com/v1/forecast",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://api.open-meteo.com/v1/forecast",
+        payload)
+
     data = pd.DataFrame.from_dict(resp.json()['daily'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
@@ -135,9 +151,10 @@ def get_ensemble_data(latitude=53.55,
         "forecast_days": forecast_days
     }
 
-    resp = r.get("https://ensemble-api.open-meteo.com/v1/ensemble",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://ensemble-api.open-meteo.com/v1/ensemble",
+        payload)
+
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
@@ -181,9 +198,10 @@ def get_historical_data(latitude=53.55,
         "end_date": end_date
     }
 
-    resp = r.get("https://archive-api.open-meteo.com/v1/archive",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://archive-api.open-meteo.com/v1/archive",
+        payload)
+
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
         data['time'], format='%Y-%m-%dT%H:%M')
@@ -214,9 +232,10 @@ def get_historical_daily_data(latitude=53.55,
         "end_date": end_date
     }
 
-    resp = r.get("https://archive-api.open-meteo.com/v1/archive",
-                 params=payload)
-    resp.raise_for_status()
+    resp = make_request(
+        "https://archive-api.open-meteo.com/v1/archive",
+        payload)
+
     data = pd.DataFrame.from_dict(resp.json()['daily'])
     data['time'] = pd.to_datetime(data['time'])
 
@@ -238,6 +257,7 @@ def compute_climatology(latitude=53.55,
     This is a very expensive operation (5-6 seconds for the full 30 years)
     so it should be cached!
     """
+    start_time = time.time()
     data = get_historical_data(latitude, longitude, variables,
                                timezone, model, start_date, end_date)
 
@@ -249,6 +269,9 @@ def compute_climatology(latitude=53.55,
     mean = data.groupby([data.doy, data.time.dt.hour]).mean(
         numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
 
+    end_time = time.time()
+    logging.info(f"Climatology computation for ({latitude},{longitude}), variable {variables}, model {model} for date range {start_date}-{end_date} took {end_time-start_time:.2f} seconds")
+
     return mean
 
 
@@ -257,7 +280,7 @@ def compute_daily_stats(latitude=53.55, longitude=9.99, model='era5',
                         start_date='1991-01-01', end_date='2020-12-31'):
     """Starting from hourly data compute daily aggregations which are
     useful for other functions that compute climatologies"""
-
+    start_time = time.time()
     df = get_historical_data(
         variables='temperature_2m,precipitation,snowfall,cloudcover,windspeed_10m',
         latitude=latitude,
@@ -279,6 +302,8 @@ def compute_daily_stats(latitude=53.55, longitude=9.99, model='era5',
                                              cloudcover_mean=(
                                                  'cloudcover', 'mean')  # in %
                                              )
+    end_time = time.time()
+    logging.info(f"Computing daily stats for ({latitude},{longitude}), model {model} for date range {start_date}-{end_date} took {end_time-start_time:.2f} seconds")
 
     return daily
 
@@ -288,7 +313,7 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
                           start_date='1991-01-01', end_date='2020-12-31'):
     """Takes a 30 years hourly dataframe as input and compute
     some monthly statistics by aggregating many times"""
-
+    start_time = time.time()
     daily = compute_daily_stats(latitude=latitude,
                                 longitude=longitude,
                                 model=model,
@@ -345,6 +370,8 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     monthly['t2m_min_min'] = daily['t2m_min'].resample('1M').min()
     monthly['t2m_max_max'] = daily['t2m_max'].resample('1M').max()
     stats = monthly.groupby(monthly.index.month).mean().round(1)
+    end_time = time.time()
+    logging.info(f"Computing monthly stats for ({latitude},{longitude}), model {model} for date range {start_date}-{end_date} took {end_time-start_time:.2f} seconds")
 
     return stats
 
@@ -359,7 +386,7 @@ def compute_yearly_accumulation(latitude=53.55,
                                 q2=0.5,
                                 q3=0.95):
     """Compute cumulative sum of some variable over the year"""
-
+    start_time = time.time()
     daily = get_historical_daily_data(
         latitude=latitude,
         longitude=longitude,
@@ -405,6 +432,9 @@ def compute_yearly_accumulation(latitude=53.55,
     daily = daily[daily.time.dt.year == year].merge(
         quantiles, left_on='time', right_on='dummy_date', how='right')
 
+    end_time = time.time()
+    logging.info(f"Computing yearly accumulation for ({latitude},{longitude}), model {model} for year {year} took {end_time-start_time:.2f} seconds")
+
     return daily
 
 
@@ -416,7 +446,7 @@ def compute_yearly_comparison(latitude=53.55,
                               year=pd.to_datetime('now', utc=True).year):
     """ Based on daily data compute first a daily climatology and then merge with the observed values
     over a certain year"""
-
+    start_time = time.time()
     daily = get_historical_daily_data(
         latitude=latitude,
         longitude=longitude,
@@ -456,6 +486,9 @@ def compute_yearly_comparison(latitude=53.55,
     daily = daily.merge(clima, right_on='dummy_date',
                         left_on='time', how='right')
 
+    end_time = time.time()
+    logging.info(f"Computing yearly comparison for ({latitude},{longitude}), model {model} for year {year} took {end_time-start_time:.2f} seconds")
+
     return daily
 
 
@@ -463,7 +496,7 @@ def compute_yearly_comparison(latitude=53.55,
 def compute_daily_ensemble_meteogram(latitude=53.55,
                                      longitude=9.99,
                                      model='gfs_seamless'):
-
+    start_time = time.time()
     data = get_ensemble_data(
         latitude=latitude,
         longitude=longitude,
@@ -487,5 +520,8 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_prec.quantile(0.25,axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.75,axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
         .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)
+
+    end_time = time.time()
+    logging.info(f"Computing meteogram for ({latitude},{longitude}), model {model} took {end_time-start_time:.2f} seconds")
 
     return daily

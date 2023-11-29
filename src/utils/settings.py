@@ -2,6 +2,7 @@
 from flask_caching import Cache
 import plotly.io as pio
 import utils.custom_theme
+from utils.custom_logger import logging
 import os
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
