@@ -49,7 +49,7 @@ def generate_figure(n_clicks, locations, location, models):
     loc_label = (
         f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
         f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f'{",".join(models)}'
+        f'Models: {",".join(models)}'
     )
 
     try:

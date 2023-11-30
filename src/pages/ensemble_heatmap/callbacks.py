@@ -47,7 +47,7 @@ def generate_figure(n_clicks, locations, location, model, variable):
             f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
             f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
             f"{variable}  -  "
-            f"{model.upper()}"
+            f"Ensemble models: {model.upper()}"
     )
 
     try:
