@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology, get_forecast_daily_data
 from utils.figures_utils import make_empty_figure
+from utils.suntimes import find_suntimes
 from dash.exceptions import PreventUpdate
 from .figures import make_subplot_figure, make_barpolar_figure
 import pandas as pd
@@ -127,7 +128,7 @@ def generate_figure(n_clicks, locations, location, model):
     loc_label = (
         f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
         f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f"{model.upper()}"
+        f"Ensemble models: {model.upper()}"
     )
 
     try:
@@ -139,12 +140,10 @@ def generate_figure(n_clicks, locations, location, model):
                                     longitude=loc['longitude'].item(),
                                     variables='temperature_2m')
 
-        sun = get_forecast_daily_data(latitude=loc['latitude'].item(),
-                                      longitude=loc['longitude'].item(),
-                                      variables='sunrise,sunset',
-                                      forecast_days=None,
-                                      start_date=data.time.min().strftime('%Y-%m-%d'),
-                                      end_date=data.time.max().strftime('%Y-%m-%d'))
+        sun = find_suntimes(df=data,
+                            latitude=loc['latitude'].item(),
+                            longitude=loc['longitude'].item(),
+                            elevation=loc['elevation'].item())
 
         return (
             make_subplot_figure(data, clima, loc_label, sun),

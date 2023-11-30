@@ -5,6 +5,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
+from utils.custom_logger import logging, time_this_func
 
 
 def make_boxplot_timeseries(df, var, clima=None):
@@ -157,6 +158,7 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
     return trace
 
 
+@time_this_func
 def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     timeSpan = (df.time.iloc[-1]-df.time.iloc[0])
     rule = int((timeSpan.total_seconds()/3600.)/n_partitions)
@@ -189,6 +191,7 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     return fig
 
 
+@time_this_func
 def make_subplot_figure(data, clima, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
