@@ -5,7 +5,7 @@ import pytz
 from pytz import timezone
 import pandas as pd
 import time
-from .settings import logging
+from .custom_logger import logging, time_this_func
 
 
 """Different constants."""
@@ -348,7 +348,7 @@ class SunTimes():
         else:
             return utc_time
 
-
+@time_this_func
 def find_suntimes(df, latitude, longitude, elevation=0):
     """
     Wrapper to use the library to compute suntimes using
@@ -357,7 +357,6 @@ def find_suntimes(df, latitude, longitude, elevation=0):
     frequency and use that to compute the rise and set times.
     Providing elevation improves the computation.
     """
-    start_time = time.time()
     sun = SunTimes(longitude, latitude, elevation)
 
     # Create a dataframe with only daily data, we don't actually care
@@ -375,7 +374,5 @@ def find_suntimes(df, latitude, longitude, elevation=0):
 
     daily = daily.merge(daily.apply(lambda x: find_times(x), axis=1).apply(pd.Series).rename(columns={0: 'sunrise', 1: 'sunset'}),
                         left_index=True, right_index=True)
-    end_time = time.time()
-    logging.info(f"Computed suntimes in {end_time-start_time:.2f} seconds")
 
     return daily
