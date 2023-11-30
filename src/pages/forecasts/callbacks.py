@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
 from utils.figures_utils import make_empty_figure
+from utils.suntimes import find_suntimes
 from .figures import make_subplot_figure
 import pandas as pd
 
@@ -56,12 +57,11 @@ def generate_figure(n_clicks, locations, location, models):
                                  longitude=loc['longitude'].item(),
                                  model=",".join(models),
                                  forecast_days=14)
-        sun = get_forecast_daily_data(latitude=loc['latitude'].item(),
-                                      longitude=loc['longitude'].item(),
-                                      variables='sunrise,sunset',
-                                      forecast_days=None,
-                                      start_date=data.time.min().strftime('%Y-%m-%d'),
-                                      end_date=data.time.max().strftime('%Y-%m-%d'))
+
+        sun = find_suntimes(df=data,
+                            latitude=loc['latitude'].item(),
+                            longitude=loc['longitude'].item(),
+                            elevation=loc['elevation'].item())
 
         return make_subplot_figure(data=data, title=loc_label, sun=sun, models=models), None, False
     except Exception as e:

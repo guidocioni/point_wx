@@ -13,6 +13,7 @@ Install the requirements
 - `plotly`
 - `requests`
 - `flask-cache`
+- `jdcal` for suntimes to work
 
 Sorry, no explicit packaging with `yaml` and/or `requirements.txt` is provided for now.
 But since you only need a few packages to make it work, it should be fine. 
