@@ -84,6 +84,8 @@ def get_forecast_data(latitude=53.55,
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
         data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
 
     return data
 
@@ -167,6 +169,8 @@ def get_ensemble_data(latitude=53.55,
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
         data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
 
     return data
 
@@ -266,7 +270,6 @@ def compute_climatology(latitude=53.55,
     # Compute mean over day of the year AND hour
     mean = data.groupby([data.doy, data.time.dt.hour]).mean(
         numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
-
 
     return mean
 
@@ -487,13 +490,15 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         latitude=latitude,
         longitude=longitude,
         model=model,
-        variables="weather_code,temperature_2m,precipitation",
+        variables="weather_code,temperature_2m,precipitation,sunshine_duration",
         from_now=False)
 
+    # This computes a daily aggregation for all ensemble members
     daily_tmin = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').min()
     daily_tmax = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').max()
     daily_wcode = data.loc[:,data.columns.str.contains('weather_code|time')].resample('1D', on='time').median()
     daily_prec = data.loc[:,data.columns.str.contains('precipitation|time')].resample('1D', on='time').sum()
+    daily_sunshine = data.loc[:,data.columns.str.contains('sunshine_duration|time')].resample('1D', on='time').sum()
 
     daily = daily_tmin.mean(axis=1).to_frame(name='t_min_mean')\
         .merge(daily_tmax.mean(axis=1).to_frame(name='t_max_mean'), left_index=True, right_index=True)\
@@ -505,6 +510,9 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.25,axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.75,axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
-        .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)
+        .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
+        .merge(daily_sunshine.quantile(0.25,axis=1).to_frame(name='sunshine_min'), left_index=True, right_index=True)\
+        .merge(daily_sunshine.quantile(0.75,axis=1).to_frame(name='sunshine_max'), left_index=True, right_index=True)\
+        .merge(daily_sunshine.mean(axis=1).to_frame(name='sunshine_mean'), left_index=True, right_index=True)
 
     return daily
