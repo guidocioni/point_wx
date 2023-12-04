@@ -25,6 +25,7 @@ def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=F
                     name=model,
                     marker=dict(size=5, color=colors[i]),
                     line=dict(width=2, color=colors[i]),
+                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
                     showlegend=showlegend),
             )
         i += 1
@@ -57,6 +58,7 @@ def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='wi
                                 angle=df.loc[:, var_dir_model] - 180.,
                                 line=dict(width=1, color="DarkSlateGrey"),
                                 ),
+                    hoverinfo='skip',
                     showlegend=showlegend),
             )
             # we always add to respect the colors order
@@ -83,6 +85,7 @@ def make_barplot_timeseries(df, var, models, color='rgb(26, 118, 255)'):
                     name=model,
                     opacity=0.6,
                     marker=dict(color=color),
+                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
                     showlegend=False),
             )
             traces.append(
@@ -91,6 +94,7 @@ def make_barplot_timeseries(df, var, models, color='rgb(26, 118, 255)'):
                     y=df.loc[df[var_model] >= 0.1, var_model],
                     mode='markers',
                     name=model,
+                    hoverinfo='skip',
                     marker=dict(size=3, color=colors[i]),
                     showlegend=False),
             )
@@ -131,7 +135,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
     traces_precipitation = make_barplot_timeseries(
-        data, 'precipitation', models=models)
+        data, 'rain', models=models)
     traces_snow = make_barplot_timeseries(
         data, 'snowfall', models=models, color='rgb(214, 138, 219)')
     traces_wind = make_lineplot_timeseries(
@@ -190,12 +194,15 @@ def make_subplot_figure(data, models, title=None, sun=None):
             )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="Prec. [mm]", row=2, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="Rain [mm]",
+                     color='rgb(26, 118, 255)',
+                     row=2, col=1, secondary_y=False)
     fig.update_yaxes(title_text="Wind Gusts [kph]", row=3, col=1)
     fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=2)
     fig.update_yaxes(title_text="Snowfall [cm]", row=2, col=1,
                      secondary_y=True, autorange="reversed",
+                     color='rgb(214, 138, 219)',
                      showgrid=False)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
                      gridwidth=1),

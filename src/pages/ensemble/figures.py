@@ -51,6 +51,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
                          pd.to_timedelta(break_hours), col],
                 mode='lines+markers',
                 name=col,
+                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
                 marker=dict(size=4),
                 line=dict(width=1),
                 showlegend=False),
@@ -64,6 +65,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
                          pd.to_timedelta(break_hours), col],
                 mode='lines',
                 name=col,
+                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
                 line=dict(width=1),
                 showlegend=False),
         )
@@ -73,7 +75,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
         y=df.loc[:, df.columns.str.contains(var)].min(axis=1),
         mode='lines',
         line=dict(color='rgba(0, 0, 0, 0)'),
-        name='Minimum',
+        hoverinfo='skip',
         showlegend=False
     ))
     traces.append(go.Scatter(
@@ -83,7 +85,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
         line=dict(color='rgba(0, 0, 0, 0)'),
         fillcolor='rgba(0, 0, 0, 0.1)',
         fill='tonexty',
-        name='Maximum',
+        hoverinfo='skip',
         showlegend=False
     ))
     if clima is not None:
@@ -101,6 +103,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
                 mode='lines',
                 name='climatology',
                 line=dict(width=4, color='rgba(0, 0, 0, 0.4)', dash='dot'),
+                hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
                 showlegend=False)
         )
 
@@ -119,6 +122,7 @@ def make_scatterplot_timeseries(df, var):
                 name=col,
                 marker=dict(size=4),
                 line=dict(width=1),
+                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
                 showlegend=False),
         )
     # add line with the average
@@ -129,6 +133,7 @@ def make_scatterplot_timeseries(df, var):
             mode='lines',
             name='Mean',
             line=dict(width=4, color='black'),
+            hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
             showlegend=False),
     )
 
@@ -152,13 +157,13 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
         text=df[f'{var}_prob'],
         name=var,
         textposition='outside',
+        hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
         showlegend=False,
         marker_color=color)
 
     return trace
 
 
-@time_this_func
 def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     timeSpan = (df.time.iloc[-1]-df.time.iloc[0])
     rule = int((timeSpan.total_seconds()/3600.)/n_partitions)
@@ -181,11 +186,13 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
             r=out[i-1],
             theta=bins,
             marker_color='rgb(106,81,163)',
-            showlegend=False), row=1, col=i+1)
+            showlegend=False,
+            hoverinfo='skip'), row=1, col=i+1)
     fig.update_polars(radialaxis_showticklabels=False,
                       angularaxis_showticklabels=False)
     fig.update_layout(margin={"r": 2, "t": 1, "l": 2, "b": 0.1},
                       height=100,
+                      dragmode=False
                       )
 
     return fig
@@ -209,7 +216,7 @@ def make_subplot_figure(data, clima, title=None, sun=None):
         rows=4,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.05,
+        vertical_spacing=0.02,
         row_heights=[0.35, height_graph, 0.3, 0.25])
 
     for trace_temp in traces_temp:
@@ -229,7 +236,7 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                    range=[data['time'].min(),
                           data['time'].max()]),
         yaxis=dict(showgrid=True,),
-        height=900,
+        height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack'
     )
@@ -245,11 +252,18 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                 row=1, col=1
             )
 
-    fig.update_yaxes(title_text="2m T [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="850 hPa T [°C]", row=2, col=1)
+    fig.update_yaxes(title_text="2m Temp. [°C]",
+                     title_font=dict(size=12),
+                     row=1, col=1)
+    fig.update_yaxes(title_text="850 hPa T [°C]",
+                     title_font=dict(size=12),
+                     row=2, col=1)
     fig.update_yaxes(
-        title_text="Rain [mm] | Snow [cm] | Prob. [%]", row=3, col=1)
-    fig.update_yaxes(title_text="Cloud Cover", row=4, col=1)
+        title_text="Rain [mm] | Snow [cm] | Prob. [%]",
+        title_font=dict(size=10), row=3, col=1)
+    fig.update_yaxes(title_text="Cloud Cover",
+                     title_font=dict(size=12),
+                     row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True, gridwidth=3),
                      showgrid=True,

@@ -28,11 +28,10 @@ def make_heatmap(df, var, title=None):
 
     fig.update_traces(hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
 
-    fig.update_yaxes(visible=False, showticklabels=False)
-
     fig.update_layout(
         xaxis=dict(showgrid=True, tickformat='%a %d %b\n%H:%M'),
-        yaxis=dict(showgrid=True, fixedrange=True),
+        yaxis=dict(showgrid=True, fixedrange=True, showticklabels=False,
+                   title_text="Members"),
         height=700,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
     )
