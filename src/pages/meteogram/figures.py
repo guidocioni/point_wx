@@ -72,7 +72,9 @@ def make_temp_timeseries(df, showlegend=False):
 
 
 def make_barplot_timeseries(df, var, var_text=None,
-                            showlegend=False, color='rgb(73, 135, 230)'):
+                            showlegend=False,
+                            color='rgb(73, 135, 230)',
+                            text_formatting='%{text:.1s}'):
     if var_text is not None:
         text = df[var_text]
     traces = []
@@ -82,7 +84,7 @@ def make_barplot_timeseries(df, var, var_text=None,
         text=text,
         name='',
         textposition='auto',
-        texttemplate='%{text:.1s}',
+        texttemplate=text_formatting,
         showlegend=showlegend,
         marker_color=color))
 
@@ -93,11 +95,13 @@ def make_subplot_figure(data, title=None):
     traces_temp = make_temp_timeseries(data)
     traces_prec = make_barplot_timeseries(data,
                                           var='daily_prec_mean',
-                                          var_text='prec_prob')
+                                          var_text='prec_prob',
+                                          text_formatting='%{text:.0f}%')
     traces_sun = make_barplot_timeseries(data,
                                          var='sunshine_mean',
                                          var_text='sunshine_mean',
-                                         color='rgba(255, 240, 184, 0.5)')
+                                         color='rgba(255, 240, 184, 0.5)',
+                                         text_formatting='%{text:.1f} hrs')
 
     fig = make_subplots(
         rows=3,
