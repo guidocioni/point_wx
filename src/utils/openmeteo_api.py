@@ -87,6 +87,9 @@ def get_forecast_data(latitude=53.55,
     for col in data.columns[data.columns.str.contains('sunshine_duration')]:
         data[col] = data[col] / 3600.  # s to hrs
 
+    # Add metadata (experimental)
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+
     return data
 
 
@@ -124,6 +127,9 @@ def get_forecast_daily_data(latitude=53.55,
     data = pd.DataFrame.from_dict(resp.json()['daily'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
+
+    # Add metadata (experimental)
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
 
     return data
 
@@ -172,6 +178,9 @@ def get_ensemble_data(latitude=53.55,
     for col in data.columns[data.columns.str.contains('sunshine_duration')]:
         data[col] = data[col] / 3600.  # s to hrs
 
+    # Add metadata (experimental)
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+
     return data
 
 # As historical data is in the past, it never changes
@@ -210,6 +219,9 @@ def get_historical_data(latitude=53.55,
 
     data = data.dropna()
 
+    # Add metadata (experimental)
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+
     return data
 
 
@@ -242,6 +254,9 @@ def get_historical_daily_data(latitude=53.55,
     data['time'] = pd.to_datetime(data['time'])
 
     data = data.dropna()
+
+    # Add metadata (experimental)
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
 
     return data
 
