@@ -115,10 +115,11 @@ def toggle_fade(n):
     Input("submit-button", "n_clicks"),
     [State("locations-list", "data"),
      State("locations", "value"),
-     State("models-selection", "value")],
+     State("models-selection", "value"),
+     State("clima-switch", "value")],
     prevent_initial_call=True
 )
-def generate_figure(n_clicks, locations, location, model):
+def generate_figure(n_clicks, locations, location, model, clima_):
     if n_clicks is None:
         return make_empty_figure(), make_empty_figure(), no_update, no_update
 
@@ -136,9 +137,12 @@ def generate_figure(n_clicks, locations, location, model):
                                  longitude=loc['longitude'].item(),
                                  model=model)
 
-        clima = compute_climatology(latitude=loc['latitude'].item(),
-                                    longitude=loc['longitude'].item(),
-                                    variables='temperature_2m')
+        if clima_:
+            clima = compute_climatology(latitude=loc['latitude'].item(),
+                                        longitude=loc['longitude'].item(),
+                                        variables='temperature_2m')
+        else:
+            clima = None
 
         sun = find_suntimes(df=data,
                             latitude=loc['latitude'].item(),

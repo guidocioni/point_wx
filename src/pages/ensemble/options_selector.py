@@ -15,6 +15,17 @@ opts_selector = dbc.Card(
             ],
             className="mb-2",
         ),
+        dbc.InputGroup(
+            [
+                dbc.InputGroupText(dbc.Checkbox(
+                    id="clima-switch",
+                    value=True,
+                    persistence=True
+                )),
+                dbc.InputGroupText("Compute climatology (only 2m Temperature)")
+            ],
+            className="mb-2",
+        ),
         dbc.Row(
             [
                 dbc.Button("Submit",
