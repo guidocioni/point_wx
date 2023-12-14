@@ -41,9 +41,10 @@ def navbar():
 
 
 @callback(
-    Output('navbar-collapse', 'is_open'),
+    Output('navbar-collapse', 'is_open', allow_duplicate=True),
     Input('navbar-toggler', 'n_clicks'),
     State('navbar-collapse', 'is_open'),
+    prevent_initial_call=True
 )
 def toggle_navbar_collapse(n, is_open):
     if n:
@@ -68,7 +69,6 @@ clientside_callback(
         }
     }
     """,
-    Output('navbar-collapse', 'is_open', allow_duplicate=True),
+    Output('navbar-collapse', 'is_open'),
     [Input({'type': 'navbar-link', 'index': ALL}, 'n_clicks')],
-    prevent_initial_call=True
 )
