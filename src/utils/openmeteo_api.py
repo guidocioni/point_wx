@@ -1,12 +1,32 @@
 import pandas as pd
 import requests as r
-from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
+import os
+from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS, ROOT_DIR
 from .custom_logger import logging, time_this_func
 
 
 @time_this_func
 def make_request(url, payload):
     logging.info(f"Sending request with payload {payload} to url {url}")
+
+    # Attempt to read a file with the apikey
+    api_key = None
+    if os.path.exists(f"{ROOT_DIR}/.apikey"):
+        try:
+            file1 = open(f"{ROOT_DIR}/.apikey", 'r')
+            for line in file1.readlines():
+                api_key = line.strip()
+        except Exception as e:
+            logging.warning(".apikey file exists but there was an error reading it")
+            logging.warning(f"ERROR: {repr(e)}")
+            api_key = None
+
+    if api_key:
+        logging.info("Using commercial API key")
+        # In this case we have to prepend the 'customer-' string to the url
+        # and add &apikey=... at the end
+        url = url.replace("https://", "https://customer-")
+        payload['apikey'] = api_key
 
     resp = r.get(url=url, params=payload)
     resp.raise_for_status()
