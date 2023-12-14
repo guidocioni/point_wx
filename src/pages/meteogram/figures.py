@@ -13,10 +13,11 @@ def make_temp_timeseries(df, showlegend=False):
             x=df['time'],
             y=df['t_max_mean'],
             mode='markers+lines+text',
-            text=df['t_max_mean'].astype(int).astype(str) + ' °C',
+            text=df['t_max_mean'].astype(int).astype(str),
             textposition="top right",
             textfont=dict(color='rgba(227, 56, 30, 1)'),
             name='Maximum temperature',
+            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
             line=dict(width=2, color='rgba(227, 56, 30, 1)'),
             showlegend=showlegend,),
     )
@@ -25,10 +26,11 @@ def make_temp_timeseries(df, showlegend=False):
             x=df['time'],
             y=df['t_min_mean'],
             mode='markers+lines+text',
-            text=df['t_min_mean'].astype(int).astype(str) + ' °C',
+            text=df['t_min_mean'].astype(int).astype(str),
             textposition="top right",
             textfont=dict(color='rgba(58, 91, 139, 1)'),
             name='Minimum temperature',
+            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
             line=dict(width=2, color='rgba(58, 91, 139, 1)'),
             showlegend=showlegend),
     )
@@ -38,6 +40,7 @@ def make_temp_timeseries(df, showlegend=False):
         mode='lines',
         line=dict(color='rgba(0, 0, 0, 0)'),
         name='',
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
         showlegend=showlegend
     ))
     traces.append(go.Scatter(
@@ -48,6 +51,7 @@ def make_temp_timeseries(df, showlegend=False):
         fillcolor='rgba(58, 91, 139, 0.2)',
         fill='tonexty',
         name='',
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
         showlegend=showlegend
     ))
     traces.append(go.Scatter(
@@ -56,6 +60,7 @@ def make_temp_timeseries(df, showlegend=False):
         mode='lines',
         line=dict(color='rgba(0, 0, 0, 0)'),
         name='',
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
         showlegend=showlegend
     ))
     traces.append(go.Scatter(
@@ -66,6 +71,7 @@ def make_temp_timeseries(df, showlegend=False):
         fillcolor='rgba(227, 56, 30, 0.2)',
         fill='tonexty',
         name='',
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
         showlegend=showlegend
     ))
     return traces
@@ -85,6 +91,7 @@ def make_barplot_timeseries(df, var, var_text=None,
         name='',
         textposition='auto',
         texttemplate=text_formatting,
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, "+ var + " = %{y:.1f}",
         showlegend=showlegend,
         marker_color=color))
 
@@ -109,11 +116,11 @@ def make_subplot_figure(data, title=None):
         shared_xaxes=True,
         vertical_spacing=0.05,
         row_heights=[0.1, 0.5, 0.5],
-        subplot_titles=['', '<b>Temperature<b>',
-                        '<b>Precipitation (mm) / Precipitation probability (%)<b> / Sunshine'],
-        specs=[[{"secondary_y": False}],
-               [{"secondary_y": False}],
-               [{"secondary_y": True}]]
+        subplot_titles=['', '<b>Temperature',
+                        '<b>Precipitation (mm), Probability (%), Sunshine'],
+        specs=[[{"secondary_y": False, "r":-0.06}],
+               [{"secondary_y": False, "r":-0.06}],
+               [{"secondary_y": True, "r":-0.06}]]
     )
 
     for trace_temp in traces_temp:
@@ -139,6 +146,8 @@ def make_subplot_figure(data, title=None):
         y=[3] * len(data['time']),
         mode='lines+text',
         text=data['time'].dt.strftime("<b>%a</b><br>%d %b"),
+        customdata=data['weather_descriptions'],
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b><br>%{customdata}",
         textposition="top left",
         textfont=dict(color='rgba(1, 1, 1, 1)'),
         line=dict(color='rgba(0, 0, 0, 0)'),
