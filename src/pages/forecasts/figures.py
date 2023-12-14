@@ -3,6 +3,7 @@ from dash import dcc
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
+import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
 
 
@@ -180,6 +181,30 @@ def make_subplot_figure(data, models, title=None, sun=None):
         margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
         barmode='overlay',
         legend=dict(orientation='h', y=-0.04),
+        updatemenus=[
+            dict(
+                type="buttons",
+                x=0.5,
+                y=-0.05,
+                xanchor='center',
+                direction='right',
+                buttons=[
+                    dict(label="24H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('24H')}]),
+                    dict(label="48H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('48H')}]),
+                    dict(label="Reset",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].max()}]),
+                ],
+                pad=dict(b=5),
+            ),
+        ],
     )
 
     if sun is not None:

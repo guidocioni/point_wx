@@ -238,7 +238,31 @@ def make_subplot_figure(data, clima, title=None, sun=None):
         yaxis=dict(showgrid=True,),
         height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
-        barmode='stack'
+        barmode='stack',
+        updatemenus=[
+            dict(
+                type="buttons",
+                x=0.5,
+                y=-0.05,
+                xanchor='center',
+                direction='right',
+                buttons=[
+                    dict(label="24H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('24H')}]),
+                    dict(label="48H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('48H')}]),
+                    dict(label="Reset",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": data['time'].min(),
+                                "xaxis.range[1]": data['time'].max()}]),
+                ],
+                pad=dict(b=5),
+            ),
+        ],
     )
 
     if sun is not None:
