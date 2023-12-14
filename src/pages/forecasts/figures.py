@@ -89,14 +89,15 @@ def make_barplot_timeseries(df, var, models, color='rgb(26, 118, 255)'):
                     hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
                     showlegend=False),
             )
+            # Add marker to identify model
             traces.append(
                 go.Scatter(
-                    x=df.loc[df[var_model] >= 0.1, 'time'],
-                    y=df.loc[df[var_model] >= 0.1, var_model],
+                    x=df.loc[df[var_model] >= 0.05, 'time'],
+                    y=df.loc[df[var_model] >= 0.05, var_model],
                     mode='markers',
                     name=model,
-                    hoverinfo='skip',
-                    marker=dict(size=3, color=colors[i]),
+                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
+                    marker=dict(size=5, color=colors[i]),
                     showlegend=False),
             )
         i += 1

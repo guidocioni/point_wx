@@ -48,7 +48,7 @@ ENSEMBLE_MODELS = [
 ENSEMBLE_VARS = ["temperature_2m", "cloudcover", "rain",
                  "snowfall", "precipitation", "freezinglevel_height",
                  "snow_depth", "windgusts_10m", "wind_direction_10m",
-                 "temperature_850hPa"]
+                 "temperature_850hPa", "sunshine_duration"]
 
 # All the models available in the APIs for Forecasts
 DETERMINISTIC_MODELS = [

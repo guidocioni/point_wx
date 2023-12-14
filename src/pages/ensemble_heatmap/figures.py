@@ -17,6 +17,8 @@ def make_heatmap(df, var, title=None):
         cmap = 'Burgyl'
     elif var == 'windgusts_10m':
         cmap = 'Hot_r'
+    elif var == 'sunshine_duration':
+        cmap = 'solar'
     else:
         cmap = 'RdBu_r'
 
