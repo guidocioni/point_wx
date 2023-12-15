@@ -186,7 +186,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
             dict(
                 type="buttons",
                 x=0.5,
-                y=-0.05,
+                y=-0.07,
                 xanchor='center',
                 direction='right',
                 buttons=[

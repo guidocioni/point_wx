@@ -12,7 +12,8 @@ footer = html.Footer(
     dbc.Container(
         [
             html.Hr(),
-            'Guido Cioni | ',
+            html.A('Guido Cioni', title ='email_me', href='mailto:guidocioni@gmail.com', target='_blank'),
+            " | ",
             html.A("Open Meteo", href='https://open-meteo.com/')
         ]
     )
