@@ -40,7 +40,7 @@ def make_boxplot_timeseries(df, var, clima=None):
     return traces
 
 
-def make_lineplot_timeseries(df, var, clima=None, break_hours='72H'):
+def make_lineplot_timeseries(df, var, clima=None, break_hours='48H'):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
         traces.append(

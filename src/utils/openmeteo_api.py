@@ -160,14 +160,29 @@ def get_ensemble_data(latitude=53.55,
                       variables=",".join(ENSEMBLE_VARS),
                       timezone='auto',
                       model=ENSEMBLE_MODELS[0]['value'],
-                      from_now=True):
+                      from_now=True,
+                      decimate=False):
     """
     Get the ensemble data
     """
-    if model == 'icon_seamless':
-        forecast_days = 7
+    # Adjust forecast_days depending on the model
+    if model in ['icon_seamless','icon_global']:
+        forecast_days = 8
+    elif model == 'icon_eu':
+        forecast_days = 6
+    elif model == 'icon_d2':
+        forecast_days = 3
+    elif model in ['gfs_seamless', 'gfs05']:
+        forecast_days = 15
+    elif model == 'gfs025':
+        forecast_days = 11
+    elif model == 'ecmwf_ifs04':
+        forecast_days = 11
+    elif model == 'gem_global':
+        forecast_days = 15
     else:
-        forecast_days = 14
+        forecast_days = 8
+
     payload = {
         "latitude": latitude,
         "longitude": longitude,
@@ -187,10 +202,35 @@ def get_ensemble_data(latitude=53.55,
 
     data = data.dropna(subset=data.columns[data.columns != 'time'],
                        how='all')
+
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+
+    # Optionally decimate data
+    if decimate:
+        if model in ['gfs_seamless', 'gfs05', 'gfs025', 'ecmwf_ifs04', 'gem_global']:
+            # Decimate every 3 hours considering as starting point the first time value
+            # which means that, in case the from_now option is activated, it will start
+            # resampling every 3 hours from that starting point, otherwise it will resample
+            # at the original point 0, 3, 6, 9, 12, 18, as the data always starts at 00
+            # Of course, it means that with from_now = True, the resulting data will almost
+            # always be interpolated, but we assume this to be ok.
+            data = data.resample('3H', on='time', origin=data.iloc[0]['time']).first().reset_index()
+        elif model in ['icon_seamless', 'icon_global', 'icon_eu', 'icon_d2']:
+            # We leave the first 48 hrs untouched, and then decimate every 3 hours
+            # Note that we count from 48 hrs from the first time value, which means
+            # it may not correspond to the run start time
+            if model != 'icon_d2':
+                t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48H')
+                data = pd.concat(
+                    [
+                        data.loc[data.time <= t48_start_date, :],
+                        data.loc[data.time > t48_start_date, :].resample(
+                            '3H', on='time', origin=t48_start_date).first().reset_index()
+                    ]
+                )
 
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
