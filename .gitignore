@@ -77,6 +77,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.apikey
+
 # Cython debug symbols
 cython_debug/
 .DS_Store
