@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update
-from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology, get_forecast_daily_data
+from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
 from utils.figures_utils import make_empty_figure
 from utils.suntimes import find_suntimes
 from dash.exceptions import PreventUpdate
@@ -126,11 +126,6 @@ def generate_figure(n_clicks, locations, location, model, clima_):
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
-    loc_label = (
-        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f"Ensemble models: {model.upper()}"
-    )
 
     try:
         data = get_ensemble_data(latitude=loc['latitude'].item(),
@@ -149,6 +144,12 @@ def generate_figure(n_clicks, locations, location, model, clima_):
                             latitude=loc['latitude'].item(),
                             longitude=loc['longitude'].item(),
                             elevation=loc['elevation'].item())
+
+        loc_label = (
+            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
+            f"Ens: {model.upper()}"
+        )
 
         return (
             make_subplot_figure(data, clima, loc_label, sun),

@@ -294,7 +294,7 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                      gridwidth=4,
                      tickformat='%a %d %b\n%H:%M')
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
     return fig
 

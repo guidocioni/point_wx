@@ -187,7 +187,7 @@ def make_subplot_figure(data, title=None):
     fig.update_yaxes(row=3, col=1, range=[18, 0], title_text='',
                      secondary_y=True, showgrid=False, showticklabels=False)
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
     return fig
 

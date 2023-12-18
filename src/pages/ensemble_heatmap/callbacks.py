@@ -4,6 +4,7 @@ from utils.figures_utils import make_empty_figure
 from .figures import make_heatmap
 import pandas as pd
 
+
 @callback(
     Output("submit-button-heatmap", "disabled"),
     [Input("locations", "value"),
@@ -15,6 +16,7 @@ def activate_submit_button(location, _nouse):
     else:
         return True
 
+
 @callback(
     Output("fade-heatmap", "is_in"),
     [Input("submit-button-heatmap", "n_clicks")],
@@ -24,6 +26,7 @@ def toggle_fade(n):
         # Button has never been clicked
         return False
     return True
+
 
 @callback(
     [Output("ensemble-plot-heatmap", "figure"),
@@ -43,18 +46,19 @@ def generate_figure(n_clicks, locations, location, model, variable):
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
-    loc_label = (
-            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-            f"{variable}  -  "
-            f"Ensemble models: {model.upper()}"
-    )
 
     try:
         data = get_ensemble_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
                                  model=model,
                                  decimate=True)
+
+        loc_label = (
+            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
+            f"{variable} | "
+            f"Ens: {model.upper()}"
+        )
 
         return make_heatmap(data, var=variable, title=loc_label), None, False
 

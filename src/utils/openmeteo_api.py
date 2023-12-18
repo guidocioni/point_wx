@@ -590,4 +590,6 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_sunshine.quantile(0.75,axis=1).to_frame(name='sunshine_max'), left_index=True, right_index=True)\
         .merge(daily_sunshine.mean(axis=1).to_frame(name='sunshine_mean'), left_index=True, right_index=True)
 
+    daily.attrs = data.attrs
+
     return daily

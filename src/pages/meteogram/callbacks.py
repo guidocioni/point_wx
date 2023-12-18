@@ -46,11 +46,6 @@ def generate_figure(n_clicks, locations, location, model):
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
-    loc_label = (
-        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f"{model.upper()}"
-    )
 
     try:
         data = compute_daily_ensemble_meteogram(
@@ -60,6 +55,12 @@ def generate_figure(n_clicks, locations, location, model):
         data = get_weather_icons(data,
                                  icons_path=f"{ASSETS_DIR}/yrno_png/",
                                  mapping_path=f"{ASSETS_DIR}/weather_codes.json")
+
+        loc_label = (
+            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
+            f"{model.upper()}"
+        )
 
         return make_subplot_figure(data, title=loc_label), None, False
 

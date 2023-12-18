@@ -65,7 +65,7 @@ def make_heatmap(df, var, title=None):
 
     fig.update_coloraxes(showscale=False)
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
     return fig
 

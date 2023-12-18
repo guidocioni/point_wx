@@ -234,7 +234,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
                      gridwidth=1),
                      tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
     return fig
 

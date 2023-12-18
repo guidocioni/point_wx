@@ -63,6 +63,12 @@ def generate_figure(n_clicks, locations, location, models):
                             longitude=loc['longitude'].item(),
                             elevation=loc['elevation'].item())
 
+        loc_label = (
+            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
+            f'{",".join(models)}'
+        )
+
         return make_subplot_figure(data=data, title=loc_label, sun=sun, models=models), None, False
     except Exception as e:
         return make_empty_figure(), repr(e), True
