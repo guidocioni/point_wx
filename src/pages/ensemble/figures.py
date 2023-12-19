@@ -159,6 +159,7 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
         textposition='outside',
         hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
         showlegend=False,
+        width=(df['time'].diff().dt.seconds * 850).fillna(method='bfill').fillna(method='ffill'),
         marker_color=color)
 
     return trace
@@ -205,7 +206,7 @@ def make_subplot_figure(data, clima, title=None, sun=None):
     height_graph = 0.0
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
         traces_temp_850 = make_lineplot_timeseries(
-            data, 'temperature_850hPa', break_hours='1H')
+            data, 'temperature_850hPa', break_hours='0H')
         height_graph = 0.4
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
@@ -233,8 +234,8 @@ def make_subplot_figure(data, clima, title=None, sun=None):
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
-                   range=[data['time'].min(),
-                          data['time'].max()]),
+                   range=[data['time'].min() - pd.to_timedelta('2H'),
+                          data['time'].max() + pd.to_timedelta('2H')]),
         yaxis=dict(showgrid=True,),
         height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
@@ -249,16 +250,16 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                 buttons=[
                     dict(label="24H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
-                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('24H')}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('25H')}]),
                     dict(label="48H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
-                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('48H')}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('49H')}]),
                     dict(label="Reset",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
-                                "xaxis.range[1]": data['time'].max()}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
+                                "xaxis.range[1]": data['time'].max() + pd.to_timedelta('2H')}]),
                 ],
                 pad=dict(b=5),
             ),
@@ -284,8 +285,14 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                      row=2, col=1)
     fig.update_yaxes(
         title_text="Rain [mm] | Snow [cm] | Prob. [%]",
-        title_font=dict(size=10), row=3, col=1)
+        title_font=dict(size=10),
+        row=3,
+        col=1,
+        range=[0,
+               (data['rain_mean'].max() + data['snowfall_mean'].max()) * 1.1]
+    )
     fig.update_yaxes(title_text="Cloud Cover",
+                     range=[0, 100],
                      title_font=dict(size=12),
                      row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)

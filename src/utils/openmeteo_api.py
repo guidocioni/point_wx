@@ -227,8 +227,10 @@ def get_ensemble_data(latitude=53.55,
                 data = pd.concat(
                     [
                         data.loc[data.time <= t48_start_date, :],
-                        data.loc[data.time > t48_start_date, :].resample(
-                            '3H', on='time', origin=t48_start_date).first().reset_index()
+                        data.loc[data.time > t48_start_date + pd.to_timedelta('3H'), :].resample(
+                            '3H',
+                            on='time',
+                            origin=t48_start_date + pd.to_timedelta('3H')).first().reset_index()
                     ]
                 )
 
