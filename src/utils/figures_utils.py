@@ -53,3 +53,28 @@ def get_weather_icons(df,
     df['weather_descriptions'] = descriptions
 
     return df
+
+
+def attach_alpha_to_hex_color(alpha, color):
+    """Apply opacity to an hex color
+
+    Args:
+        alpha (float): Between 0 and 1
+        color (str): Hex color string
+
+    Returns:
+        str: New hex color string with opacity
+    """
+    # Calculate the equivalent alpha value in the range of 0 to 255
+    alphaInt = (alpha * 255).__round__()
+    # Convert alphaInt to hexadecimal string
+    alphaHex = hex(alphaInt)[2:].upper().zfill(2)
+    #
+    return color + alphaHex
+
+
+def hex2rgba(x):
+    if len(x) < 6:
+        return "rgba" + str(tuple(17 * int(x[n+1], 16) * (1 if n < 3 else 1/255) for n in range(len(x) - 1)))
+    else:
+        return "rgba" + str(tuple(int(x[2*n+1:2*n+3], 16) * (1 if n < 3 else 1/255) for n in range(len(x) // 2)))
