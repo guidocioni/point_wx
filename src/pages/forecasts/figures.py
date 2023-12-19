@@ -5,9 +5,10 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
+from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba
 
 
-def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=False):
+def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=False, fill='none', alpha=1):
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
@@ -18,16 +19,22 @@ def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=F
         else:
             var_model = var
         if var_model in df.columns:
+            color = attach_alpha_to_hex_color(alpha, colors[i])
+            color = hex2rgba(color)
             traces.append(
                 go.Scatter(
                     x=df.loc[:, 'time'],
                     y=df.loc[:, var_model],
                     mode=mode,
                     name=model,
-                    marker=dict(size=5, color=colors[i]),
-                    line=dict(width=2, color=colors[i]),
+                    marker=dict(size=5,
+                                color=color),
+                    line=dict(width=2,
+                              color=color),
+                    fillcolor=color,
                     hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y}",
-                    showlegend=showlegend),
+                    showlegend=showlegend,
+                    fill=fill),
             )
         i += 1
 
@@ -136,6 +143,9 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
+    traces_sunshine = make_lineplot_timeseries(
+        data, 'sunshine_duration', models=models,
+        fill="tozeroy", alpha=0.3)
     traces_precipitation = make_barplot_timeseries(
         data, 'rain', models=models)
     traces_snow = make_barplot_timeseries(
@@ -152,7 +162,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         shared_xaxes=True,
         vertical_spacing=0.03,
         row_heights=[0.45, 0.3, 0.3, 0.25],
-        specs=[[{"secondary_y": False, "r":-0.05}],
+        specs=[[{"secondary_y": True, "r":-0.05}],
                [{"secondary_y": True, "r":-0.05}],
                [{"secondary_y": False, "r":-0.05}],
                [{"secondary_y": False, "r":-0.05}]])
@@ -160,6 +170,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
+    for trace_sunshine in traces_sunshine:
+        fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
     fig.add_hline(y=0, line_width=3, row=1, col=1,
                   line_color="rgba(0,0,0,0.2)")  # 0 isotherm
     for trace_precipitation in traces_precipitation:
@@ -175,9 +187,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
-                   range=[data['time'].min(),
-                          data['time'].max()]),
-        yaxis=dict(showgrid=True,),
+                   range=[data['time'].min() - pd.to_timedelta('1H'),
+                          data['time'].max() + pd.to_timedelta('1H')]),
         height=1000,
         margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
         barmode='overlay',
@@ -192,16 +203,16 @@ def make_subplot_figure(data, models, title=None, sun=None):
                 buttons=[
                     dict(label="24H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('1H'),
                                 "xaxis.range[1]": data['time'].min() + pd.to_timedelta('24H')}]),
                     dict(label="48H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('1H'),
                                 "xaxis.range[1]": data['time'].min() + pd.to_timedelta('48H')}]),
                     dict(label="Reset",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min(),
-                                "xaxis.range[1]": data['time'].max()}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('1H'),
+                                "xaxis.range[1]": data['time'].max() + pd.to_timedelta('1H')}]),
                 ],
                 pad=dict(b=5),
             ),
@@ -220,16 +231,18 @@ def make_subplot_figure(data, models, title=None, sun=None):
             )
 
     fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
+    fig.update_yaxes(title_text="Sunshine (hrs)", row=1, col=1,
+                     secondary_y=True, range=[1.0, 0.2],
+                     showgrid=False, minor=dict(showgrid=False))
     fig.update_yaxes(title_text="Rain [mm]",
                      color='rgb(26, 118, 255)',
                      row=2, col=1, secondary_y=False)
     fig.update_yaxes(title_text="Wind Gusts [kph]", row=3, col=1)
     fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
-    fig.update_yaxes(showgrid=True, gridwidth=2)
     fig.update_yaxes(title_text="Snowfall [cm]", row=2, col=1,
                      secondary_y=True, autorange="reversed",
                      color='rgb(214, 138, 219)',
-                     showgrid=False)
+                     showgrid=False, minor=dict(showgrid=False))
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
                      gridwidth=1),
                      tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)

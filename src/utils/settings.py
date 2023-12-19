@@ -78,7 +78,8 @@ DETERMINISTIC_MODELS = [
 
 # The variables we download by default for deterministic models
 DETERMINISTIC_VARS = ["temperature_2m", "precipitation", "rain", "snowfall", "snow_depth",
-                      "cloudcover", "winddirection_10m", "windgusts_10m", "weather_code"]
+                      "cloudcover", "winddirection_10m", "windgusts_10m", "weather_code",
+                      "sunshine_duration"]
 
 REANALYSIS_MODELS = [
     {"label": "Best Match (ECMWF IFS & ERA5)", "value": "best_match"},
