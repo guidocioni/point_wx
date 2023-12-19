@@ -27,6 +27,7 @@ def make_boxplot_timeseries(df, var, clima=None):
         clima = clima.merge(df[['doy', 'hour', 'time']],
                             left_on=['doy', 'hour'],
                             right_on=['doy', 'hour'])
+        clima = clima.sort_values(by='time')
         traces.append(
             go.Scatter(
                 x=clima['time'],
@@ -95,6 +96,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours='48H'):
         clima = clima.merge(df[['doy', 'hour', 'time']],
                             left_on=['doy', 'hour'],
                             right_on=['doy', 'hour'])
+        clima = clima.sort_values(by='time')
 
         traces.append(
             go.Scatter(
