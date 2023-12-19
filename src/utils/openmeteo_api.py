@@ -341,7 +341,7 @@ def compute_climatology(latitude=53.55,
                                timezone, model, start_date, end_date)
 
     # Only take 3-hourly data
-    data = data.resample('3H', on='time').first().reset_index()
+    # data = data.resample('3H', on='time').first().reset_index()
     # Add doy not as integer but as string to allow for leap years
     data['doy'] = data.time.dt.strftime("%m%d")
     # Compute mean over day of the year AND hour
