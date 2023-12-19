@@ -152,10 +152,10 @@ def make_subplot_figure(data, models, title=None, sun=None):
         shared_xaxes=True,
         vertical_spacing=0.03,
         row_heights=[0.45, 0.3, 0.3, 0.25],
-        specs=[[{"secondary_y": False}],
-               [{"secondary_y": True}],
-               [{"secondary_y": False}],
-               [{"secondary_y": False}]])
+        specs=[[{"secondary_y": False, "r":-0.05}],
+               [{"secondary_y": True, "r":-0.05}],
+               [{"secondary_y": False, "r":-0.05}],
+               [{"secondary_y": False, "r":-0.05}]])
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
