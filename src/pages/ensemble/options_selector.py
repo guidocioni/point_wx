@@ -22,7 +22,7 @@ opts_selector = dbc.Card(
                     value=True,
                     persistence=True
                 )),
-                dbc.InputGroupText("Compute climatology (only 2m Temperature)")
+                dbc.InputGroupText("Compute climatology (only 2m T)")
             ],
             className="mb-2",
         ),
