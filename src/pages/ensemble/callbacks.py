@@ -1,6 +1,5 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_ensemble_data, compute_climatology
-from utils.figures_utils import make_empty_figure
 from utils.suntimes import find_suntimes
 from dash.exceptions import PreventUpdate
 from .figures import make_subplot_figure, make_barpolar_figure
@@ -90,7 +89,7 @@ def update_locations_value_selected(value):
      Input("search-button", "n_clicks")],
 )
 def activate_submit_button(location, _nouse):
-    if len(location) >= 2:
+    if location is not None and len(location) >= 2:
         return False
     else:
         return True

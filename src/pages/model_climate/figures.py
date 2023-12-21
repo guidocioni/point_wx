@@ -507,9 +507,8 @@ def make_winds_climate_figure(df):
 
     return fig
 
+
 # CARDS for layout
-
-
 fig_temp_prec_climate = dbc.Card(
     [
         html.Div([
@@ -519,11 +518,12 @@ fig_temp_prec_climate = dbc.Card(
             "The dashed lines show instead the extremes that you can expect at this location. ",
             html.Br(),
             "The blue bars show the monthly cumulated precipitation as average."
-        ]
+        ], className="mb-2"
         ),
         dcc.Graph(id='temp-prec-climate-figure', config=images_config)
     ],
     className="mb-2",
+    body=True,
 )
 
 fig_clouds_climate = dbc.Card(
@@ -533,10 +533,11 @@ fig_clouds_climate = dbc.Card(
             "partly cloudy (20-80%) and sunny (<20%) days.",
             html.Br(),
             "The number of precipitation days (>= 1 mm) are also shown."
-        ]),
+        ], className="mb-2"),
         dcc.Graph(id='clouds-climate-figure', config=images_config)
     ],
     className="mb-2",
+    body=True,
 )
 
 fig_temperature_climate = dbc.Card(
@@ -545,11 +546,13 @@ fig_temperature_climate = dbc.Card(
             ["The number of days that exceed a certain temperature threshold are shown in this plot.",
              html.Br(),
              "Frost days (daily minimum temperature <= 0°C) are also shown"
-             ]
+             ],
+            className="mb-2"
         ),
         dcc.Graph(id='temperature-climate-figure', config=images_config)
     ],
     className="mb-2",
+    body=True,
 )
 
 fig_precipitation_climate = dbc.Card(
@@ -558,20 +561,24 @@ fig_precipitation_climate = dbc.Card(
             ["The number of days that exceed a certain precipitation threshold are shown in this plot.",
              html.Br(),
              "Snow days (>= 1 cm) are also shown"
-             ]
+             ],
+            className="mb-2"
         ),
         dcc.Graph(id='precipitation-climate-figure', config=images_config)
     ],
     className="mb-2",
+    body=True,
 )
 
 fig_winds_climate = dbc.Card(
     [
         html.Div(
             "The number of days that exceed a certain wind speed threshold are shown in this plot. "
-            "Note that we use the average of maximum wind speed at 10m. "
+            "Note that we use the average of maximum wind speed at 10m. ",
+            className="mb-2"
         ),
         dcc.Graph(id='winds-climate-figure', config=images_config)
     ],
     className="mb-2",
+    body=True,
 )

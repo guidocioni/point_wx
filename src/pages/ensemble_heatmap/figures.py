@@ -1,6 +1,5 @@
 import dash_bootstrap_components as dbc
 from dash import dcc
-import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 from utils.settings import images_config

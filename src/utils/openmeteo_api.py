@@ -245,11 +245,10 @@ def get_ensemble_data(latitude=53.55,
 
     return data
 
+
 # As historical data is in the past, it never changes
 # so we can safely set these functions to infinite timeout
 # They will only be re-computed if the parameters change
-
-
 @cache.memoize(0)
 def get_historical_data(latitude=53.55,
                         longitude=9.99,

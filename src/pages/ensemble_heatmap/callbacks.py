@@ -1,6 +1,5 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_ensemble_data
-from utils.figures_utils import make_empty_figure
 from .figures import make_heatmap
 import pandas as pd
 
@@ -11,7 +10,7 @@ import pandas as pd
      Input("search-button", "n_clicks")],
 )
 def activate_submit_button(location, _nouse):
-    if len(location) >= 2:
+    if location is not None and len(location) >= 2:
         return False
     else:
         return True
@@ -41,7 +40,7 @@ def toggle_fade(n):
 )
 def generate_figure(n_clicks, locations, location, model, variable):
     if n_clicks is None:
-        return make_empty_figure(), no_update, no_update
+        return no_update, no_update, no_update
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
@@ -63,4 +62,4 @@ def generate_figure(n_clicks, locations, location, model, variable):
         return make_heatmap(data, var=variable, title=loc_label), None, False
 
     except Exception as e:
-        return make_empty_figure(), repr(e), True
+        return no_update, repr(e), True

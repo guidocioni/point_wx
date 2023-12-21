@@ -30,7 +30,17 @@ layout = html.Div(
                  "Afterwards you just have to choose the different parameters on the other box and press on Submit. ",
                  "Computation can take a while, although many results are cached. ",
                  html.Br(),
-                 "Remember to always press on submit if you change something!"
+                 "Remember to always press on submit if you change something!",
+             ])],
+            body=True,
+            className="mb-2"),
+        dbc.Card(
+            [html.H4("Good to know"),
+             html.Div([
+                 dbc.Alert((
+                     "This app will also work on mobile devices, "
+                     "however plots are not optimized for small displays"
+                 ), color="info"),
              ])],
             body=True,
             className="mb-2")

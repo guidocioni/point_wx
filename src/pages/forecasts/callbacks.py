@@ -1,6 +1,5 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
-from utils.figures_utils import make_empty_figure
 from utils.suntimes import find_suntimes
 from .figures import make_subplot_figure
 import pandas as pd
@@ -12,7 +11,7 @@ import pandas as pd
      Input("search-button", "n_clicks")],
 )
 def activate_submit_button(location, _nouse):
-    if len(location) >= 2:
+    if location is not None and len(location) >= 2:
         return False
     else:
         return True

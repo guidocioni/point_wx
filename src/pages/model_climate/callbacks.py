@@ -1,6 +1,5 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import compute_monthly_clima
-from utils.figures_utils import make_empty_figure
 from .figures import (make_clouds_climate_figure,
                       make_precipitation_climate_figure,
                       make_temp_prec_climate_figure,
@@ -15,7 +14,7 @@ from datetime import date
      Input("search-button", "n_clicks")],
 )
 def activate_submit_button(location, _nouse):
-    if len(location) >= 2:
+    if location is not None and len(location) >= 2:
         return False
     else:
         return True

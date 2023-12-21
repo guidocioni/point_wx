@@ -1,8 +1,8 @@
 from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
-from utils.figures_utils import make_empty_figure
 from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
+
 
 @callback(
     Output("submit-button-climate-daily", "disabled"),
@@ -10,7 +10,7 @@ import pandas as pd
      Input("search-button", "n_clicks")],
 )
 def activate_submit_button(location, _nouse):
-    if len(location) >= 2:
+    if location is not None and len(location) >= 2:
         return False
     else:
         return True
@@ -25,6 +25,7 @@ def toggle_fade(n):
         # Button has never been clicked
         return False
     return True
+
 
 @callback(
     [Output("prec-climate-daily-figure", "figure"),
@@ -47,9 +48,9 @@ def generate_figure(n_clicks, locations, location, model, year):
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
     loc_label = (
-            f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-            f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-            f"{model.upper()}"
+        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
+        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
+        f"{model.upper()}"
     )
 
     try:
@@ -69,8 +70,10 @@ def generate_figure(n_clicks, locations, location, model, year):
             year=year,
         )
 
-        fig_prec = make_prec_figure(data, year=year, var='precipitation_sum', title=loc_label)
-        fig_temp = make_temp_figure(data_2, year=year, var='temperature_2m_mean', title=loc_label)
+        fig_prec = make_prec_figure(
+            data, year=year, var='precipitation_sum', title=loc_label)
+        fig_temp = make_temp_figure(
+            data_2, year=year, var='temperature_2m_mean', title=loc_label)
 
         return [fig_prec, fig_temp, None, False]
 

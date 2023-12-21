@@ -60,7 +60,8 @@ def make_prec_figure(df, year, var, title=None):
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h'),
-        yaxis=dict(showgrid=True, title='Yearly accumulated precipitation [mm]'),
+        yaxis=dict(showgrid=True,
+                   title='Yearly accumulated precipitation [mm]'),
     )
     if title is not None:
         fig.update_layout(title_text=title)
@@ -142,7 +143,7 @@ def make_temp_figure(df, year, var, title=None):
 
     if year == pd.to_datetime('now', utc=True).year:
         fig.add_vline(x=pd.to_datetime('now', utc=True),
-                    line_width=2, line_dash="dash", line_color="gray")
+                      line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
@@ -155,8 +156,8 @@ def make_temp_figure(df, year, var, title=None):
 
     return fig
 
-# CARDS for layout
 
+# CARDS for layout
 
 fig_prec_climate_daily = dbc.Card(
     [
