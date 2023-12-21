@@ -7,6 +7,7 @@ from .figures import (make_clouds_climate_figure,
                       make_temperature_climate_figure,
                       make_winds_climate_figure)
 import pandas as pd
+from datetime import date
 
 @callback(
     Output("submit-button-climate", "disabled"),
@@ -42,8 +43,8 @@ def toggle_fade(n):
     [State("locations-list", "data"),
      State("locations", "value"),
      State("models-selection-climate", "value"),
-     State("date-start-climate", "value"),
-     State("date-end-climate", "value")],
+     State("date-start-climate", "date"),
+     State("date-end-climate", "date")],
     prevent_initial_call=True
 )
 def generate_figure(n_clicks, locations, location, model, ds, de):
@@ -61,8 +62,8 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
             latitude=loc['latitude'].item(),
             longitude=loc['longitude'].item(),
             model=model,
-            start_date=ds,
-            end_date=de)
+            start_date=date.fromisoformat(ds).strftime("%Y-%m-%d"),
+            end_date=date.fromisoformat(de).strftime("%Y-%m-%d"))
 
         fig_temp_prec = make_temp_prec_climate_figure(data)
         fig_temperature = make_temperature_climate_figure(data)

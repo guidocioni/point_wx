@@ -1,4 +1,6 @@
 import dash_bootstrap_components as dbc
+from dash import dcc
+from datetime import date, timedelta
 from utils.settings import REANALYSIS_MODELS
 
 opts_selector = dbc.Card(
@@ -17,24 +19,32 @@ opts_selector = dbc.Card(
         ),
         dbc.InputGroup(
             [
-                dbc.InputGroupText("Start date"),
-                dbc.Input(
+                dbc.InputGroupText("Start Date"),
+                dcc.DatePickerSingle(
                     id="date-start-climate",
-                    value='1991-01-01',
-                    type='text',
-                    persistence=True
+                    date=date(1991, 1, 1),
+                    min_date_allowed=date(1950, 1, 1),
+                    max_date_allowed=date.today() - timedelta(days=6),
+                    className="dash-bootstrap",
+                    persistence=True,
+                    display_format="DD/MM/YYYY",
+                    first_day_of_week=1
                 ),
             ],
             className="mb-2",
         ),
         dbc.InputGroup(
             [
-                dbc.InputGroupText("End date"),
-                dbc.Input(
+                dbc.InputGroupText("End Date"),
+                dcc.DatePickerSingle(
                     id="date-end-climate",
-                    value='2020-12-31',
-                    type='text',
-                    persistence=True
+                    date=date(2020, 12, 31),
+                    min_date_allowed=date(1950, 1, 1),
+                    max_date_allowed=date.today() - timedelta(days=6),
+                    className="dash-bootstrap",
+                    persistence=True,
+                    display_format="DD/MM/YYYY",
+                    first_day_of_week=1
                 ),
             ],
             className="mb-2",
