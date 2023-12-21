@@ -19,7 +19,7 @@ def activate_submit_button(location, _nouse):
 
 
 @callback(
-    Output("fade-meteogram", "is_in"),
+    Output("fade-meteogram", "is_open"),
     [Input("submit-button-meteogram", "n_clicks")],
 )
 def toggle_fade(n):
@@ -41,7 +41,7 @@ def toggle_fade(n):
 )
 def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
-        return make_empty_figure(), no_update, no_update
+        return no_update, no_update, no_update
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
@@ -65,4 +65,4 @@ def generate_figure(n_clicks, locations, location, model):
         return make_subplot_figure(data, title=loc_label), None, False
 
     except Exception as e:
-        return make_empty_figure(), repr(e), True
+        return no_update, repr(e), True

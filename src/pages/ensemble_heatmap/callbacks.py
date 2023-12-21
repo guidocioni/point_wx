@@ -18,7 +18,7 @@ def activate_submit_button(location, _nouse):
 
 
 @callback(
-    Output("fade-heatmap", "is_in"),
+    Output("fade-heatmap", "is_open"),
     [Input("submit-button-heatmap", "n_clicks")],
 )
 def toggle_fade(n):

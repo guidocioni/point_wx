@@ -17,7 +17,7 @@ def activate_submit_button(location, _nouse):
 
 
 @callback(
-    Output("fade-climate-daily", "is_in"),
+    Output("fade-climate-daily", "is_open"),
     [Input("submit-button-climate-daily", "n_clicks")],
 )
 def toggle_fade(n):
@@ -40,7 +40,7 @@ def toggle_fade(n):
 )
 def generate_figure(n_clicks, locations, location, model, year):
     if n_clicks is None:
-        return [make_empty_figure(), make_empty_figure(),
+        return [no_update, no_update,
                 no_update, no_update]
 
     # unpack locations data
@@ -75,5 +75,5 @@ def generate_figure(n_clicks, locations, location, model, year):
         return [fig_prec, fig_temp, None, False]
 
     except Exception as e:
-        return [make_empty_figure(), make_empty_figure(),
+        return [no_update, no_update,
                 repr(e), True]

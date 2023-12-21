@@ -37,12 +37,11 @@ layout = html.Div(
         ),
         dbc.Row(
             [
-                dbc.Fade(
+                dbc.Collapse(
                     dbc.Col(
                         dbc.Spinner(fig_subplots)),
                     id="fade-deterministic",
-                    is_in=False,
-                    appear=False)
+                    is_open=False)
             ]
         ),
     ]

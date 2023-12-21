@@ -31,7 +31,7 @@ layout = html.Div(
                 dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
-        dbc.Fade(
+        dbc.Collapse(
             [
                 dbc.Row(
                     [
@@ -44,8 +44,7 @@ layout = html.Div(
                     ]
                 ),
             ], id="fade-climate-daily",
-            is_in=False,
-            appear=False
+            is_open=False
         )
 
     ]

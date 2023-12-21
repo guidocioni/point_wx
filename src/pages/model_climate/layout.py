@@ -36,7 +36,7 @@ layout = html.Div(
                 dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
-        dbc.Fade([
+        dbc.Collapse([
             dbc.Row(
                 [
                     dbc.Col(dbc.Spinner(fig_temp_prec_climate))
@@ -63,8 +63,7 @@ layout = html.Div(
                 ]
             ),
         ], id="fade-climate",
-            is_in=False,
-            appear=False
+            is_open=False
         )
     ]
 )

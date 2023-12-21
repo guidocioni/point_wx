@@ -40,7 +40,7 @@ layout = html.Div(
             ]
         ),
         dbc.Row(
-            dbc.Fade(
+            dbc.Collapse(
                 dbc.Col(
                     [
                         dbc.Spinner(fig_subplots),
@@ -48,8 +48,7 @@ layout = html.Div(
                     ]
                 ),
                 id="fade-ensemble",
-                is_in=False,
-                appear=False)
+                is_open=False)
         ),
     ]
 )
