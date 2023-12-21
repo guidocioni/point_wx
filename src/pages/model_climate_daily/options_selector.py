@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-import pandas as pd
+from datetime import date
 from utils.settings import REANALYSIS_MODELS
 
 opts_selector = dbc.Card(
@@ -21,10 +21,12 @@ opts_selector = dbc.Card(
                 dbc.InputGroupText("Year"),
                 dbc.Input(
                     id="year-selection-climate",
-                    value=pd.to_datetime('now', utc=True).year,
+                    value=date.today().year,
                     autocomplete="true",
                     type='number',
-                    persistence=True
+                    persistence=True,
+                    max=date.today().year,
+                    min=1981
                 ),
             ],
             className="mb-2",
