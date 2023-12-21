@@ -56,7 +56,7 @@ clientside_callback(
     """
     function toggleCollapse(n_clicks) {
         // Check the viewport width
-        var viewportWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        var viewportWidth = window.innerWidth;
 
         // Set a threshold for the viewport width when collapse should not happen
         var threshold = 768;  // Adjust this threshold as needed
