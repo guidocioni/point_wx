@@ -1,6 +1,7 @@
 import pandas as pd
 import requests as r
 import os
+import re
 from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS, ROOT_DIR
 from .custom_logger import logging, time_this_func
 
@@ -39,6 +40,14 @@ def get_locations(name, count=10, language='en'):
     """
     Get a list of locations based on a name
     """
+    # First cleanup the input string
+    # Remove any number (we don't use the postal code lookup)
+    name = re.sub(r'\d', '', name)
+    # Replace more than 2 spaces with just one space
+    name = re.sub(r'\s{2,}', ' ', name)
+    # Remove trailing and leading whitespaces
+    name = re.sub(r'^[\s]+|[\s]+$', '', name)
+    # Now submit the payload
     payload = {
         "name": name,
         "count": count,
