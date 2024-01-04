@@ -17,13 +17,13 @@ loc_selector = dbc.Card(
         html.Div('Closest Locations',
                  id='closest_locations_description',
                  className="mb-2"),
-        dbc.InputGroup(
-            dbc.Spinner(
+        dbc.Spinner(
+            dbc.InputGroup(
                 dbc.Select(
                     id="locations",
                     persistence=True
                 )
-            ),
+            )
         )
     ],
     body=True,
