@@ -18,9 +18,11 @@ loc_selector = dbc.Card(
                  id='closest_locations_description',
                  className="mb-2"),
         dbc.InputGroup(
-            dbc.Select(
-                id="locations",
-                persistence=True
+            dbc.Spinner(
+                dbc.Select(
+                    id="locations",
+                    persistence=True
+                )
             ),
         )
     ],
