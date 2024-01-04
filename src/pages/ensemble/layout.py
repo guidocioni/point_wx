@@ -3,7 +3,7 @@ from dash import html
 import dash_bootstrap_components as dbc
 from components.location_selector import loc_selector
 from .options_selector import opts_selector
-from .figures import fig_subplots, fig_polar
+from .figures import fig_subplots
 from .callbacks import *
 
 dash.register_page(
@@ -44,7 +44,7 @@ layout = html.Div(
                 dbc.Col(
                     [
                         dbc.Spinner(fig_subplots),
-                        dbc.Spinner(fig_polar)
+                        # dbc.Spinner(fig_polar)
                     ]
                 ),
                 id="fade-ensemble",

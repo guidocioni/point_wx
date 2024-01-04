@@ -28,7 +28,7 @@ images_config = {
         'width': None,
         'scale': 1.5  # Multiply title/legend/axis/canvas sizes by this factor
     },
-    'modeBarButtonsToRemove': ['select','lasso2d','zoomIn','zoomOut','resetScale'],
+    'modeBarButtonsToRemove': ['select','lasso2d','zoomIn','zoomOut','resetScale', 'autoScale'],
     'displaylogo': False
 }
 

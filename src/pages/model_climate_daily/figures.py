@@ -159,16 +159,9 @@ def make_temp_figure(df, year, var, title=None):
 
 # CARDS for layout
 
-fig_prec_climate_daily = dbc.Card(
-    [
-        dcc.Graph(id='prec-climate-daily-figure', config=images_config)
-    ],
-    className="mb-2",
-)
+fig_prec_climate_daily = dcc.Graph(id='prec-climate-daily-figure',
+                                   config=images_config,
+                                   className='mb-3 mt-2')
 
-fig_temp_climate_daily = dbc.Card(
-    [
-        dcc.Graph(id='temp-climate-daily-figure', config=images_config)
-    ],
-    className="mb-2",
-)
+fig_temp_climate_daily = dcc.Graph(id='temp-climate-daily-figure',
+                                   config=images_config)

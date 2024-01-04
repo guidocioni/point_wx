@@ -162,6 +162,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
         shared_xaxes=True,
         vertical_spacing=0.03,
         row_heights=[0.45, 0.3, 0.3, 0.25],
+        subplot_titles=['', 'Rain/Snow',
+                        'Winds [km/h]', 'Clouds [%]'],
         specs=[[{"secondary_y": True, "r":-0.05}],
                [{"secondary_y": True, "r":-0.05}],
                [{"secondary_y": False, "r":-0.05}],
@@ -197,7 +199,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
             dict(
                 type="buttons",
                 x=0.5,
-                y=-0.07,
+                y=-0.1,
                 xanchor='center',
                 direction='right',
                 buttons=[
@@ -230,16 +232,16 @@ def make_subplot_figure(data, models, title=None, sun=None):
                 row=1, col=1
             )
 
-    fig.update_yaxes(title_text="2m Temp [°C]", row=1, col=1)
-    fig.update_yaxes(title_text="Sunshine (hrs)", row=1, col=1,
+    fig.update_yaxes(ticksuffix="°C", row=1, col=1)
+    fig.update_yaxes(ticksuffix="h", row=1, col=1,
                      secondary_y=True, range=[1.0, 0.2],
                      showgrid=False, minor=dict(showgrid=False))
-    fig.update_yaxes(title_text="Rain [mm]",
+    fig.update_yaxes(ticksuffix=" mm", tickangle=-90,
                      color='rgb(26, 118, 255)',
                      row=2, col=1, secondary_y=False)
-    fig.update_yaxes(title_text="Wind Gusts [kph]", row=3, col=1)
-    fig.update_yaxes(title_text="Cloud cover [%]", row=4, col=1)
-    fig.update_yaxes(title_text="Snowfall [cm]", row=2, col=1,
+    fig.update_yaxes(tickangle=-90, row=3, col=1)
+    fig.update_yaxes(row=4, col=1, tickangle=-90)
+    fig.update_yaxes(ticksuffix=" cm", tickangle=-90, row=2, col=1,
                      secondary_y=True, autorange="reversed",
                      color='rgb(214, 138, 219)',
                      showgrid=False, minor=dict(showgrid=False))
@@ -254,9 +256,4 @@ def make_subplot_figure(data, models, title=None, sun=None):
 # CARDS for layout
 
 
-fig_subplots = dbc.Card(
-    [
-        dcc.Graph(id='forecast-plot', config=images_config)
-    ],
-    className="mb-2",
-)
+fig_subplots = dcc.Graph(id='forecast-plot', config=images_config)

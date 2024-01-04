@@ -11,8 +11,7 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection-climate",
                     options=REANALYSIS_MODELS,
-                    value=REANALYSIS_MODELS[1]["value"],
-                    persistence=True
+                    value="era5_seamless",
                 ),
             ],
             className="mb-2",

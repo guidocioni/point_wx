@@ -206,10 +206,12 @@ def make_subplot_figure(data, clima, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(data, 'temperature_2m', clima)
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     height_graph = 0.0
+    subplot_title = ''
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
         traces_temp_850 = make_lineplot_timeseries(
             data, 'temperature_850hPa', break_hours='0H')
         height_graph = 0.4
+        subplot_title = '850hPa T'
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
     trace_snow = make_barplot_timeseries(
         data, 'snowfall', color='rebeccapurple')
@@ -219,7 +221,10 @@ def make_subplot_figure(data, clima, title=None, sun=None):
         rows=4,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.02,
+        vertical_spacing=0.03,
+        subplot_titles=['', subplot_title,
+                        'Rain [mm] | Snow [cm] | Prob. [%]',
+                        'Clouds [%]'],
         row_heights=[0.35, height_graph, 0.3, 0.25])
 
     for trace_temp in traces_temp:
@@ -279,23 +284,17 @@ def make_subplot_figure(data, clima, title=None, sun=None):
                 row=1, col=1
             )
 
-    fig.update_yaxes(title_text="2m Temp. [°C]",
-                     title_font=dict(size=12),
+    fig.update_yaxes(ticksuffix="°C",
                      row=1, col=1)
-    fig.update_yaxes(title_text="850 hPa T [°C]",
-                     title_font=dict(size=12),
+    fig.update_yaxes(ticksuffix="°C",
                      row=2, col=1)
     fig.update_yaxes(
-        title_text="Rain [mm] | Snow [cm] | Prob. [%]",
-        title_font=dict(size=10),
         row=3,
         col=1,
         range=[0,
                (data['rain_mean'].max() + data['snowfall_mean'].max()) * 1.1]
     )
-    fig.update_yaxes(title_text="Cloud Cover",
-                     range=[0, 100],
-                     title_font=dict(size=12),
+    fig.update_yaxes(range=[0, 100],
                      row=4, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True, gridwidth=3),
@@ -307,20 +306,9 @@ def make_subplot_figure(data, clima, title=None, sun=None):
 
     return fig
 
-# CARDS for layout
+# Figures for layout
 
 
-fig_subplots = dbc.Card(
-    [
-        dcc.Graph(id='ensemble-plot', config=images_config)
-    ],
-    className="mb-2",
-)
-
-fig_polar = dbc.Card(
-    [
-        dcc.Graph(id='polar-plot',
-                  config={**images_config, 'displayModeBar': False})
-    ],
-    className="mb-2",
-)
+fig_subplots = dcc.Graph(id='ensemble-plot', config=images_config)
+# fig_polar = dcc.Graph(id='polar-plot',
+#                       config={**images_config, 'displayModeBar': False})

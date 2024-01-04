@@ -176,9 +176,9 @@ def make_subplot_figure(data, title=None):
         legend=dict(orientation='h', y=-0.04),
     )
 
-    fig.update_yaxes(title_text="2m Temp [°C]", row=2, col=1)
-    fig.update_yaxes(title_text="Prec.", row=3, col=1)
-    fig.update_yaxes(showgrid=True, gridwidth=2)
+    fig.update_yaxes(ticksuffix="°C", row=2, col=1)
+    fig.update_yaxes(ticksuffix=" mm", row=3, col=1)
+    fig.update_yaxes(showgrid=True, gridwidth=2, fixedrange=True)
     fig.update_xaxes(minor=dict(showgrid=False),
                      tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=2)
     fig.update_yaxes(showgrid=False, row=1, col=1, minor=dict(showgrid=False),
@@ -194,9 +194,4 @@ def make_subplot_figure(data, title=None):
 
 # CARDS for layout
 
-fig_subplots = dbc.Card(
-    [
-        dcc.Graph(id='meteogram-plot', config=images_config)
-    ],
-    className="mb-2",
-)
+fig_subplots = dcc.Graph(id='meteogram-plot', config=images_config)

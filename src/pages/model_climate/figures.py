@@ -77,9 +77,9 @@ def make_temp_prec_climate_figure(df):
     )
 
     fig.update_yaxes(row=1, col=1,
-                     secondary_y=True, title='mm', showgrid=False)
+                     secondary_y=True, title='mm', showgrid=False, fixedrange=True)
     fig.update_yaxes(row=1, col=1,
-                     secondary_y=False, title='°C', showgrid=False)
+                     secondary_y=False, title='°C', showgrid=False, fixedrange=True)
 
     return fig
 
@@ -144,7 +144,7 @@ def make_clouds_climate_figure(df):
     )
 
     fig.update_yaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False, fixedrange=True)
 
     return fig
 
@@ -275,7 +275,7 @@ def make_temperature_climate_figure(df):
     )
 
     fig.update_yaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False, fixedrange=True)
 
     return fig
 
@@ -384,7 +384,7 @@ def make_precipitation_climate_figure(df):
     )
 
     fig.update_yaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False, fixedrange=True)
 
     return fig
 
@@ -503,13 +503,13 @@ def make_winds_climate_figure(df):
     )
 
     fig.update_yaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False, fixedrange=True)
 
     return fig
 
 
 # CARDS for layout
-fig_temp_prec_climate = dbc.Card(
+fig_temp_prec_climate = html.Div(
     [
         html.Div([
             "The typical evolution of average minimum and maximum temperatures for every month ",
@@ -523,10 +523,9 @@ fig_temp_prec_climate = dbc.Card(
         dcc.Graph(id='temp-prec-climate-figure', config=images_config)
     ],
     className="mb-2",
-    body=True,
 )
 
-fig_clouds_climate = dbc.Card(
+fig_clouds_climate = html.Div(
     [
         html.Div([
             "Here we show the number of days with overcast (>80% cloud cover), "
@@ -537,10 +536,9 @@ fig_clouds_climate = dbc.Card(
         dcc.Graph(id='clouds-climate-figure', config=images_config)
     ],
     className="mb-2",
-    body=True,
 )
 
-fig_temperature_climate = dbc.Card(
+fig_temperature_climate = html.Div(
     [
         html.Div(
             ["The number of days that exceed a certain temperature threshold are shown in this plot.",
@@ -552,10 +550,9 @@ fig_temperature_climate = dbc.Card(
         dcc.Graph(id='temperature-climate-figure', config=images_config)
     ],
     className="mb-2",
-    body=True,
 )
 
-fig_precipitation_climate = dbc.Card(
+fig_precipitation_climate = html.Div(
     [
         html.Div(
             ["The number of days that exceed a certain precipitation threshold are shown in this plot.",
@@ -567,10 +564,9 @@ fig_precipitation_climate = dbc.Card(
         dcc.Graph(id='precipitation-climate-figure', config=images_config)
     ],
     className="mb-2",
-    body=True,
 )
 
-fig_winds_climate = dbc.Card(
+fig_winds_climate = html.Div(
     [
         html.Div(
             "The number of days that exceed a certain wind speed threshold are shown in this plot. "
@@ -579,6 +575,4 @@ fig_winds_climate = dbc.Card(
         ),
         dcc.Graph(id='winds-climate-figure', config=images_config)
     ],
-    className="mb-2",
-    body=True,
 )
