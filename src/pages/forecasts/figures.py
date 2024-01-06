@@ -160,14 +160,14 @@ def make_subplot_figure(data, models, title=None, sun=None):
         rows=4,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.03,
+        vertical_spacing=0.032,
         row_heights=[0.45, 0.3, 0.3, 0.25],
-        subplot_titles=['', 'Rain/Snow',
+        subplot_titles=['', 'Rain[mm]/Snow[cm]',
                         'Winds [km/h]', 'Clouds [%]'],
-        specs=[[{"secondary_y": True, "r":-0.05}],
-               [{"secondary_y": True, "r":-0.05}],
-               [{"secondary_y": False, "r":-0.05}],
-               [{"secondary_y": False, "r":-0.05}]])
+        specs=[[{"secondary_y": True, "r": -0.05}],
+               [{"secondary_y": True, "r": -0.05}],
+               [{"secondary_y": False, "r": -0.05}],
+               [{"secondary_y": False, "r": -0.05}]])
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
@@ -236,12 +236,12 @@ def make_subplot_figure(data, models, title=None, sun=None):
     fig.update_yaxes(ticksuffix="h", row=1, col=1,
                      secondary_y=True, range=[1.0, 0.2],
                      showgrid=False, minor=dict(showgrid=False))
-    fig.update_yaxes(ticksuffix=" mm", tickangle=-90,
+    fig.update_yaxes(tickangle=-90,
                      color='rgb(26, 118, 255)',
                      row=2, col=1, secondary_y=False)
     fig.update_yaxes(tickangle=-90, row=3, col=1)
     fig.update_yaxes(row=4, col=1, tickangle=-90)
-    fig.update_yaxes(ticksuffix=" cm", tickangle=-90, row=2, col=1,
+    fig.update_yaxes(tickangle=-90, row=2, col=1,
                      secondary_y=True, autorange="reversed",
                      color='rgb(214, 138, 219)',
                      showgrid=False, minor=dict(showgrid=False))
