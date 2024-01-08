@@ -123,6 +123,55 @@ def get_forecast_data(latitude=53.55,
 
 
 @cache.memoize(1800)
+def get_vertical_data(
+        latitude=53.55,
+        longitude=9.99,
+        timezone='auto',
+        forecast_days=7,
+        model='best_match',
+        from_now=True,
+        past_days=None,
+        start_date=None,
+        end_date=None,
+        variables=['temperature', 'cloud_cover',
+                   'windspeed', 'winddirection'],
+        levels=[100, 150, 200,
+                250, 300, 400,
+                500, 600, 700,
+                750, 800, 850,
+                900, 925,
+                950, 975, 1000]):
+    """Wrapper to download vertical data"""
+    # Construct the string
+    vars = [f'{var}_{lev}hPa' for var in variables for lev in levels]
+    df = get_forecast_data(latitude=latitude,
+                           longitude=longitude,
+                           timezone=timezone,
+                           forecast_days=forecast_days,
+                           model=model,
+                           from_now=from_now,
+                           past_days=past_days,
+                           start_date=start_date,
+                           end_date=end_date,
+                           variables=vars)
+    # Create array representation useful to plot
+    time_axis = df['time'].values
+    arrs = []
+    for v in variables:
+        sub = df.loc[:, df.columns.str.contains(f'{v}|time')].set_index('time')
+        sub.columns = sub.columns.str.extract(
+            r'(\d+)(?:hPa)').values.astype(int).reshape(-1)
+        sub = sub.sort_index(axis=1)
+        arrs.append(sub.values)
+
+    vertical_levels = sub.columns.values
+    # The resulting array has shape (x, y) = (time_axis, vertical_levels)
+    # and we return a list containing all the variables requested
+
+    return df, variables, time_axis, vertical_levels, arrs
+
+
+@cache.memoize(1800)
 def get_forecast_daily_data(latitude=53.55,
                             longitude=9.99,
                             variables="precipitation_sum",
