@@ -1,46 +1,84 @@
-from dash import dcc
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
+from dash import dcc
 from utils.settings import images_config
 
 
 def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
-
-    fig = go.Figure(data=[
+    traces = []
+    traces.append(
         go.Contour(
             z=arrs[0].T,
-            x=time_axis,  # horizontal axis
-            y=vertical_levels,  # vertical axis,
-            line_width=0,
+            x=time_axis,
+            y=vertical_levels,
+            line_width=0.1,
             colorscale='jet',
             contours=dict(
-                start=-50,
+                start=-60,
                 end=30,
                 size=2.5,
-            )
-        ),
+            ),
+            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}"
+        ))
+    traces.append(
         go.Contour(
-            z=arrs[1].T,
-            x=time_axis,  # horizontal axis
-            y=vertical_levels,  # vertical axis,
-            line_width=1,
-            contours_coloring='none',
+            z=np.where(arrs[1].T < 10, np.nan, arrs[1].T),
+            x=time_axis,
+            y=vertical_levels,
+            line_width=0,
+            colorscale=['rgba(255,255,255,0.2)',
+                        'rgba(240,240,240,0.2)',
+                        'rgba(217,217,217,0.2)',
+                        'rgba(189,189,189,0.2)',
+                        'rgba(150,150,150,0.2)',
+                        'rgba(115,115,115,0.2)',
+                        'rgba(82,82,82,0.2)',
+                        'rgba(37,37,37,0.2)',
+                        'rgba(0,0,0,0.2)'],
             contours=dict(
-                start=0,
+                start=10,
                 end=100,
-                size=25,
+                size=20,
                 showlabels=True,
             ),
-        ),
-    ])
+            hoverinfo='skip',
+            showscale=False,
+            line_smoothing=0.95
+        ))
+    every = 4
+    for i_level, level in enumerate(vertical_levels):
+        traces.append(
+            go.Scatter(
+                x=time_axis[::4],
+                y=[level] * len(time_axis[::every]),
+                mode='markers',
+                marker=dict(
+                    size=10,
+                    color=arrs[2][::every, i_level],
+                    colorscale='YlOrBr',
+                    cmin=0,
+                    cmax=100,
+                    symbol='arrow',
+                    angle=arrs[3][::every, i_level] - 180.,
+                    line=dict(width=.5,
+                              color="DarkSlateGrey"),
+                ),
+                customdata=[f"Wind = {winddir}°@{windspd:.0f}km/h" for winddir, windspd in zip(
+                    arrs[3][::every, i_level], arrs[2][::every, i_level])],
+                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}"
 
-    fig.update_traces(
-        hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
+            ))
+
+    fig = go.Figure(traces)
 
     fig.update_layout(
-        xaxis=dict(showgrid=True, tickformat='%a %d %b\n%H:%M'),
-        yaxis=dict(range=[vertical_levels.max(),
-                          vertical_levels.min()],
+        showlegend=False,
+        xaxis=dict(showgrid=True,
+                   tickformat='%a %d %b\n%H:%M',
+                   range=[time_axis.min() - pd.to_timedelta('0.5H'),
+                          time_axis.max() + pd.to_timedelta('0.5H')]),
+        yaxis=dict(range=[1010, 100],
                    showgrid=True,
                    title_text="Pressure [hPa]"),
         height=700,
