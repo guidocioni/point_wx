@@ -19,7 +19,8 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 end=30,
                 size=2.5,
             ),
-            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}"
+            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}",
+            showscale=False,
         ))
     traces.append(
         go.Contour(
