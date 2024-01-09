@@ -135,8 +135,7 @@ def get_vertical_data(
         end_date=None,
         variables=['temperature', 'cloud_cover',
                    'windspeed', 'winddirection'],
-        levels=[100, 150, 200,
-                250, 300, 400,
+        levels=[200, 250, 300, 400,
                 500, 600, 700,
                 750, 800, 850,
                 900, 925,
@@ -154,6 +153,8 @@ def get_vertical_data(
                            start_date=start_date,
                            end_date=end_date,
                            variables=vars)
+    # Drop columns that contain all missing values
+    df = df.dropna(axis=1, how='all')
     # Create array representation useful to plot
     time_axis = df['time'].values
     arrs = []

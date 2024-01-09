@@ -18,30 +18,40 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 start=-60,
                 end=30,
                 size=2.5,
+                showlabels=True,
+                labelfont=dict(  # label font properties
+                    size=10,
+                    color='rgba(0, 0, 0, 0.3)',
+                ),
             ),
-            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}",
             showscale=False,
+            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}"
         ))
     traces.append(
         go.Contour(
-            z=np.where(arrs[1].T < 10, np.nan, arrs[1].T),
+            z=arrs[1].T,
             x=time_axis,
             y=vertical_levels,
             line_width=0,
-            colorscale=['rgba(255,255,255,0.2)',
-                        'rgba(240,240,240,0.2)',
-                        'rgba(217,217,217,0.2)',
-                        'rgba(189,189,189,0.2)',
-                        'rgba(150,150,150,0.2)',
-                        'rgba(115,115,115,0.2)',
-                        'rgba(82,82,82,0.2)',
-                        'rgba(37,37,37,0.2)',
-                        'rgba(0,0,0,0.2)'],
+            colorscale=[
+                [0, "rgba(255, 255, 255, 0)"],
+                [0.1, "rgba(255, 255, 255, 0)"],
+                [0.1, "rgba(240,240,240, 0.25)"],
+                [0.3, "rgba(217,217,217,  0.25)"],
+                [0.5, "rgba(189,189,189,  0.25)"],
+                [0.7, "rgba(150,150,150,  0.25)"],
+                [0.9, "rgba(115,115,115,  0.25)"],
+                [0.9, "rgba(255, 255, 255, 0)"],
+                [1, "rgba(255, 255, 255, 0)"],
+            ],
             contours=dict(
                 start=10,
                 end=100,
                 size=20,
                 showlabels=True,
+                labelfont=dict(  # label font properties
+                    size=10,
+                    color='rgba(0, 0, 0, 0.9)')
             ),
             hoverinfo='skip',
             showscale=False,
@@ -68,7 +78,6 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 customdata=[f"Wind = {winddir}°@{windspd:.0f}km/h" for winddir, windspd in zip(
                     arrs[3][::every, i_level], arrs[2][::every, i_level])],
                 hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}"
-
             ))
 
     fig = go.Figure(traces)
@@ -79,7 +88,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                    tickformat='%a %d %b\n%H:%M',
                    range=[time_axis.min() - pd.to_timedelta('0.5H'),
                           time_axis.max() + pd.to_timedelta('0.5H')]),
-        yaxis=dict(range=[1010, 100],
+        yaxis=dict(range=[1010, 200],
                    showgrid=True,
                    title_text="Pressure [hPa]"),
         height=700,

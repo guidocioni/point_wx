@@ -41,7 +41,8 @@ ENSEMBLE_MODELS = [
     {"label":"ICON-EU-EPS (Europe, 13km, 40 members)", "value":"icon_eu"},
     {"label":"ICON-D2-EPS (Germany, 2km, 20 members)", "value":"icon_d2"},
     {"label":"GFS ENS (Global, 25km, 31 members)", "value":"gfs025"},
-    {"label":"GFS ENS (Global, 50km, 31 members)", "value":"gfs05"}
+    {"label":"GFS ENS (Global, 50km, 31 members)", "value":"gfs05"},
+    {"label":"BOM ACCESS-GE (Global, 40km, 18 members)", "value":"bom_access_global"}
 ]
 
 # The variables we download by default for ensemble models
@@ -61,6 +62,7 @@ DETERMINISTIC_MODELS = [
     {"label":"JMA Seamless", "value":"jma_seamless"},
     {"label":"JMA MSM (Japan/Korea, 5km)", "value":"jma_msm"},
     {"label":"JMA GSM (Global, 55km)", "value":"jma_gsm"},
+    {"label":"CMA GRAPES (Global, 15km)", "value":"cma_grapes_global"},
     {"label":"ICON Seamless", "value":"icon_seamless"},
     {"label":"ICON Global (Global, 11km)", "value":"icon_global"},
     {"label":"ICON-EU (Europe, 7km)", "value":"icon_eu"},
@@ -69,6 +71,7 @@ DETERMINISTIC_MODELS = [
     {"label":"GEM Global (Global, 15km)", "value":"gem_global"},
     {"label":"GEM Regional (North America, 10km)", "value":"gem_regional"},
     {"label":"HRDPS (Canada, 2.5km)", "value":"gem_hrdps_continental"},
+    {"label":"BOM ACCESS-G (Global, 15km)", "value":"bom_access_global"},
     {"label":"MeteoFrance Seamless", "value":"meteofrance_seamless"},
     {"label":"Arpege (Global, 55km)", "value":"meteofrance_arpege_world"},
     {"label":"Arpege (Europe, 11km)", "value":"meteofrance_arpege_europe"},
