@@ -42,7 +42,7 @@ ENSEMBLE_MODELS = [
     {"label":"ICON-D2-EPS (Germany, 2km, 20 members)", "value":"icon_d2"},
     {"label":"GFS ENS (Global, 25km, 31 members)", "value":"gfs025"},
     {"label":"GFS ENS (Global, 50km, 31 members)", "value":"gfs05"},
-    {"label":"BOM ACCESS-GE (Global, 40km, 18 members)", "value":"bom_access_global"}
+    {"label":"BOM ACCESS-GE (Global, 40km, 18 members)", "value":"bom_access_global_ensemble"}
 ]
 
 # The variables we download by default for ensemble models

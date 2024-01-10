@@ -9,7 +9,9 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection-vertical",
                     # Manually remove models that do not have vertical level coverage
-                    options=[d for d in DETERMINISTIC_MODELS if d['label'] not in ['metno_nordic','meteofrance_arome_france_hd','bom_access_global']],
+                    options=[d for d in DETERMINISTIC_MODELS if d['value'] not in ['metno_nordic',
+                                                                                   'meteofrance_arome_france_hd',
+                                                                                   'bom_access_global']],
                     value='best_match',
                     persistence=True
                 ),
