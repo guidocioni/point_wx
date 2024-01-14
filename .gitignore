@@ -60,7 +60,8 @@ instance/
 .webassets-cache
 
 # Jupyter Notebook
-.ipynb_checkpoints
+*.ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/

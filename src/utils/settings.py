@@ -19,7 +19,7 @@ DEFAULT_TEMPLATE = "custom"
 pio.templates.default = DEFAULT_TEMPLATE
 
 cache = Cache(config={'CACHE_TYPE': 'filesystem',
-                      'CACHE_DIR': '/tmp'})
+                      'CACHE_DIR': '/var/cache/pointwx'})
 
 images_config = {
     'toImageButtonOptions': {

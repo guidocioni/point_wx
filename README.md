@@ -43,6 +43,6 @@ autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-stderr_logfile=/tmp/point_wx.err.log
-stdout_logfile=/tmp/point_wx.err.log
+stderr_logfile=/var/log/pointwx/point_wx.err.log
+stdout_logfile=/var/log/pointwx/point_wx.err.log
 ```
