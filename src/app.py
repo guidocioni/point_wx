@@ -1,8 +1,10 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 from utils.settings import APP_HOST, APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
+from flask import request
+from utils.custom_logger import logging
 
 app = dash.Dash(
     __name__,
@@ -33,6 +35,7 @@ def serve_layout():
             navbar(),
             dcc.Store(id='locations-list', data={}, storage_type='local'),
             dcc.Store(id='locations-selected', data={}, storage_type='local'),
+            dcc.Store(id='client-details', data={}, storage_type='session'),
             dbc.Modal(
                 [
                     dbc.ModalHeader("Error"),
@@ -47,11 +50,23 @@ def serve_layout():
                 class_name='my-2'
             ),
             footer
-        ]
+        ],
+        id='app-div'
     )
 
 
 app.layout = serve_layout
+
+@callback(
+    Output('client-details', 'data'),
+    Input('app-div', 'id')
+)
+def ip(id):
+    client_details = request.__dict__
+    logging.info(f"New session for IP {client_details['remote_addr']}")
+
+    return str(request.__dict__)
+
 
 if __name__ == "__main__":
     app.run(
