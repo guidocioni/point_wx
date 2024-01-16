@@ -62,8 +62,9 @@ app.layout = serve_layout
     Input('app-div', 'id')
 )
 def ip(id):
-    client_details = request.__dict__
-    logging.info(f"New session for IP {client_details['remote_addr']}")
+    # client_details = request.__dict__
+    client_address = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    logging.info(f"New session for IP {client_address}")
 
     return str(request.__dict__)
 
