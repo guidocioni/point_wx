@@ -29,6 +29,43 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
         ))
     traces.append(
         go.Contour(
+            z=arrs[0].T,
+            x=time_axis,
+            y=vertical_levels,
+            line_width=1,
+            contours=dict(
+                coloring='none',
+                type="constraint",
+                operation="=",
+                value=0,
+            ),
+            showscale=False,
+            hoverinfo='skip',
+        ))
+    for lev in [100, 1500, 3000, 5000, 7500, 10000]:
+        traces.append(
+            go.Contour(
+                z=arrs[4].T,
+                x=time_axis,
+                y=vertical_levels,
+                line_width=4,
+                line_color='rgba(0, 0, 0, 0.4)',
+                contours=dict(
+                    coloring='none',
+                    type="constraint",
+                    operation="=",
+                    value=lev,
+                    showlabels=True,
+                    labelfont=dict(
+                        size=15,
+                        color='rgba(0, 0, 0, 0.4)'),
+                    labelformat="%i",
+                ),
+                hoverinfo='skip',
+                showscale=False,
+            ))
+    traces.append(
+        go.Contour(
             z=arrs[1].T,
             x=time_axis,
             y=vertical_levels,
@@ -36,11 +73,11 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
             colorscale=[
                 [0, "rgba(255, 255, 255, 0)"],
                 [0.1, "rgba(255, 255, 255, 0)"],
-                [0.1, "rgba(240,240,240, 0.25)"],
-                [0.3, "rgba(217,217,217,  0.25)"],
-                [0.5, "rgba(189,189,189,  0.25)"],
-                [0.7, "rgba(150,150,150,  0.25)"],
-                [0.9, "rgba(115,115,115,  0.25)"],
+                [0.1, "rgba(240,240,240, 0.35)"],
+                [0.3, "rgba(217,217,217,  0.35)"],
+                [0.5, "rgba(189,189,189,  0.35)"],
+                [0.7, "rgba(150,150,150,  0.35)"],
+                [0.9, "rgba(115,115,115,  0.35)"],
                 [0.9, "rgba(255, 255, 255, 0)"],
                 [1, "rgba(255, 255, 255, 0)"],
             ],
@@ -51,7 +88,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 showlabels=True,
                 labelfont=dict(  # label font properties
                     size=10,
-                    color='rgba(0, 0, 0, 0.9)')
+                    color='rgba(0, 0, 0, 0.7)')
             ),
             hoverinfo='skip',
             showscale=False,
