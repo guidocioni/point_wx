@@ -233,13 +233,15 @@ def get_ensemble_data(latitude=53.55,
     elif model == 'icon_d2':
         forecast_days = 3
     elif model in ['gfs_seamless', 'gfs05']:
-        forecast_days = 15
+        forecast_days = 16
     elif model == 'gfs025':
         forecast_days = 11
     elif model == 'ecmwf_ifs04':
         forecast_days = 11
     elif model == 'gem_global':
-        forecast_days = 15
+        forecast_days = 17
+    elif model == 'bom_access_global_ensemble':
+        forecast_days = 11
     else:
         forecast_days = 8
 
