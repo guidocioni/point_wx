@@ -75,6 +75,57 @@ def get_closest_address(n_clicks, from_address, locations, locations_sel):
 
 
 @callback(
+    Output("geolocation", "update_now"),
+    Input("geolocate", "n_clicks"),
+)
+def update_now(click):
+    if not click:
+        raise PreventUpdate
+    else:
+        return True
+
+
+@callback(
+    [Output("locations", "options", allow_duplicate=True),
+     Output("locations", "value", allow_duplicate=True),
+     Output("locations-list", "data", allow_duplicate=True),
+     Output("locations-selected", "data", allow_duplicate=True),
+     Output("from_address", "value")],
+    [Input("geolocation", "local_date"),
+     Input("geolocation", "position")],
+    State("geolocate", "n_clicks"),
+    prevent_initial_call=True
+)
+def display_output(date, pos, n_clicks):
+    if pos and n_clicks:
+        locations = pd.DataFrame({"id": 9999999999, "name": "Custom location", "latitude": pd.to_numeric(pos['lat']),
+                                  "longitude": pd.to_numeric(pos['lon']), "elevation": float(pos['alt']) if pos['alt'] else 0,
+                                  "feature_code": "", "country_code": "", "admin1_id": "",
+                                  "admin3_id": "", "admin4_id": "", "timezone": "", "population": 0,
+                                  "postcodes": [""], "country_id": "", "country": "",
+                                  "admin1": "", "admin3": "", "admin4": ""})
+        options = []
+        for _, row in locations.iterrows():
+            options.append(
+                {
+                    "label": (
+                        f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                        f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
+                    ),
+                    "value": str(row['id'])
+                }
+            )
+        return (
+            options, options[0]['value'],
+            locations.to_json(orient='split'),  # locations saved in Store
+            {'value': options[0]['value']},  # selected location saved in Store
+            ""
+        )
+    else:
+        raise PreventUpdate
+
+
+@callback(
     Output("locations-selected", "data", allow_duplicate=True),
     Input("locations", "value"),
     prevent_initial_call=True
@@ -108,7 +159,7 @@ def toggle_fade(n):
 
 @callback(
     [Output("ensemble-plot", "figure"),
-    #  Output("polar-plot", "figure"),
+     #  Output("polar-plot", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button", "n_clicks"),
