@@ -14,9 +14,9 @@ loc_selector = dbc.Card(
             dbc.Button("Search",
                        id="search-button",
                        color="secondary",
-                       className="col-11"),
+                       className="col-10"),
             dbc.Button(id='geolocate',
-                       className="fa-solid fa-location-dot col-1",
+                       className="fa-solid fa-location-dot col-2",
                        color="secondary", outline=True)
         ], className="col-12"),
         html.Div('Closest Locations',

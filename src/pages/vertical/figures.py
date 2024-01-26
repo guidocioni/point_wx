@@ -7,6 +7,7 @@ from utils.settings import images_config
 
 def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
     traces = []
+    # Filled contours of temperature
     traces.append(
         go.Contour(
             z=arrs[0].T,
@@ -25,8 +26,12 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 ),
             ),
             showscale=False,
+            name='Temp',
+            showlegend=True,
+            legendgroup="Temp",
             hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}"
         ))
+    # Contour line for 0 isotherm
     traces.append(
         go.Contour(
             z=arrs[0].T,
@@ -41,7 +46,10 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
             ),
             showscale=False,
             hoverinfo='skip',
+            legendgroup="Temp",
+            showlegend=False
         ))
+    # Geopotential height contours
     for lev in [100, 1500, 3000, 5000, 7500, 10000]:
         traces.append(
             go.Contour(
@@ -63,7 +71,11 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 ),
                 hoverinfo='skip',
                 showscale=False,
+                legendgroup="Geop",
+                name='Geop',
+                showlegend=True if lev == 100 else False
             ))
+    # Cloud cover filled contours with less opacity
     traces.append(
         go.Contour(
             z=arrs[1].T,
@@ -92,8 +104,11 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
             ),
             hoverinfo='skip',
             showscale=False,
-            line_smoothing=0.95
+            line_smoothing=0.95,
+            name="Clouds",
+            showlegend=True
         ))
+    # Wind vectors showing direction and intensity
     every = 4
     for i_level, level in enumerate(vertical_levels):
         traces.append(
@@ -114,13 +129,16 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 ),
                 customdata=[f"Wind = {winddir}°@{windspd:.0f}km/h" for winddir, windspd in zip(
                     arrs[3][::every, i_level], arrs[2][::every, i_level])],
-                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}"
+                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}",
+            legendgroup="Winds",
+            name='Winds',
+            showlegend=True if i_level == 0 else False
             ))
 
     fig = go.Figure(traces)
 
     fig.update_layout(
-        showlegend=False,
+        legend=dict(orientation='h'),
         xaxis=dict(showgrid=True,
                    tickformat='%a %d %b\n%H:%M',
                    range=[time_axis.min() - pd.to_timedelta('0.5H'),
