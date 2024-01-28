@@ -18,18 +18,24 @@ loc_selector = dbc.Card(
             dbc.Button(id='geolocate',
                        className="fa-solid fa-location-dot col-2",
                        color="secondary", outline=True)
-        ], className="col-12"),
-        html.Div('Closest Locations',
-                 id='closest_locations_description',
-                 className="mb-2"),
+        ], className="col-12 mb-2"),
+        # html.Div('Closest Locations',
+        #          id='closest_locations_description',
+        #          className="mb-2"),
         dbc.Spinner(
             dbc.InputGroup(
                 dbc.Select(
                     id="locations",
                     persistence=True
-                )
-            )
-        )
+                ),
+                 className="mb-2"
+            ),
+        ),
+        dbc.Accordion([
+            dbc.AccordionItem(
+                html.Div(id='map-div'),
+                title='Map (click to show)')
+        ], start_collapsed=False)
     ],
     body=True,
     className="mb-2",
