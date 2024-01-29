@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
 from utils.suntimes import find_suntimes
 from .figures import make_subplot_figure
@@ -71,3 +71,20 @@ def generate_figure(n_clicks, locations, location, models):
         return make_subplot_figure(data=data, title=loc_label, sun=sun, models=models), None, False
     except Exception as e:
         return no_update, repr(e), True
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        return null;
+    }
+    """,
+    Output('garbage', 'data', allow_duplicate=True),
+    Input('forecast-plot', 'figure'),
+    [State('forecast-plot', 'id')],
+    prevent_initial_call=True
+)

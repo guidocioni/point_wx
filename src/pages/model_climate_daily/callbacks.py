@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
@@ -80,3 +80,20 @@ def generate_figure(n_clicks, locations, location, model, year):
     except Exception as e:
         return [no_update, no_update,
                 repr(e), True]
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        return null;
+    }
+    """,
+    Output('garbage', 'data', allow_duplicate=True),
+    Input('prec-climate-daily-figure', 'figure'),
+    [State('prec-climate-daily-figure', 'id')],
+    prevent_initial_call=True
+)

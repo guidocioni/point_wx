@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_monthly_clima
 from .figures import (make_clouds_climate_figure,
                       make_precipitation_climate_figure,
@@ -77,3 +77,20 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
         return [no_update, no_update,
                 no_update, no_update,
                 no_update, repr(e), True]
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        return null;
+    }
+    """,
+    Output('garbage', 'data', allow_duplicate=True),
+    Input('temp-prec-climate-figure', 'figure'),
+    [State('temp-prec-climate-figure', 'id')],
+    prevent_initial_call=True
+)

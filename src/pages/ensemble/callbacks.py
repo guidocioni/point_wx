@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data, compute_climatology
 from utils.suntimes import find_suntimes
 from .figures import make_subplot_figure, make_barpolar_figure
@@ -85,3 +85,20 @@ def generate_figure(n_clicks, locations, location, model, clima_):
             no_update,
             repr(e), True  # Error message
         )
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        return null;
+    }
+    """,
+    Output('garbage', 'data'),
+    Input('ensemble-plot', 'figure'),
+    [State('ensemble-plot', 'id')],
+    prevent_initial_call=True
+)

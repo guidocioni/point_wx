@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_vertical_data
 from .figures import make_figure_vertical
 import pandas as pd
@@ -61,3 +61,20 @@ def generate_figure(n_clicks, locations, location, model):
 
     except Exception as e:
         return no_update, repr(e), True
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        return null;
+    }
+    """,
+    Output('garbage', 'data', allow_duplicate=True),
+    Input('plot-vertical', 'figure'),
+    [State('plot-vertical', 'id')],
+    prevent_initial_call=True
+)
