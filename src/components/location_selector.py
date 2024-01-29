@@ -1,8 +1,9 @@
 import dash_bootstrap_components as dbc
-from dash import html
+from dash import html, dcc
 
 loc_selector = dbc.Card(
     [
+        dcc.Geolocation(id="geolocation"),
         dbc.InputGroup(
             dbc.Input(placeholder="City/Town",
                       id='from_address',
@@ -23,7 +24,7 @@ loc_selector = dbc.Card(
             dbc.InputGroup(
                 dbc.Select(
                     id="locations",
-                    persistence=True
+                    persistence=False
                 ),
                 className="mb-2"
             ),

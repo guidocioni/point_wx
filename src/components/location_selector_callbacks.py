@@ -84,53 +84,6 @@ def update_now(click):
         return True
 
 
-@callback(
-    [Output("locations", "options", allow_duplicate=True),
-     Output("locations", "value", allow_duplicate=True),
-     Output("locations-list", "data", allow_duplicate=True),
-     Output("locations-selected", "data", allow_duplicate=True),
-     Output("from_address", "value")],
-    [Input("geolocation", "local_date"), # need it just to force an update!
-     Input("geolocation", "position")],
-     State("geolocate", "n_clicks"),
-    prevent_initial_call=True
-)
-def update_location_with_geolocate(_, pos, n_clicks):
-    if pos and n_clicks:
-        locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
-                                  "latitude": pd.to_numeric(pos['lat']),
-                                  "longitude": pd.to_numeric(pos['lon']),
-                                  "elevation": float(pos['alt']) if pos['alt'] else get_elevation(pos['lat'], pos['lon']),
-                                  "feature_code": "", "country_code": "",
-                                  "admin1_id": "",
-                                  "admin3_id": "", "admin4_id": "",
-                                  "timezone": "",
-                                  "population": 0,
-                                  "postcodes": [""], "country_id": "",
-                                  "country": "",
-                                  "admin1": "", "admin3": "",
-                                  "admin4": ""})
-        options = []
-        for _, row in locations.iterrows():
-            options.append(
-                {
-                    "label": (
-                        f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
-                        f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
-                    ),
-                    "value": str(row['id'])
-                }
-            )
-        return (
-            options, options[0]['value'],
-            locations.to_json(orient='split'),  # locations saved in Store
-            {'value': options[0]['value']},  # selected location saved in Store
-            ""
-        )
-    else:
-        raise PreventUpdate
-
-
 # Draw the empty map
 # Points will be added in a different callbacks
 @callback(
@@ -212,6 +165,53 @@ def map_click(click_lat_lng, clickData):
             )
         return (
             dl.Marker(position=[lat, lon]),
+            options, options[0]['value'],
+            locations.to_json(orient='split'),  # locations saved in Store
+            {'value': options[0]['value']},  # selected location saved in Store
+            ""
+        )
+    else:
+        raise PreventUpdate
+
+
+@callback(
+    [Output("locations", "options", allow_duplicate=True),
+     Output("locations", "value", allow_duplicate=True),
+     Output("locations-list", "data", allow_duplicate=True),
+     Output("locations-selected", "data", allow_duplicate=True),
+     Output("from_address", "value", allow_duplicate=True)],
+    [Input("geolocation", "local_date"),  # need it just to force an update!
+     Input("geolocation", "position")],
+     State("geolocate", "n_clicks"),
+    prevent_initial_call=True
+)
+def update_location_with_geolocate(_, pos, n_clicks):
+    if pos and n_clicks:
+        locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
+                                  "latitude": pd.to_numeric(pos['lat']),
+                                  "longitude": pd.to_numeric(pos['lon']),
+                                  "elevation": float(pos['alt']) if pos['alt'] else get_elevation(pos['lat'], pos['lon']),
+                                  "feature_code": "", "country_code": "",
+                                  "admin1_id": "",
+                                  "admin3_id": "", "admin4_id": "",
+                                  "timezone": "",
+                                  "population": 0,
+                                  "postcodes": [""], "country_id": "",
+                                  "country": "",
+                                  "admin1": "", "admin3": "",
+                                  "admin4": ""})
+        options = []
+        for _, row in locations.iterrows():
+            options.append(
+                {
+                    "label": (
+                        f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                        f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
+                    ),
+                    "value": str(row['id'])
+                }
+            )
+        return (
             options, options[0]['value'],
             locations.to_json(orient='split'),  # locations saved in Store
             {'value': options[0]['value']},  # selected location saved in Store

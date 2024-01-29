@@ -36,7 +36,6 @@ def serve_layout():
             dcc.Store(id='locations-list', data={}, storage_type='local'),
             dcc.Store(id='locations-selected', data={}, storage_type='local'),
             dcc.Store(id='client-details', data={}, storage_type='session'),
-            dcc.Geolocation(id="geolocation"),
             dbc.Modal(
                 [
                     dbc.ModalHeader("Error"),
