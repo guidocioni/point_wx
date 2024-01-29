@@ -19,9 +19,6 @@ loc_selector = dbc.Card(
                        className="fa-solid fa-location-dot col-2",
                        color="secondary", outline=True)
         ], className="col-12 mb-2"),
-        # html.Div('Closest Locations',
-        #          id='closest_locations_description',
-        #          className="mb-2"),
         dbc.Spinner(
             dbc.InputGroup(
                 dbc.Select(
