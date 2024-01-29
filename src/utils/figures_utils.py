@@ -84,7 +84,7 @@ def hex2rgba(x):
 
 def make_map(lat_center=45, lon_center=10, zoom=2):
     mapURL = (
-        'https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}{r}'
+        'https://api.mapbox.com/styles/v1/guidocioni/ckmun175t3ejv17k7al4aax4b/tiles/{z}/{x}/{y}{r}'
         f"?access_token={os.environ['MAPBOX_KEY']}"
     )
     attribution = (

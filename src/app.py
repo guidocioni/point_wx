@@ -14,12 +14,12 @@ app = dash.Dash(
         dbc.themes.FLATLY,
         dbc.icons.FONT_AWESOME
     ],
-    meta_tags=[
-        {   # check if device is a mobile device.
-            'name': 'viewport',
-            'content': 'width=device-width, initial-scale=1'
-        }
-    ],
+    # meta_tags=[
+    #     {   # check if device is a mobile device.
+    #         'name': 'viewport',
+    #         'content': 'width=device-width, initial-scale=1'
+    #     }
+    # ],
     suppress_callback_exceptions=True,
     title='Point WX'
 )
