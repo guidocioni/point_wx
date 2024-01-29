@@ -84,28 +84,29 @@ def hex2rgba(x):
 
 def make_map(lat_center=45, lon_center=10, zoom=2):
     mapURL = (
-            'https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}{r}'
-            f"?access_token={os.environ['MAPBOX_KEY']}"
-        )
+        'https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}{r}'
+        f"?access_token={os.environ['MAPBOX_KEY']}"
+    )
     attribution = (
         '© <a href="https://www.mapbox.com/feedback/">'
         'Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">'
         'OpenStreetMap</a>'
-        )
-    fig = dl.Map([
-            dl.TileLayer(url=mapURL, attribution=attribution,
-                         tileSize=512, zoomOffset=-1),
+    )
+    return dl.Map(
+        [
+            dl.TileLayer(url=mapURL,
+                         attribution=attribution,
+                         tileSize=512,
+                         zoomOffset=-1),
             dl.LayerGroup(id="map-scatter-layer"),
-            ],
-            center=[lat_center, lon_center],
-            zoom=zoom,
-            style={'width': '100%',
-                   'height': '30vh',
-                   'margin': "auto",
-                   "display": "block"
-                   },
-            dragging=True,
-            scrollWheelZoom=False,
-            id='map')
-
-    return fig
+        ],
+        center=[lat_center, lon_center],
+        zoom=zoom,
+        style={'width': '100%',
+               'height': '30vh',
+               'margin': "auto",
+               "display": "block"
+               },
+        dragging=True,
+        scrollWheelZoom=False,
+        id='map')

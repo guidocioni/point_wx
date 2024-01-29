@@ -93,11 +93,12 @@ def update_now(click):
      Output("locations-list", "data", allow_duplicate=True),
      Output("locations-selected", "data", allow_duplicate=True),
      Output("from_address", "value")],
-    [Input("geolocation", "position")],
-    State("geolocate", "n_clicks"),
+    [Input("geolocation", "local_date"), # need it just to force an update!
+     Input("geolocation", "position")],
+     State("geolocate", "n_clicks"),
     prevent_initial_call=True
 )
-def update_location_with_geolocate(pos, n_clicks):
+def update_location_with_geolocate(_, pos, n_clicks):
     if pos and n_clicks:
         locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
                                   "latitude": pd.to_numeric(pos['lat']),
@@ -137,10 +138,13 @@ def update_location_with_geolocate(pos, n_clicks):
 # Points will be added in a different callbacks
 @callback(
     Output("map-div", "children"),
-    Input('app-div', 'id'),
+    Input("map-accordion", "active_item"),
 )
-def create_map(_):
-    return make_map()
+def create_map(item):
+    if item is not None and item == 'item-0':
+        return make_map()
+    else:
+        raise PreventUpdate
 
 
 # Add point on the map when a location is chosen
@@ -149,7 +153,7 @@ def create_map(_):
      Output("map", "center")],
     [Input("locations-list", "data"),
      Input("locations", "value")],
-    )
+)
 def add_point_on_map(locations, location):
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
@@ -171,13 +175,21 @@ def add_point_on_map(locations, location):
      Output("locations-list", "data", allow_duplicate=True),
      Output("locations-selected", "data", allow_duplicate=True),
      Output("from_address", "value", allow_duplicate=True)],
-    Input("map", "click_lat_lng"),
+    [Input("map", "click_lat_lng"),
+     Input("map", "clickData")],
     prevent_initial_call=True)
-def map_click(click_lat_lng):
+def map_click(click_lat_lng, clickData):
+    lat, lon = None, None
     if click_lat_lng is not None:
+        lat = click_lat_lng[0]
+        lon = click_lat_lng[1]
+    elif clickData is not None:
+        lat = clickData['latlng']['lat']
+        lon = clickData['latlng']['lng']
+    if lat is not None and lon is not None:
         locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
-                                  "latitude": click_lat_lng[0],
-                                  "longitude": click_lat_lng[1],
+                                  "latitude": lat,
+                                  "longitude": lon,
                                   "elevation": 0,
                                   "feature_code": "",
                                   "country_code": "",
@@ -202,7 +214,7 @@ def map_click(click_lat_lng):
                 }
             )
         return (
-            dl.Marker(position=click_lat_lng),
+            dl.Marker(position=[lat, lon]),
             options, options[0]['value'],
             locations.to_json(orient='split'),  # locations saved in Store
             {'value': options[0]['value']},  # selected location saved in Store
@@ -233,6 +245,7 @@ def activate_submit_button(location, _nouse):
         return True
 
 
+# Hide the plots until the button hasn't been clicked
 @callback(
     Output("fade-ensemble", "is_open"),
     [Input("submit-button", "n_clicks")],

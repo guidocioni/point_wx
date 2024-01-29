@@ -28,14 +28,16 @@ loc_selector = dbc.Card(
                     id="locations",
                     persistence=True
                 ),
-                 className="mb-2"
+                className="mb-2"
             ),
         ),
-        dbc.Accordion([
-            dbc.AccordionItem(
-                html.Div(id='map-div'),
-                title='Map (click to show)')
-        ], start_collapsed=False)
+        dbc.Accordion(id='map-accordion',
+                      children=[
+                          dbc.AccordionItem(
+                              children=html.Div(id='map-div'),
+                              title='Map (click to show)')
+                      ],
+                      start_collapsed=True)
     ],
     body=True,
     className="mb-2",
