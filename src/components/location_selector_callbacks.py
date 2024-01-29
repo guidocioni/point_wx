@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update
-from utils.openmeteo_api import get_locations
+from utils.openmeteo_api import get_locations, get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 import pandas as pd
@@ -100,7 +100,7 @@ def update_location_with_geolocate(_, pos, n_clicks):
         locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
                                   "latitude": pd.to_numeric(pos['lat']),
                                   "longitude": pd.to_numeric(pos['lon']),
-                                  "elevation": float(pos['alt']) if pos['alt'] else 0,
+                                  "elevation": float(pos['alt']) if pos['alt'] else get_elevation(pos['lat'], pos['lon']),
                                   "feature_code": "", "country_code": "",
                                   "admin1_id": "",
                                   "admin3_id": "", "admin4_id": "",
@@ -187,7 +187,7 @@ def map_click(click_lat_lng, clickData):
         locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
                                   "latitude": lat,
                                   "longitude": lon,
-                                  "elevation": 0,
+                                  "elevation": get_elevation(lat, lon),
                                   "feature_code": "",
                                   "country_code": "",
                                   "admin1_id": "",

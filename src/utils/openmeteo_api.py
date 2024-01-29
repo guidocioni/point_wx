@@ -67,6 +67,27 @@ def get_locations(name, count=10, language='en'):
     return data
 
 
+@cache.memoize(86400)
+def get_elevation(latitude=53.55, longitude=9.99):
+    """
+    Get the elevation of a certain point using the API
+    """
+    # Now submit the payload
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+
+    resp = make_request(
+        "https://api.open-meteo.com/v1/elevation",
+        payload)
+
+    if 'elevation' in resp.json():
+        return resp.json()['elevation'][0]
+    else:
+        return None
+
+
 @cache.memoize(1800)
 def get_forecast_data(latitude=53.55,
                       longitude=9.99,
