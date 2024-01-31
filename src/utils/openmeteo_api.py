@@ -8,8 +8,6 @@ from .custom_logger import logging, time_this_func
 
 @time_this_func
 def make_request(url, payload):
-    logging.info(f"Sending request with payload {payload} to url {url}")
-
     # Attempt to read a file with the apikey
     api_key = None
     if os.path.exists(f"{ROOT_DIR}/.apikey"):
@@ -18,17 +16,18 @@ def make_request(url, payload):
             for line in file1.readlines():
                 api_key = line.strip()
         except Exception as e:
-            logging.warning(".apikey file exists but there was an error reading it")
+            logging.warning(
+                ".apikey file exists but there was an error reading it")
             logging.warning(f"ERROR: {repr(e)}")
             api_key = None
 
     if api_key:
-        logging.info("Using commercial API key")
         # In this case we have to prepend the 'customer-' string to the url
         # and add &apikey=... at the end
         url = url.replace("https://", "https://customer-")
         payload['apikey'] = api_key
 
+    logging.info(f"{'Commercial' if api_key else 'Free'} API | Sending request, payload={payload}, url={url}")
     resp = r.get(url=url, params=payload)
     resp.raise_for_status()
 
@@ -138,7 +137,8 @@ def get_forecast_data(latitude=53.55,
         data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+        "hourly", "daily"]}
 
     return data
 
@@ -230,7 +230,8 @@ def get_forecast_daily_data(latitude=53.55,
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+        "hourly", "daily"]}
 
     return data
 
@@ -241,13 +242,13 @@ def get_ensemble_data(latitude=53.55,
                       variables=",".join(ENSEMBLE_VARS),
                       timezone='auto',
                       model=ENSEMBLE_MODELS[0]['value'],
-                      from_now=True,
+                      from_now=False,
                       decimate=False):
     """
     Get the ensemble data
     """
     # Adjust forecast_days depending on the model
-    if model in ['icon_seamless','icon_global']:
+    if model in ['icon_seamless', 'icon_global']:
         forecast_days = 8
     elif model == 'icon_eu':
         forecast_days = 6
@@ -291,31 +292,61 @@ def get_ensemble_data(latitude=53.55,
         data = data[data.time >= pd.to_datetime(
             'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
 
-    # Optionally decimate data
+    # Optionally decimate data to a 3 hourly resolution
+    # This is useful when visualising a long timeseries
     if decimate:
-        if model in ['gfs_seamless', 'gfs05', 'gfs025', 'ecmwf_ifs04', 'gem_global']:
-            # Decimate every 3 hours considering as starting point the first time value
+        if model in ['gfs_seamless', 'gfs05', 'gfs025',
+                     'ecmwf_ifs04', 'gem_global', 'bom_access_global_ensemble']:
+            # The original data for all these models is 3 hourly, so there is no added
+            # value in showing hourly data. Here we decimate every 3 hours considering
+            # as starting point the first time value
             # which means that, in case the from_now option is activated, it will start
             # resampling every 3 hours from that starting point, otherwise it will resample
-            # at the original point 0, 3, 6, 9, 12, 18, as the data always starts at 00
-            # Of course, it means that with from_now = True, the resulting data will almost
-            # always be interpolated, but we assume this to be ok.
-            data = data.resample('3H', on='time', origin=data.iloc[0]['time']).first().reset_index()
-        elif model in ['icon_seamless', 'icon_global', 'icon_eu', 'icon_d2']:
+            # at 0, 3, 6, 9, 12, 18, as the data always starts at 00 UTC.
+            #
+            # Consider only the variables that are defined as accumulation over the last hour
+            # First we do a rolling sum over the same period (3 hours) and then take only the
+            # first value
+            acc_vars = data.loc[:, data.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
+                window='3H', on='time').sum().resample('3H', on='time', origin=data.iloc[0]['time']).first()
+            # Now the variables that are instantaneous
+            # In this case we can just take the first value directly every 3 hours
+            inst_vars = data.loc[:, data.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
+                '3H', on='time', origin=data.iloc[0]['time']).first()
+            # Now variables with different aggregations (like preceding hour maximum)
+            max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
+                window='3H', on='time').max().resample('3H', on='time', origin=data.iloc[0]['time']).first()
+            # Now merge everything together and overwrite the original data
+            data = acc_vars.merge(inst_vars, left_index=True, right_index=True).merge(
+                max_vars, left_index=True, right_index=True).reset_index()
+        elif model in ['icon_seamless', 'icon_global', 'icon_eu']:
+            # For these models we want to preserve the original hourly resolution
+            # because it is the original one! Actually, for ICON-EPS the data
+            # is every 6 hours, but I don't want to implement a different logic
+            # just for that....
             # We leave the first 48 hrs untouched, and then decimate every 3 hours
-            # Note that we count from 48 hrs from the first time value, which means
-            # it may not correspond to the run start time
-            if model != 'icon_d2':
-                t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48H')
-                data = pd.concat(
-                    [
-                        data.loc[data.time <= t48_start_date, :],
-                        data.loc[data.time > t48_start_date + pd.to_timedelta('3H'), :].resample(
-                            '3H',
-                            on='time',
-                            origin=t48_start_date + pd.to_timedelta('3H')).first().reset_index()
-                    ]
-                )
+            # NOTE that we count 48 hrs from the first time value. In case from_now = True
+            # is activated, it could mean
+            # NOTE icon_d2 is not here because we don't need to do anything in that case
+            t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48H')
+            after_48_hrs = data.loc[data.time >=
+                                    t48_start_date + pd.to_timedelta('3H'), :]
+            # For this sector does the same trick as before
+            acc_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
+                window='3H', on='time').sum().resample('3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+            inst_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
+                '3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+            max_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|windgusts_10m')].rolling(
+                window='3H', on='time').max().resample('3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+            #
+            after_48_hrs = acc_vars.merge(inst_vars, left_index=True, right_index=True).merge(
+                max_vars, left_index=True, right_index=True).reset_index()
+            data = pd.concat(
+                [
+                    data.loc[data.time <= t48_start_date, :],
+                    after_48_hrs
+                ]
+            ).reset_index(drop=True)
 
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
@@ -324,7 +355,8 @@ def get_ensemble_data(latitude=53.55,
         data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+        "hourly", "daily"]}
 
     return data
 
@@ -364,7 +396,8 @@ def get_historical_data(latitude=53.55,
     data = data.dropna()
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+        "hourly", "daily"]}
 
     return data
 
@@ -400,7 +433,8 @@ def get_historical_daily_data(latitude=53.55,
     data = data.dropna()
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in ["hourly","daily"]}
+    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+        "hourly", "daily"]}
 
     return data
 
@@ -650,14 +684,20 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         longitude=longitude,
         model=model,
         variables="weather_code,temperature_2m,precipitation,sunshine_duration",
-        from_now=False)
+        from_now=False,
+        decimate=False)
 
     # This computes a daily aggregation for all ensemble members
-    daily_tmin = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').min()
-    daily_tmax = data.loc[:,data.columns.str.contains('temperature_2m|time')].resample('1D', on='time').max()
-    daily_wcode = data.loc[:,data.columns.str.contains('weather_code|time')].resample('1D', on='time').median()
-    daily_prec = data.loc[:,data.columns.str.contains('precipitation|time')].resample('1D', on='time').sum()
-    daily_sunshine = data.loc[:,data.columns.str.contains('sunshine_duration|time')].resample('1D', on='time').sum()
+    daily_tmin = data.loc[:, data.columns.str.contains(
+        'temperature_2m|time')].resample('1D', on='time').min()
+    daily_tmax = data.loc[:, data.columns.str.contains(
+        'temperature_2m|time')].resample('1D', on='time').max()
+    daily_wcode = data.loc[:, data.columns.str.contains(
+        'weather_code|time')].resample('1D', on='time').median()
+    daily_prec = data.loc[:, data.columns.str.contains(
+        'precipitation|time')].resample('1D', on='time').sum()
+    daily_sunshine = data.loc[:, data.columns.str.contains(
+        'sunshine_duration|time')].resample('1D', on='time').sum()
 
     daily = daily_tmin.mean(axis=1).to_frame(name='t_min_mean')\
         .merge(daily_tmax.mean(axis=1).to_frame(name='t_max_mean'), left_index=True, right_index=True)\
@@ -667,11 +707,11 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_tmax.min(axis=1).to_frame(name='t_max_min'), left_index=True, right_index=True)\
         .merge(daily_wcode.mode(axis=1)[0].to_frame(name='weather_code').astype(int), left_index=True, right_index=True)\
         .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
-        .merge(daily_prec.quantile(0.25,axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
-        .merge(daily_prec.quantile(0.75,axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
+        .merge(daily_prec.quantile(0.25, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
+        .merge(daily_prec.quantile(0.75, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
         .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
-        .merge(daily_sunshine.quantile(0.25,axis=1).to_frame(name='sunshine_min'), left_index=True, right_index=True)\
-        .merge(daily_sunshine.quantile(0.75,axis=1).to_frame(name='sunshine_max'), left_index=True, right_index=True)\
+        .merge(daily_sunshine.quantile(0.25, axis=1).to_frame(name='sunshine_min'), left_index=True, right_index=True)\
+        .merge(daily_sunshine.quantile(0.75, axis=1).to_frame(name='sunshine_max'), left_index=True, right_index=True)\
         .merge(daily_sunshine.mean(axis=1).to_frame(name='sunshine_mean'), left_index=True, right_index=True)
 
     daily.attrs = data.attrs

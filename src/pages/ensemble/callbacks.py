@@ -54,7 +54,8 @@ def generate_figure(n_clicks, locations, location, model, clima_):
         data = get_ensemble_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
                                  model=model,
-                                 decimate=True)
+                                 decimate=True,
+                                 from_now=True)
 
         if clima_:
             clima = compute_climatology(latitude=loc['latitude'].item(),

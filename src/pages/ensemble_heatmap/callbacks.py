@@ -50,7 +50,8 @@ def generate_figure(n_clicks, locations, location, model, variable):
         data = get_ensemble_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
                                  model=model,
-                                 decimate=True)
+                                 decimate=True,
+                                 from_now=True)
 
         loc_label = (
             f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"

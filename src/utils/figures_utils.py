@@ -48,8 +48,12 @@ def get_weather_icons(df,
                 time_day = 'day'
             else:
                 time_day = 'night'
-        icons.append(icons_path+j[str(int(row[var]))][time_day]['image'])
-        descriptions.append(j[str(int(row[var]))][time_day]['description'])
+        if str(int(row[var])) in j.keys():
+            icons.append(icons_path+j[str(int(row[var]))][time_day]['image'])
+            descriptions.append(j[str(int(row[var]))][time_day]['description'])
+        else:
+            icons.append('')
+            descriptions.append('')
 
     df['icons'] = icons
     df['weather_descriptions'] = descriptions
