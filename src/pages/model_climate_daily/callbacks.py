@@ -1,5 +1,6 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
+from utils.custom_logger import logging
 from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
 
@@ -78,8 +79,14 @@ def generate_figure(n_clicks, locations, location, model, year):
         return [fig_prec, fig_temp, None, False]
 
     except Exception as e:
-        return [no_update, no_update,
-                repr(e), True]
+        logging.error(
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
+        return (
+            no_update,
+            no_update,
+            "An error occurred when processing the data",
+            True  # Error message
+        )
 
 
 clientside_callback(

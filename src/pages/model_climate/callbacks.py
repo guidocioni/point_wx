@@ -1,5 +1,6 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_monthly_clima
+from utils.custom_logger import logging
 from .figures import (make_clouds_climate_figure,
                       make_precipitation_climate_figure,
                       make_temp_prec_climate_figure,
@@ -74,9 +75,15 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
                 fig_precipitation, fig_winds, None, False]
 
     except Exception as e:
-        return [no_update, no_update,
-                no_update, no_update,
-                no_update, repr(e), True]
+        logging.error(
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
+        return (
+            no_update, no_update,
+            no_update, no_update,
+            no_update,
+            "An error occurred when processing the data",
+            True  # Error message
+        )
 
 
 clientside_callback(

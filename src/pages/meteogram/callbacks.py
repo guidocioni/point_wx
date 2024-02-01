@@ -2,6 +2,7 @@ from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_daily_ensemble_meteogram
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR
+from utils.custom_logger import logging
 from .figures import make_subplot_figure
 import pandas as pd
 
@@ -65,7 +66,13 @@ def generate_figure(n_clicks, locations, location, model):
         return make_subplot_figure(data, title=loc_label), None, False
 
     except Exception as e:
-        return no_update, repr(e), True
+        logging.error(
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
+        return (
+            no_update,
+            "An error occurred when processing the data",
+            True  # Error message
+        )
 
 
 clientside_callback(

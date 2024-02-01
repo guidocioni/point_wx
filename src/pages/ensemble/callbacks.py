@@ -1,9 +1,10 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data, compute_climatology
 from utils.suntimes import find_suntimes
+from utils.custom_logger import logging
 from .figures import make_subplot_figure, make_barpolar_figure
-import pandas as pd
 from components import location_selector_callbacks
+import pandas as pd
 
 
 @callback(
@@ -82,9 +83,12 @@ def generate_figure(n_clicks, locations, location, model, clima_):
         )
 
     except Exception as e:
+        logging.error(
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
         return (
             no_update,
-            repr(e), True  # Error message
+            "An error occurred when processing the data",
+            True  # Error message
         )
 
 
