@@ -33,7 +33,8 @@ loc_selector = dbc.Card(
                       children=[
                           dbc.AccordionItem(
                               children=html.Div(id='map-div'),
-                              title='Map (click to show)')
+                              title='Map (click to show)',
+                              class_name='map-accordion-body-padding')
                       ],
                       start_collapsed=True)
     ],

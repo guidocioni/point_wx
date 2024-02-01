@@ -393,3 +393,10 @@
 .dash-bootstrap .rc-slider-mark-text.rc-slider-mark-text-active {
   color: #343a40;
 }
+
+.map-accordion-body-padding .accordion-body {
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 2px;
+}

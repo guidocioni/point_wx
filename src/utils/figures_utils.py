@@ -86,7 +86,7 @@ def hex2rgba(x):
         return "rgba" + str(tuple(int(x[2*n+1:2*n+3], 16) * (1 if n < 3 else 1/255) for n in range(len(x) // 2)))
 
 
-def make_map(lat_center=45, lon_center=10, zoom=2):
+def make_map(lat_center=45, lon_center=10, zoom=3):
     mapURL = (
         'https://api.mapbox.com/styles/v1/guidocioni/ckmun175t3ejv17k7al4aax4b/tiles/{z}/{x}/{y}{r}'
         f"?access_token={os.environ['MAPBOX_KEY']}"
@@ -107,7 +107,7 @@ def make_map(lat_center=45, lon_center=10, zoom=2):
         center=[lat_center, lon_center],
         zoom=zoom,
         style={'width': '100%',
-               'height': '30vh',
+               'height': '35vh',
                'margin': "auto",
                "display": "block"
                },
