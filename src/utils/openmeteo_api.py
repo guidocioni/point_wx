@@ -314,11 +314,13 @@ def get_ensemble_data(latitude=53.55,
             inst_vars = data.loc[:, data.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
                 '3H', on='time', origin=data.iloc[0]['time']).first()
             # Now variables with different aggregations (like preceding hour maximum)
-            max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
-                window='3H', on='time').max().resample('3H', on='time', origin=data.iloc[0]['time']).first()
+            if 'windgusts_10m' in data.columns:
+                max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
+                    window='3H', on='time').max().resample('3H', on='time', origin=data.iloc[0]['time']).first()
             # Now merge everything together and overwrite the original data
-            data = acc_vars.merge(inst_vars, left_index=True, right_index=True).merge(
-                max_vars, left_index=True, right_index=True).reset_index()
+            data = acc_vars.merge(inst_vars, left_index=True, right_index=True)
+            if 'windgusts_10m' in data.columns:
+                data = data.merge(max_vars, left_index=True, right_index=True).reset_index()
         elif model in ['icon_seamless', 'icon_global', 'icon_eu']:
             # For these models we want to preserve the original hourly resolution
             # because it is the original one! Actually, for ICON-EPS the data
