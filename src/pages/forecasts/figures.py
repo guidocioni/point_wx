@@ -147,7 +147,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         data, 'sunshine_duration', models=models,
         fill="tozeroy", alpha=0.3)
     traces_precipitation = make_barplot_timeseries(
-        data, 'rain', models=models)
+        data, 'precipitation', models=models)
     traces_snow = make_barplot_timeseries(
         data, 'snowfall', models=models, color='rgb(214, 138, 219)')
     traces_wind = make_lineplot_timeseries(
@@ -162,7 +162,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         shared_xaxes=True,
         vertical_spacing=0.032,
         row_heights=[0.45, 0.3, 0.3, 0.25],
-        subplot_titles=['', 'Rain[mm]/Snow[cm]',
+        subplot_titles=['', 'Precip[mm] / Snow[cm]',
                         'Winds [km/h]', 'Clouds [%]'],
         specs=[[{"secondary_y": True, "r": -0.05}],
                [{"secondary_y": True, "r": -0.05}],
