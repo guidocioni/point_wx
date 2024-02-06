@@ -6,7 +6,7 @@ loc_selector = dbc.Card(
         dcc.Geolocation(id="geolocation"),
         dbc.InputGroup(
             dbc.Input(placeholder="City/Town",
-                      id='from_address',
+                      id='location_search',
                       type='text',
                       autocomplete="true",
                       persistence=True),

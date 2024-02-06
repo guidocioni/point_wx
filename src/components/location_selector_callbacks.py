@@ -13,11 +13,11 @@ import dash_leaflet as dl
      Output("error-message", "children"),
      Output("error-modal", "is_open")],
     Input("search-button", "n_clicks"),
-    [State("from_address", "value"),
+    [State("location_search", "value"),
      State("locations-list", "data"),
      State("locations-selected", "data")]
 )
-def get_closest_address(n_clicks, from_address, locations, locations_sel):
+def get_closest_address(n_clicks, location_search, locations, locations_sel):
     if n_clicks is None:
         # In this case it means that the button has not been clicked
         # so we first check if there are already some locations
@@ -32,7 +32,7 @@ def get_closest_address(n_clicks, from_address, locations, locations_sel):
             raise PreventUpdate
     else:
         # In this case the button has been clicked so we load the data
-        locations = get_locations(from_address)
+        locations = get_locations(location_search)
         # If no location has been found raise an error
         if len(locations) < 1:
             return (
@@ -124,7 +124,7 @@ def add_point_on_map(locations, location):
      Output("locations", "value", allow_duplicate=True),
      Output("locations-list", "data", allow_duplicate=True),
      Output("locations-selected", "data", allow_duplicate=True),
-     Output("from_address", "value", allow_duplicate=True)],
+     Output("location_search", "value", allow_duplicate=True)],
     [Input("map", "click_lat_lng"),
      Input("map", "clickData")],
     prevent_initial_call=True)
@@ -179,7 +179,7 @@ def map_click(click_lat_lng, clickData):
      Output("locations", "value", allow_duplicate=True),
      Output("locations-list", "data", allow_duplicate=True),
      Output("locations-selected", "data", allow_duplicate=True),
-     Output("from_address", "value", allow_duplicate=True)],
+     Output("location_search", "value", allow_duplicate=True)],
     [Input("geolocation", "local_date"),  # need it just to force an update!
      Input("geolocation", "position")],
      State("geolocate", "n_clicks"),
