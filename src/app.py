@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Output, Input
+from dash import html, dcc, callback, Output, Input, clientside_callback
 import dash_bootstrap_components as dbc
 from utils.settings import APP_HOST, APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
@@ -48,7 +48,8 @@ def serve_layout():
             ),
             dbc.Container(
                 dash.page_container,
-                class_name='my-2'
+                class_name='my-2',
+                id='content'
             ),
             footer
         ],
@@ -69,6 +70,24 @@ def ip(id):
 
     return str(request.__dict__)
 
+
+clientside_callback(
+    """function (id) {
+        var myID = document.getElementById(id)
+        var myScrollFunc = function() {
+          var y = window.scrollY;
+          if (y >= 200) {
+            myID.style.display = ""
+          } else {
+            myID.style.display = "none"
+          }
+        };
+        window.addEventListener("scroll", myScrollFunc);
+        return window.dash_clientside.no_update
+    }""",
+    Output('back-to-top-button', 'id'),
+    Input('back-to-top-button', 'id')
+)
 
 if __name__ == "__main__":
     app.run(
