@@ -258,7 +258,7 @@ def get_ensemble_data(latitude=53.55,
         forecast_days = 16
     elif model == 'gfs025':
         forecast_days = 11
-    elif model == 'ecmwf_ifs04':
+    elif model in ['ecmwf_ifs04', 'ecmwf_ifs025']:
         forecast_days = 11
     elif model == 'gem_global':
         forecast_days = 17
@@ -296,7 +296,8 @@ def get_ensemble_data(latitude=53.55,
     # This is useful when visualising a long timeseries
     if decimate:
         if model in ['gfs_seamless', 'gfs05', 'gfs025',
-                     'ecmwf_ifs04', 'gem_global', 'bom_access_global_ensemble']:
+                     'ecmwf_ifs04', 'ecmwf_ifs025', 'gem_global',
+                     'bom_access_global_ensemble']:
             # The original data for all these models is 3 hourly, so there is no added
             # value in showing hourly data. Here we decimate every 3 hours considering
             # as starting point the first time value
@@ -592,7 +593,7 @@ def compute_yearly_accumulation(latitude=53.55,
             latitude=latitude,
             longitude=longitude,
             variables=var,
-            model='ecmwf_ifs04',
+            model='ecmwf_ifs025',
             forecast_days=14,
             past_days=7)
         additional['time'] = additional['time'].dt.tz_localize(
@@ -649,7 +650,7 @@ def compute_yearly_comparison(latitude=53.55,
             latitude=latitude,
             longitude=longitude,
             variables=var,
-            model='ecmwf_ifs04',
+            model='ecmwf_ifs025',
             forecast_days=14,
             past_days=7)
         additional['time'] = additional['time'].dt.tz_localize(
