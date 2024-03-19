@@ -121,7 +121,7 @@ def get_forecast_data(latitude=53.55,
 
     data = pd.DataFrame.from_dict(resp.json()['hourly'])
     data['time'] = pd.to_datetime(
-        data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT')
+        data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
 
     data = data.dropna(subset=data.columns[data.columns != 'time'],
                        how='all')
