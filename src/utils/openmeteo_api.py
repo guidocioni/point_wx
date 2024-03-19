@@ -450,22 +450,29 @@ def compute_climatology(latitude=53.55,
                         timezone='auto',
                         model='best_match',
                         start_date='1991-01-01',
-                        end_date='2020-12-31'):
+                        end_date='2020-12-31',
+                        daily=False):
     """
     Compute climatology.
     This is a very expensive operation (5-6 seconds for the full 30 years)
     so it should be cached!
     """
-    data = get_historical_data(latitude, longitude, variables,
-                               timezone, model, start_date, end_date)
+    if daily:
+        data = get_historical_daily_data(latitude, longitude, variables,
+                                         timezone, model, start_date, end_date)
+    else:
+        data = get_historical_data(latitude, longitude, variables,
+                                   timezone, model, start_date, end_date)
 
-    # Only take 3-hourly data
-    # data = data.resample('3H', on='time').first().reset_index()
     # Add doy not as integer but as string to allow for leap years
     data['doy'] = data.time.dt.strftime("%m%d")
-    # Compute mean over day of the year AND hour
-    mean = data.groupby([data.doy, data.time.dt.hour]).mean(
-        numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
+    if daily:
+        mean = data.groupby(data.doy).mean(
+            numeric_only=True).round(1).rename_axis(['doy']).reset_index()
+    else:
+        # Compute mean over day of the year AND hour
+        mean = data.groupby([data.doy, data.time.dt.hour]).mean(
+            numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
 
     return mean
 

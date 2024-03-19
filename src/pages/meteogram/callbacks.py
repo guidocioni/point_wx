@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import compute_daily_ensemble_meteogram
+from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR
 from utils.custom_logger import logging
@@ -56,6 +56,13 @@ def generate_figure(n_clicks, locations, location, model):
         data = get_weather_icons(data,
                                  icons_path=f"{ASSETS_DIR}/yrno_png/",
                                  mapping_path=f"{ASSETS_DIR}/weather_codes.json")
+        # Add daily climatology (quite fast)
+        clima = compute_climatology(
+            latitude=loc['latitude'].item(),
+            longitude=loc['longitude'].item(),
+            daily=True,
+            variables='temperature_2m_max,temperature_2m_min')
+        clima = clima.rename(columns={'temperature_2m_max':'t_max_clima','temperature_2m_min':'t_min_clima'})
 
         loc_label = (
             f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
@@ -63,7 +70,7 @@ def generate_figure(n_clicks, locations, location, model):
             f"{model.upper()}"
         )
 
-        return make_subplot_figure(data, title=loc_label), None, False
+        return make_subplot_figure(data, title=loc_label, clima=clima), None, False
 
     except Exception as e:
         logging.error(

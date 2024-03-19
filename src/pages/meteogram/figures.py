@@ -6,7 +6,7 @@ from utils.settings import images_config
 from PIL import Image
 
 
-def make_temp_timeseries(df, showlegend=False):
+def make_temp_timeseries(df, showlegend=False, clima=None):
     traces = []
     traces.append(
         go.Scatter(
@@ -74,6 +74,29 @@ def make_temp_timeseries(df, showlegend=False):
         hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
         showlegend=showlegend
     ))
+    if clima is not None:
+        df['doy'] = df.time.dt.strftime("%m%d")
+        df = df.merge(clima, left_on='doy', right_on='doy')
+        traces.append(
+            go.Scatter(
+                x=df['time'],
+                y=df['t_min_clima'],
+                mode='markers',
+                name='Minimum temperature (clima)',
+                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T (clima) = %{y:.1f} °C",
+                marker=dict(color='rgba(58, 91, 139, 0.5)', symbol='diamond-tall', size=10),
+                showlegend=showlegend),
+        )
+        traces.append(
+            go.Scatter(
+                x=df['time'],
+                y=df['t_max_clima'],
+                mode='markers',
+                name='Maximum temperature (clima)',
+                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T (clima) = %{y:.1f} °C",
+                marker=dict(color='rgba(227, 56, 30, 0.5)', symbol='diamond-tall', size=10),
+                showlegend=showlegend),
+        )
     return traces
 
 
@@ -98,8 +121,8 @@ def make_barplot_timeseries(df, var, var_text=None,
     return traces
 
 
-def make_subplot_figure(data, title=None):
-    traces_temp = make_temp_timeseries(data)
+def make_subplot_figure(data, title=None, clima=None):
+    traces_temp = make_temp_timeseries(data, clima=clima)
     traces_prec = make_barplot_timeseries(data,
                                           var='daily_prec_mean',
                                           var_text='prec_prob',
