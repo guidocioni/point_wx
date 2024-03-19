@@ -143,9 +143,9 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, 'temperature_2m', showlegend=True, models=models)
-    traces_sunshine = make_lineplot_timeseries(
-        data, 'sunshine_duration', models=models,
-        fill="tozeroy", alpha=0.3)
+    # traces_sunshine = make_lineplot_timeseries(
+    #     data, 'sunshine_duration', models=models,
+    #     fill="tozeroy", alpha=0.3)
     traces_precipitation = make_barplot_timeseries(
         data, 'precipitation', models=models)
     traces_snow = make_barplot_timeseries(
@@ -172,8 +172,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
-    for trace_sunshine in traces_sunshine:
-        fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
+    # for trace_sunshine in traces_sunshine:
+    #     fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
     fig.add_hline(y=0, line_width=3, row=1, col=1,
                   line_color="rgba(0,0,0,0.2)")  # 0 isotherm
     for trace_precipitation in traces_precipitation:
