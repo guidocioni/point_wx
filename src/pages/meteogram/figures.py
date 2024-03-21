@@ -178,17 +178,18 @@ def make_subplot_figure(data, title=None, clima=None):
         showlegend=False
     ), row=1, col=1)
     for _, row in data.iterrows():
-        fig.add_layout_image(dict(
-            source=Image.open(row['icons']),
-            xref='x',
-            x=row['time'],
-            yref='y',
-            y=1,
-            sizex=12*24*10*60*1000,
-            sizey=2,
-            xanchor="right",
-            yanchor="bottom"
-        ), row=1, col=1)
+        if row['icons'] != '':
+            fig.add_layout_image(dict(
+                source=Image.open(row['icons']),
+                xref='x',
+                x=row['time'],
+                yref='y',
+                y=1,
+                sizex=12*24*10*60*1000,
+                sizey=2,
+                xanchor="right",
+                yanchor="bottom"
+            ), row=1, col=1)
 
     fig.update_layout(
         xaxis=dict(showgrid=True),
