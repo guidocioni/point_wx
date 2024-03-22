@@ -62,8 +62,11 @@ def generate_figure(n_clicks, locations, location, model):
             longitude=loc['longitude'].item(),
             daily=True,
             model='era5_seamless',
-            variables='temperature_2m_max,temperature_2m_min')
-        clima = clima.rename(columns={'temperature_2m_max':'t_max_clima','temperature_2m_min':'t_min_clima'})
+            variables='temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration')
+        clima = clima.rename(columns={'temperature_2m_max':'t_max_clima',
+                                      'temperature_2m_min':'t_min_clima',
+                                      'precipitation_sum':'daily_prec_clima',
+                                      'sunshine_duration':'sunshine_clima'})
 
         loc_label = (
             f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"

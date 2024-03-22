@@ -415,6 +415,11 @@ def get_historical_data(latitude=53.55,
 
     data = data.dropna()
 
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
+
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
         "hourly", "daily"]}
@@ -451,6 +456,9 @@ def get_historical_daily_data(latitude=53.55,
     data['time'] = pd.to_datetime(data['time'])
 
     data = data.dropna()
+
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
