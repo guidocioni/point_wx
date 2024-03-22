@@ -61,6 +61,7 @@ def generate_figure(n_clicks, locations, location, model):
             latitude=loc['latitude'].item(),
             longitude=loc['longitude'].item(),
             daily=True,
+            model='era5_seamless',
             variables='temperature_2m_max,temperature_2m_min')
         clima = clima.rename(columns={'temperature_2m_max':'t_max_clima','temperature_2m_min':'t_min_clima'})
 
