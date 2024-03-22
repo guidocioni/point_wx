@@ -1,4 +1,3 @@
-import dash_bootstrap_components as dbc
 from dash import html
 from dash import dcc
 import plotly.graph_objects as go
