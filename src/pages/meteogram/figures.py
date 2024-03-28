@@ -133,7 +133,9 @@ def make_barplot_timeseries(df, var, var_text=None,
                 mode='markers',
                 name='',
                 hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, " + var + " (clima) = %{y:.1f}",
-                marker=dict(color=color.replace(", 0.5",", 1.0"), symbol='diamond-tall', size=10),
+                marker=dict(color=color.replace(", 0.5",", 0.8"), symbol='diamond-tall',
+                            size=12,
+                            line=dict(width=.5, color='rgba(0, 0, 0, 0.5)')),
                 showlegend=showlegend),
         )
 
