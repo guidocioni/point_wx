@@ -1,4 +1,3 @@
-import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.express as px
 import pandas as pd
@@ -10,9 +9,10 @@ def make_heatmap(df, var, title=None):
         cmap = 'RdBu_r'
     elif var == 'cloudcover':
         cmap = 'YlGnBu_r'
-    elif var in ['rain', 'precipitation']:
+    elif var in ['rain', 'precipitation',
+                 'accumulated_precip', 'accumulated_liquid']:
         cmap = 'dense'
-    elif var in ['snowfall', 'snow_depth']:
+    elif var in ['snowfall', 'snow_depth', 'accumulated_snow']:
         cmap = 'Burgyl'
     elif var == 'windgusts_10m':
         cmap = 'Hot_r'
@@ -28,7 +28,8 @@ def make_heatmap(df, var, title=None):
         color_continuous_scale=cmap,
         origin='lower')
 
-    fig.update_traces(hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
+    fig.update_traces(
+        hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
 
     fig.update_layout(
         xaxis=dict(showgrid=True, tickformat='%a %d %b\n%H:%M'),

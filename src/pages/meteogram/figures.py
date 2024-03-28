@@ -1,9 +1,9 @@
-import dash_bootstrap_components as dbc
 from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.settings import images_config
 from PIL import Image
+import pandas as pd
 
 
 def make_temp_timeseries(df, showlegend=False, clima=None):
@@ -107,7 +107,9 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
 def make_barplot_timeseries(df, var, var_text=None,
                             showlegend=False,
                             color='rgb(73, 135, 230)',
-                            text_formatting='%{text:.1s}'):
+                            text_formatting='%{text:.1s}',
+                            clima=None,
+                            clima_x_shift=0):
     if var_text is not None:
         text = df[var_text]
     traces = []
@@ -118,9 +120,22 @@ def make_barplot_timeseries(df, var, var_text=None,
         name='',
         textposition='auto',
         texttemplate=text_formatting,
-        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, "+ var + " = %{y:.1f}",
+        hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, " + var + " = %{y:.1f}",
         showlegend=showlegend,
         marker_color=color))
+    if clima is not None:
+        df['doy'] = df.time.dt.strftime("%m%d")
+        df = df.merge(clima, left_on='doy', right_on='doy')
+        traces.append(
+            go.Scatter(
+                x=df['time'] + clima_x_shift,
+                y=df[var.replace("_mean","_clima")],
+                mode='markers',
+                name='',
+                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, " + var + " (clima) = %{y:.1f}",
+                marker=dict(color=color.replace(", 0.5",", 1.0"), symbol='diamond-tall', size=10),
+                showlegend=showlegend),
+        )
 
     return traces
 
@@ -128,14 +143,19 @@ def make_barplot_timeseries(df, var, var_text=None,
 def make_subplot_figure(data, title=None, clima=None):
     traces_temp = make_temp_timeseries(data, clima=clima)
     traces_prec = make_barplot_timeseries(data,
+                                          clima=clima,
                                           var='daily_prec_mean',
                                           var_text='prec_prob',
-                                          text_formatting='%{text:.0f}%')
+                                          color='rgba(73, 135, 230, 1.0)',
+                                          text_formatting='%{text:.0f}%',
+                                          clima_x_shift=-pd.to_timedelta('1H'))
     traces_sun = make_barplot_timeseries(data,
+                                         clima=clima,
                                          var='sunshine_mean',
                                          var_text='sunshine_mean',
                                          color='rgba(255, 240, 184, 0.5)',
-                                         text_formatting='%{text:.1f} hrs')
+                                         text_formatting='%{text:.1f} hrs',
+                                         clima_x_shift=pd.to_timedelta('1H'))
 
     fig = make_subplots(
         rows=3,

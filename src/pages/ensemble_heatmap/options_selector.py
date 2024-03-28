@@ -20,7 +20,9 @@ opts_selector = dbc.Card(
                 dbc.InputGroupText("Variable"),
                 dbc.Select(
                     id="variable-selection-heatmap",
-                    options=ENSEMBLE_VARS,
+                    options=ENSEMBLE_VARS + ['accumulated_precip',
+                                             'accumulated_liquid',
+                                             'accumulated_snow'],
                     value=ENSEMBLE_VARS[0],
                     persistence=True
                 ),

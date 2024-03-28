@@ -357,6 +357,23 @@ def get_ensemble_data(latitude=53.55,
     for col in data.columns[data.columns.str.contains('sunshine_duration')]:
         data[col] = data[col] / 3600.  # s to hrs
 
+    # Compute accumulated variables
+    # Comment if not needed
+    # Note that we have to change the name of the resulting accumulated variables
+    # so as not to conflict with the functions that always request data using columns.str.contains()
+    if data.columns.str.contains('precipitation').any():
+        prec_acc = data.loc[:,data.columns.str.contains('precipitation')].cumsum()
+        prec_acc.columns = prec_acc.columns.str.replace("precipitation","accumulated_precip")
+        data = data.merge(prec_acc, left_index=True, right_index=True)
+    if data.columns.str.contains('rain').any():
+        rain_acc = data.loc[:,data.columns.str.contains('rain')].cumsum()
+        rain_acc.columns = rain_acc.columns.str.replace("rain","accumulated_liquid")
+        data = data.merge(rain_acc, left_index=True, right_index=True)
+    if data.columns.str.contains('snowfall').any():
+        snowfall_acc = data.loc[:,data.columns.str.contains('snowfall')].cumsum()
+        snowfall_acc.columns = snowfall_acc.columns.str.replace("snowfall","accumulated_snow")
+        data = data.merge(snowfall_acc, left_index=True, right_index=True)
+
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
         "hourly", "daily"]}
@@ -398,6 +415,11 @@ def get_historical_data(latitude=53.55,
 
     data = data.dropna()
 
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
+
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
         "hourly", "daily"]}
@@ -434,6 +456,9 @@ def get_historical_daily_data(latitude=53.55,
     data['time'] = pd.to_datetime(data['time'])
 
     data = data.dropna()
+
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
