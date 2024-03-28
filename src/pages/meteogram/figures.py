@@ -15,7 +15,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode='markers+lines+text',
             text=df['t_max_mean'].astype(int).astype(str),
             textposition="top right",
-            textfont=dict(color='rgba(227, 56, 30, 1)'),
+            textfont=dict(color='rgba(227, 56, 30, 1)', size=14),
             name='Maximum temperature',
             hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
             line=dict(width=2, color='rgba(227, 56, 30, 1)'),
@@ -28,7 +28,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode='markers+lines+text',
             text=df['t_min_mean'].astype(int).astype(str),
             textposition="top right",
-            textfont=dict(color='rgba(58, 91, 139, 1)'),
+            textfont=dict(color='rgba(58, 91, 139, 1)', size=14),
             name='Minimum temperature',
             hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
             line=dict(width=2, color='rgba(58, 91, 139, 1)'),
@@ -84,7 +84,9 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
                 mode='markers',
                 name='Minimum temperature (clima)',
                 hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T (clima) = %{y:.1f} °C",
-                marker=dict(color='rgba(58, 91, 139, 0.5)', symbol='diamond-tall', size=10),
+                marker=dict(color='rgba(58, 91, 139, 0.5)', symbol='diamond-tall',
+                            size=12,
+                            line=dict(width=.5, color='rgba(0, 0, 0, 0.5)')),
                 showlegend=showlegend),
         )
         traces.append(
@@ -94,7 +96,9 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
                 mode='markers',
                 name='Maximum temperature (clima)',
                 hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T (clima) = %{y:.1f} °C",
-                marker=dict(color='rgba(227, 56, 30, 0.5)', symbol='diamond-tall', size=10),
+                marker=dict(color='rgba(227, 56, 30, 0.5)', symbol='diamond-tall',
+                            size=12,
+                            line=dict(width=.5, color='rgba(0, 0, 0, 0.5)')),
                 showlegend=showlegend),
         )
     return traces
@@ -138,7 +142,7 @@ def make_subplot_figure(data, title=None, clima=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.05,
-        row_heights=[0.1, 0.5, 0.5],
+        row_heights=[0.15, 0.5, 0.5],
         subplot_titles=['', '<b>Temperature',
                         '<b>Precipitation (mm), Probability (%), Sunshine'],
         specs=[[{"secondary_y": False, "r":-0.06}],
@@ -172,7 +176,7 @@ def make_subplot_figure(data, title=None, clima=None):
         customdata=data['weather_descriptions'],
         hovertemplate="<extra></extra><b>%{x|%a %d %b}</b><br>%{customdata}",
         textposition="top left",
-        textfont=dict(color='rgba(1, 1, 1, 1)'),
+        textfont=dict(color='rgba(1, 1, 1, 1)', size=14),
         line=dict(color='rgba(0, 0, 0, 0)'),
         name='',
         showlegend=False
