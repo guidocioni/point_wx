@@ -1,6 +1,8 @@
 from dash import html
 from dash import dcc
 import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
 from plotly.subplots import make_subplots
 from utils.settings import images_config
 
@@ -507,6 +509,43 @@ def make_winds_climate_figure(df):
     return fig
 
 
+def make_wind_rose_figure(df):
+    def degree_to_direction(degree):
+        """Convert angle to cardinal (categorical direction)"""
+        directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+        index = round(degree / (360. / len(directions))) % len(directions)
+
+        return directions[index]
+
+    fig = make_subplots(rows=1,
+                        cols=12,
+                        specs=[[{'type': 'polar'} for _ in range(12)]],
+                        horizontal_spacing=0.015)
+
+    for i, group in df.groupby(df.time.dt.month):
+        frequencies = pd.cut(group['wind_direction_10m_dominant'],
+            bins=np.linspace(0, 360, 17)).value_counts(sort=False).to_frame().reset_index()
+        frequencies['wind_direction_10m_dominant'] = frequencies['wind_direction_10m_dominant'].astype(str)
+        frequencies['dir'] = frequencies['wind_direction_10m_dominant'].apply(lambda x: degree_to_direction(float(x.split(',')[0][1:])))
+
+        fig.add_trace(go.Barpolar(
+                r=frequencies['count'],
+                theta=frequencies['dir'],
+                marker_color='rgb(106,81,163)',
+                showlegend=False,
+                hoverinfo='skip'), row=1, col=i)
+
+    fig.update_polars(radialaxis_showticklabels=False,
+                    angularaxis=dict(direction="clockwise", tickfont_size=5))
+    fig.update_layout(margin={"r": 2, "t": 1, "l": 2, "b": 0.1},
+                        dragmode=False,
+                        height=150
+                        )
+    
+    return fig
+
+
 # CARDS for layout
 fig_temp_prec_climate = html.Div(
     [
@@ -573,5 +612,16 @@ fig_winds_climate = html.Div(
             className="mb-2"
         ),
         dcc.Graph(id='winds-climate-figure', config=images_config)
+    ],
+)
+
+
+fig_winds_rose_climate = html.Div(
+    [
+        html.Div(
+            "Winds dominant directions throughout the year",
+            className="mb-2"
+        ),
+        dcc.Graph(id='winds-rose-climate-figure', config=images_config)
     ],
 )

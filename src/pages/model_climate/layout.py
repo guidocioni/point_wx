@@ -3,7 +3,7 @@ from dash import html
 import dash_bootstrap_components as dbc
 from components.location_selector import loc_selector
 from .options_selector import opts_selector
-from .figures import fig_temp_prec_climate, fig_clouds_climate, fig_precipitation_climate, fig_temperature_climate, fig_winds_climate
+from .figures import fig_temp_prec_climate, fig_clouds_climate, fig_precipitation_climate, fig_temperature_climate, fig_winds_climate, fig_winds_rose_climate
 from .callbacks import *
 
 dash.register_page(
@@ -60,6 +60,11 @@ layout = html.Div(
             dbc.Row(
                 [
                     dbc.Col(dbc.Spinner(fig_winds_climate))
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Spinner(fig_winds_rose_climate))
                 ]
             ),
         ], id="fade-climate",
