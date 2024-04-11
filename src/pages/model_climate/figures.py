@@ -513,7 +513,7 @@ def make_wind_rose_figure(df):
     def degree_to_direction(degree):
         """Convert angle to cardinal (categorical direction)"""
         directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-                    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+                      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
         index = round(degree / (360. / len(directions))) % len(directions)
 
         return directions[index]
@@ -525,24 +525,25 @@ def make_wind_rose_figure(df):
 
     for i, group in df.groupby(df.time.dt.month):
         frequencies = pd.cut(group['wind_direction_10m_dominant'],
-            bins=np.linspace(0, 360, 17)).value_counts(sort=False).to_frame().reset_index()
-        frequencies['wind_direction_10m_dominant'] = frequencies['wind_direction_10m_dominant'].astype(str)
-        frequencies['dir'] = frequencies['wind_direction_10m_dominant'].apply(lambda x: degree_to_direction(float(x.split(',')[0][1:])))
+                             bins=np.linspace(0, 360, 17)).value_counts(sort=False).to_frame().reset_index()
+        frequencies['index'] = frequencies['index'].astype(str)
+        frequencies['dir'] = frequencies['index'].apply(
+            lambda x: degree_to_direction(float(x.split(',')[0][1:])))
 
         fig.add_trace(go.Barpolar(
-                r=frequencies['count'],
-                theta=frequencies['dir'],
-                marker_color='rgb(106,81,163)',
-                showlegend=False,
-                hoverinfo='skip'), row=1, col=i)
+            r=frequencies['wind_direction_10m_dominant'],
+            theta=frequencies['dir'],
+            marker_color='rgb(106,81,163)',
+            showlegend=False,
+            hoverinfo='skip'), row=1, col=i)
 
     fig.update_polars(radialaxis_showticklabels=False,
-                    angularaxis=dict(direction="clockwise", tickfont_size=5))
+                      angularaxis=dict(direction="clockwise", tickfont_size=5))
     fig.update_layout(margin={"r": 2, "t": 1, "l": 2, "b": 0.1},
-                        dragmode=False,
-                        height=150
-                        )
-    
+                      dragmode=False,
+                      height=150
+                      )
+
     return fig
 
 
@@ -613,6 +614,7 @@ fig_winds_climate = html.Div(
         ),
         dcc.Graph(id='winds-climate-figure', config=images_config)
     ],
+    className="mb-2",
 )
 
 
