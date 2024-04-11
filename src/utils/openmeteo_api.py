@@ -715,7 +715,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_tmin.max(axis=1).to_frame(name='t_min_max'), left_index=True, right_index=True)\
         .merge(daily_tmax.max(axis=1).to_frame(name='t_max_max'), left_index=True, right_index=True)\
         .merge(daily_tmax.min(axis=1).to_frame(name='t_max_min'), left_index=True, right_index=True)\
-        .merge(daily_wcode.mode(axis=1)[0].to_frame(name='weather_code').astype(int), left_index=True, right_index=True)\
+        .merge(daily_wcode.mode(axis=1)[0].to_frame(name='weather_code').fillna(1).astype(int), left_index=True, right_index=True)\
         .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.25, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
         .merge(daily_prec.quantile(0.75, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
