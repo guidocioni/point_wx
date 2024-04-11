@@ -2,6 +2,7 @@ from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data, compute_climatology
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
+from utils.flags import byName
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
@@ -71,7 +72,7 @@ def generate_figure(n_clicks, locations, location, model, clima_):
                             elevation=loc['elevation'].item())
 
         loc_label = (
-            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f"{loc['name'].item()} {byName(loc['country'].item())} |📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f"Ens: {model.upper()}"
         )

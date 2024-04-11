@@ -3,6 +3,7 @@ from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climat
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR
 from utils.custom_logger import logging
+from utils.flags import byName
 from .figures import make_subplot_figure
 import pandas as pd
 
@@ -69,7 +70,7 @@ def generate_figure(n_clicks, locations, location, model):
                                       'sunshine_duration':'sunshine_clima'})
 
         loc_label = (
-            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f"{loc['name'].item()}, {byName(loc['country'].item())} |📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f"{model.upper()}"
         )

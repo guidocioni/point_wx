@@ -2,6 +2,7 @@ from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
+from utils.flags import byName
 from .figures import make_subplot_figure
 import pandas as pd
 
@@ -46,17 +47,12 @@ def generate_figure(n_clicks, locations, location, models):
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
-    loc_label = (
-        f"{loc['name'].item()} ({loc['country'].item()} | {float(loc['longitude'].item()):.1f}E"
-        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f'Models: {",".join(models)}'
-    )
 
     try:
         data = get_forecast_data(latitude=loc['latitude'].item(),
                                  longitude=loc['longitude'].item(),
                                  model=",".join(models),
-                                 forecast_days=14)
+                                 forecast_days=8)
 
         sun = find_suntimes(df=data,
                             latitude=loc['latitude'].item(),
@@ -64,7 +60,7 @@ def generate_figure(n_clicks, locations, location, models):
                             elevation=loc['elevation'].item())
 
         loc_label = (
-            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(data.attrs['longitude']):.1f}E"
+            f"{loc['name'].item()} {byName(loc['country'].item())} |📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f'{",".join(models)}'
         )

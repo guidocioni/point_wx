@@ -2,6 +2,7 @@ from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_locations, get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
+from utils.flags import byName
 import pandas as pd
 import dash_leaflet as dl
 
@@ -46,7 +47,7 @@ def get_closest_address(n_clicks, location_search, locations, locations_sel):
         options.append(
             {
                 "label": (
-                    f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                    f"{row['name']} ({byName(row['country'])} | {row['longitude']:.1f}E, "
                     f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
                 ),
                 "value": str(row['id'])
@@ -157,7 +158,7 @@ def map_click(click_lat_lng, clickData):
             options.append(
                 {
                     "label": (
-                        f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                        f"{row['name']} ({byName(row['country'])} | {row['longitude']:.1f}E, "
                         f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
                     ),
                     "value": str(row['id'])
@@ -205,7 +206,7 @@ def update_location_with_geolocate(_, pos, n_clicks):
             options.append(
                 {
                     "label": (
-                        f"{row['name']} ({row['country']} | {row['longitude']:.1f}E, "
+                        f"{row['name']} ({byName(row['country'])} | {row['longitude']:.1f}E, "
                         f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
                     ),
                     "value": str(row['id'])

@@ -21,7 +21,6 @@ opts_selector = dbc.Card(
                     dbc.Checkbox(
                         id="clima-switch",
                         value=False,
-                        persistence=True
                     )),
                 dbc.Input(placeholder='Compute climatology', disabled=True)
             ],

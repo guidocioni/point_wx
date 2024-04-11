@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_vertical_data
 from utils.custom_logger import logging
+from utils.flags import byName
 from .figures import make_figure_vertical
 import pandas as pd
 
@@ -53,7 +54,7 @@ def generate_figure(n_clicks, locations, location, model):
             model=model)
 
         loc_label = (
-            f"{loc['name'].item()}, {loc['country'].item()} | 🌐 {float(df.attrs['longitude']):.1f}E"
+            f"{loc['name'].item()}, {byName(loc['country'].item())} |📍 {float(df.attrs['longitude']):.1f}E"
             f", {float(df.attrs['latitude']):.1f}N, {float(df.attrs['elevation']):.0f}m | "
             f"{model.upper()}"
         )
