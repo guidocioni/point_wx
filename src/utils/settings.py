@@ -36,7 +36,7 @@ images_config = {
 ENSEMBLE_MODELS = [
     {"label": "DWD ICON Seamless", "value": "icon_seamless"},
     {"label": "NCEP GFS Seamless", "value": "gfs_seamless"},
-    {"label": "ECMWF IFS (Global, 44km, 51 members)", "value": "ecmwf_ifs04"},
+    # {"label": "ECMWF IFS (Global, 44km, 51 members)", "value": "ecmwf_ifs04"},
     {"label": "ECMWF IFS (Global, 25km, 51 members)", "value": "ecmwf_ifs025"},
     {"label": "CWS GEM (Global, 25km, 21 members)", "value": "gem_global"},
     {"label": "ICON-EPS (Global, 26km, 40 members)", "value": "icon_global"},
@@ -61,7 +61,7 @@ DETERMINISTIC_MODELS = [
     {"label": "ICON Global (Global, 11km)", "value": "icon_global"},
     {"label": "ICON-EU (Europe, 7km)", "value": "icon_eu"},
     {"label": "ICON-D2 (Germany, 2.2km)", "value": "icon_d2"},
-    {"label": "IFS (Global, 44km)", "value": "ecmwf_ifs04"},
+    # {"label": "IFS (Global, 44km)", "value": "ecmwf_ifs04"},
     {"label": "IFS (Global, 25km)", "value": "ecmwf_ifs025"},
     {"label": "AIFS (Global, 25km)", "value": "ecmwf_aifs025"},
     {"label": "GFS Seamless", "value": "gfs_seamless"},
