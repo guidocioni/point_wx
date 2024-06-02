@@ -128,7 +128,7 @@ def get_forecast_data(latitude=53.55,
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
-            'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+            'now', utc=True).tz_convert(resp.json()['timezone']).floor('h')]
 
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
@@ -290,7 +290,7 @@ def get_ensemble_data(latitude=53.55,
     # Optionally subset data to start only from previous hour
     if from_now:
         data = data[data.time >= pd.to_datetime(
-            'now', utc=True).tz_convert(resp.json()['timezone']).floor('H')]
+            'now', utc=True).tz_convert(resp.json()['timezone']).floor('h')]
 
     # Optionally decimate data to a 3 hourly resolution
     # This is useful when visualising a long timeseries
@@ -309,11 +309,11 @@ def get_ensemble_data(latitude=53.55,
             # First we do a rolling sum over the same period (3 hours) and then take only the
             # first value
             acc_vars = data.loc[:, data.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
-                window='3H', on='time').sum().resample('3H', on='time', origin=data.iloc[0]['time']).first()
+                window='3H', on='time').sum().resample('3h', on='time', origin=data.iloc[0]['time']).first()
             # Now the variables that are instantaneous
             # In this case we can just take the first value directly every 3 hours
             inst_vars = data.loc[:, data.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
-                '3H', on='time', origin=data.iloc[0]['time']).first()
+                '3h', on='time', origin=data.iloc[0]['time']).first()
             # Now variables with different aggregations (like preceding hour maximum)
             if 'windgusts_10m' in data.columns:
                 max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
@@ -331,16 +331,16 @@ def get_ensemble_data(latitude=53.55,
             # NOTE that we count 48 hrs from the first time value. In case from_now = True
             # is activated, it could mean
             # NOTE icon_d2 is not here because we don't need to do anything in that case
-            t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48H')
+            t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48h')
             after_48_hrs = data.loc[data.time >=
-                                    t48_start_date + pd.to_timedelta('3H'), :]
+                                    t48_start_date + pd.to_timedelta('3h'), :]
             # For this sector does the same trick as before
             acc_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
-                window='3H', on='time').sum().resample('3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+                window='3h', on='time').sum().resample('3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
             inst_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
-                '3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+                '3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
             max_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|windgusts_10m')].rolling(
-                window='3H', on='time').max().resample('3H', on='time', origin=after_48_hrs.iloc[0]['time']).first()
+                window='3h', on='time').max().resample('3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
             #
             after_48_hrs = acc_vars.merge(inst_vars, left_index=True, right_index=True).merge(
                 max_vars, left_index=True, right_index=True).reset_index()

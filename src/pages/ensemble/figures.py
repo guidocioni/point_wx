@@ -40,7 +40,7 @@ def make_boxplot_timeseries(df, var, clima=None):
     return traces
 
 
-def make_lineplot_timeseries(df, var, clima=None, break_hours='48H'):
+def make_lineplot_timeseries(df, var, clima=None, break_hours='48h'):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
         traces.append(
@@ -160,7 +160,7 @@ def make_barplot_timeseries(df, var, color='cadetblue'):
         textposition='outside',
         hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "+var+" = %{y:.1f}",
         showlegend=False,
-        width=(df['time'].diff().dt.seconds * 850).fillna(method='bfill').fillna(method='ffill'),
+        width=(df['time'].diff().dt.seconds * 850).bfill().ffill(),
         marker_color=color)
 
     return trace
@@ -208,7 +208,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     subplot_title = ''
     if len(data.loc[:, data.columns.str.contains('temperature_850hPa')].dropna() > 0):
         traces_temp_850 = make_lineplot_timeseries(
-            data, 'temperature_850hPa', break_hours='0H')
+            data, 'temperature_850hPa', break_hours='0h')
         height_graph = 0.4
         subplot_title = '850hPa T'
     trace_rain = make_barplot_timeseries(data, 'rain', color='cadetblue')
@@ -240,8 +240,8 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
 
     fig.update_layout(
         xaxis=dict(showgrid=True,
-                   range=[data['time'].min() - pd.to_timedelta('2H'),
-                          data['time'].max() + pd.to_timedelta('2H')]),
+                   range=[data['time'].min() - pd.to_timedelta('2h'),
+                          data['time'].max() + pd.to_timedelta('2h')]),
         yaxis=dict(showgrid=True,),
         height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
@@ -256,16 +256,16 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
                 buttons=[
                     dict(label="24H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
-                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('25H')}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2h'),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('25h')}]),
                     dict(label="48H",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
-                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('49H')}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2h'),
+                                "xaxis.range[1]": data['time'].min() + pd.to_timedelta('49h')}]),
                     dict(label="Reset",
                          method="relayout",
-                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2H'),
-                                "xaxis.range[1]": data['time'].max() + pd.to_timedelta('2H')}]),
+                         args=[{"xaxis.range[0]": data['time'].min() - pd.to_timedelta('2h'),
+                                "xaxis.range[1]": data['time'].max() + pd.to_timedelta('2h')}]),
                 ],
                 pad=dict(b=5),
             ),

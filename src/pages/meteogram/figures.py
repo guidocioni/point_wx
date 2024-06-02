@@ -150,14 +150,14 @@ def make_subplot_figure(data, title=None, clima=None):
                                           var_text='prec_prob',
                                           color='rgba(73, 135, 230, 1.0)',
                                           text_formatting='%{text:.0f}%',
-                                          clima_x_shift=-pd.to_timedelta('1H'))
+                                          clima_x_shift=-pd.to_timedelta('1h'))
     traces_sun = make_barplot_timeseries(data,
                                          clima=clima,
                                          var='sunshine_mean',
                                          var_text='sunshine_mean',
                                          color='rgba(255, 240, 184, 0.5)',
                                          text_formatting='%{text:.1f} hrs',
-                                         clima_x_shift=pd.to_timedelta('1H'))
+                                         clima_x_shift=pd.to_timedelta('1h'))
 
     fig = make_subplots(
         rows=3,
