@@ -2,19 +2,23 @@
 
 This is a Dash application that uses the open-meteo APIs (https://open-meteo.com/en/docs) to show some interesting plots.
 
-![alt|300](app_screen.png)
+![alt|300](app_screen_1.png)
+![alt|300](app_screen_2.png)
+![alt|300](app_screen_3.png)
+
 
 ## Installation
 Install the requirements
 
 - `dash`
 - `dash-bootstrap-components`, for styling the whole application
-- `dash-leaflet`, to show the small map
+- `dash-leaflet`, to show the small map4
 - `pandas`, for data manipulation
 - `plotly`, for plotting
 - `requests`, used to download data from the openmeteo API
 - `flask-cache`, used to cache all data functions
 - `jdcal`, for `suntimes.py` to work. We use this to show the sunrise/sunset times on the plot.
+- `Pillow`, to add weather icons
 
 Sorry, no explicit packaging with `yaml` and/or `requirements.txt` is provided for now.
 But since you only need a few packages to make it work, it should be fine. 
