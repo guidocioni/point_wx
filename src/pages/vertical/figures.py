@@ -138,6 +138,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
     fig = go.Figure(traces)
 
     fig.update_layout(
+        dragmode=False,
         legend=dict(orientation='h'),
         xaxis=dict(showgrid=True,
                    tickformat='%a %d %b\n%H:%M',

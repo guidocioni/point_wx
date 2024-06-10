@@ -239,6 +239,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         fig.add_trace(trace_clouds, row=4, col=1)
 
     fig.update_layout(
+        dragmode=False,
         xaxis=dict(showgrid=True,
                    range=[data['time'].min() - pd.to_timedelta('2h'),
                           data['time'].max() + pd.to_timedelta('2h')]),

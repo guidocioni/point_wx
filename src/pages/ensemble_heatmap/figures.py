@@ -32,6 +32,7 @@ def make_heatmap(df, var, title=None):
         hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
 
     fig.update_layout(
+        dragmode=False,
         xaxis=dict(showgrid=True, tickformat='%a %d %b\n%H:%M'),
         yaxis=dict(showgrid=True, fixedrange=True, showticklabels=False,
                    title_text="Members"),

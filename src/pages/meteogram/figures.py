@@ -218,6 +218,7 @@ def make_subplot_figure(data, title=None, clima=None):
             ), row=1, col=1)
 
     fig.update_layout(
+        dragmode=False,
         xaxis=dict(showgrid=True),
         yaxis=dict(showgrid=True,),
         height=700,
