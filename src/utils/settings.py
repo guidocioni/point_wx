@@ -11,6 +11,8 @@ ASSETS_DIR = os.path.join(ROOT_DIR, 'src', 'assets')
 APP_HOST = "0.0.0.0"
 APP_PORT = 8080
 URL_BASE_PATHNAME = '/pointwx/'
+MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", "")
+MAPBOX_API_PLACES_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places'
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
