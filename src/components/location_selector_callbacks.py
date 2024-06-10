@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, html, dcc
 from utils.openmeteo_api import get_locations, get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
@@ -72,6 +72,19 @@ def get_closest_address(n_clicks, location_search, locations, locations_sel):
             {'value': options[0]['value']},  # selected location saved in Store
             None, False  # Deactivate error popup
         )
+
+
+@callback(
+    Output("geo", "children"),
+    Input("geolocate", "n_clicks"),
+    prevent_initial_call=True
+)
+def start_geolocation_section(n):
+    return html.Div(
+        [
+            dcc.Geolocation(id="geolocation"),
+        ]
+    )
 
 
 @callback(

@@ -1,9 +1,9 @@
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import html
 
 loc_selector = dbc.Card(
     [
-        dcc.Geolocation(id="geolocation"),
+        html.Div(id="geo"),
         dbc.InputGroup(
             dbc.Input(placeholder="City/Town",
                       id='location_search',
