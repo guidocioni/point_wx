@@ -102,13 +102,15 @@ clientside_callback(
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 500); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('temp-prec-climate-figure', 'figure'),
+    Input('submit-button-climate', 'n_clicks'),
     [State('temp-prec-climate-figure', 'id')],
     prevent_initial_call=True
 )

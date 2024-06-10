@@ -95,13 +95,15 @@ clientside_callback(
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 500); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('prec-climate-daily-figure', 'figure'),
+    Input('submit-button-climate-daily', 'n_clicks'),
     [State('prec-climate-daily-figure', 'id')],
     prevent_initial_call=True
 )

@@ -92,13 +92,15 @@ clientside_callback(
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 500); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('meteogram-plot', 'figure'),
+    Input('submit-button-meteogram', 'n_clicks'),
     [State('meteogram-plot', 'id')],
     prevent_initial_call=True
 )
