@@ -187,6 +187,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         fig.add_trace(trace_cloud, row=4, col=1)
 
     fig.update_layout(
+        dragmode=False,
         xaxis=dict(showgrid=True,
                    range=[data['time'].min() - pd.to_timedelta('1h'),
                           data['time'].max() + pd.to_timedelta('1h')]),

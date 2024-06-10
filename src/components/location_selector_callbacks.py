@@ -1,5 +1,6 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, html, dcc
 from utils.openmeteo_api import get_locations, get_elevation
+from utils.mapbox_api import get_place_address_reverse
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 from utils.flags import byName
@@ -75,6 +76,19 @@ def get_closest_address(n_clicks, location_search, locations, locations_sel):
 
 
 @callback(
+    Output("geo", "children"),
+    Input("geolocate", "n_clicks"),
+    prevent_initial_call=True
+)
+def start_geolocation_section(n):
+    return html.Div(
+        [
+            dcc.Geolocation(id="geolocation"),
+        ]
+    )
+
+
+@callback(
     Output("geolocation", "update_now"),
     Input("geolocate", "n_clicks"),
 )
@@ -138,21 +152,25 @@ def map_click(click_lat_lng, clickData):
         lat = clickData['latlng']['lat']
         lon = clickData['latlng']['lng']
     if lat is not None and lon is not None:
-        locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
+        place_details = get_place_address_reverse(lon, lat)
+        locations = pd.DataFrame({"id": 9999999999,
+                                  "name": place_details['locality'],
                                   "latitude": lat,
                                   "longitude": lon,
                                   "elevation": get_elevation(lat, lon),
                                   "feature_code": "",
-                                  "country_code": "",
+                                  "country_code": place_details['country_code'].upper(),
                                   "admin1_id": "",
                                   "admin3_id": "",
                                   "admin4_id": "",
                                   "timezone": "",
                                   "population": 0,
                                   "postcodes": [""],
-                                  "country_id": "", "country": "",
+                                  "country_id": "",
+                                  "country": place_details['country_name'],
                                   "admin1": "",
-                                  "admin3": "", "admin4": ""})
+                                  "admin3": "",
+                                  "admin4": ""})
         options = []
         for _, row in locations.iterrows():
             options.append(
@@ -188,18 +206,26 @@ def map_click(click_lat_lng, clickData):
 )
 def update_location_with_geolocate(_, pos, n_clicks):
     if pos and n_clicks:
-        locations = pd.DataFrame({"id": 9999999999, "name": "Custom location",
-                                  "latitude": pd.to_numeric(pos['lat']),
-                                  "longitude": pd.to_numeric(pos['lon']),
+        lat = pd.to_numeric(pos['lat'])
+        lon = pd.to_numeric(pos['lon'])
+        place_details = get_place_address_reverse(lon, lat)
+        locations = pd.DataFrame({"id": 9999999999,
+                                  "name": place_details['locality'],
+                                  "latitude": lat,
+                                  "longitude": lon,
                                   "elevation": float(pos['alt']) if pos['alt'] else get_elevation(pos['lat'], pos['lon']),
-                                  "feature_code": "", "country_code": "",
+                                  "feature_code": "",
+                                  "country_code": place_details['country_code'].upper(),
                                   "admin1_id": "",
-                                  "admin3_id": "", "admin4_id": "",
+                                  "admin3_id": "",
+                                  "admin4_id": "",
                                   "timezone": "",
                                   "population": 0,
-                                  "postcodes": [""], "country_id": "",
-                                  "country": "",
-                                  "admin1": "", "admin3": "",
+                                  "postcodes": [""],
+                                  "country_id": "",
+                                  "country": place_details['country_name'],
+                                  "admin1": "",
+                                  "admin3": "",
                                   "admin4": ""})
         options = []
         for _, row in locations.iterrows():

@@ -98,13 +98,15 @@ clientside_callback(
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 500); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data'),
-    Input('ensemble-plot', 'figure'),
+    Input('submit-button', 'n_clicks'),
     [State('ensemble-plot', 'id')],
     prevent_initial_call=True
 )

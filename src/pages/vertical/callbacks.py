@@ -77,13 +77,15 @@ clientside_callback(
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 500); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('plot-vertical', 'figure'),
+    Input('submit-button-vertical', 'n_clicks'),
     [State('plot-vertical', 'id')],
     prevent_initial_call=True
 )
