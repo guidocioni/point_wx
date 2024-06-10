@@ -80,10 +80,10 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
         fig_precipitation = make_precipitation_climate_figure(data)
         fig_clouds = make_clouds_climate_figure(data)
         fig_winds = make_winds_climate_figure(data)
-        fig_winds_rose = make_wind_rose_figure(wind_rose_data)
+        # fig_winds_rose = make_wind_rose_figure(wind_rose_data)
 
         return [fig_temp_prec, fig_clouds, fig_temperature,
-                fig_precipitation, fig_winds, fig_winds_rose, None, False]
+                fig_precipitation, fig_winds, None, None, False]
 
     except Exception as e:
         logging.error(

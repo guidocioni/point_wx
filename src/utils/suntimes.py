@@ -357,6 +357,9 @@ def find_suntimes(df, latitude, longitude, elevation=0):
     frequency and use that to compute the rise and set times.
     Providing elevation improves the computation.
     """
+    # Handle negative elevations
+    if elevation < 0:
+        elevation = 0
     sun = SunTimes(longitude, latitude, elevation)
 
     # Create a dataframe with only daily data, we don't actually care
