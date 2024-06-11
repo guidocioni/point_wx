@@ -6,25 +6,55 @@ from .settings import cache, MAPBOX_API_KEY, MAPBOX_API_PLACES_URL
 @cache.memoize(3600)
 def get_place_address_reverse(lon, lat):
     url = f"{MAPBOX_API_PLACES_URL}/{lon},{lat}.json?&access_token={MAPBOX_API_KEY}&limit=1"
-
     response = r.get(url)
     json_data = json.loads(response.text)
 
-    place_name = json_data["features"][0]["place_name"]
-    context = json_data["features"][0]["context"]
-    country_name = [c["text"] for c in context if "country" in c["id"]]
-    if country_name is not None:
-        country_name = country_name[0]
-    country_code = [c["short_code"].upper() for c in context if "country" in c["id"]]
-    if country_code is not None:
-        country_code = country_code[0]
-    place = [c["text"] for c in context if "place" in c["id"]]
-    if place is not None:
-        place = place[0]
+    # Latitude and longitude will always be in the response
+    res = {}
+    res["lon"], res["lat"] = json_data["query"]
+    res['name'] = 'Custom Location'
 
-    return {
-        "place_name": place_name,
-        "city": place,
-        "country_name": country_name,
-        "country_code": country_code,
-    }
+    # Now start extracting features
+    # As we're using limit = 1 it will only be 1
+    if len(json_data["features"]) >= 1:
+        feature = json_data["features"][0]
+    else:
+        # No feature found, we just return the coordinates
+        # used in the query
+        return res
+    # We start extracting information
+    # These properties should always be defined
+    res["place_type"] = feature["place_type"][0]
+    res["text"] = feature["text"]
+    # Now start extracting the context information
+    context = feature["context"]
+    # Country is always present
+    country = [c for c in context if "country" in c["id"]][0]
+    res["country_name"] = country["text"]
+    res["country_code"] = country["short_code"].upper()
+    # All the rest now is optional
+    region = [c for c in context if "region" in c["id"]]
+    if len(region) > 0:
+        res["region_name"] = region[0]["text"]
+    district = [c for c in context if "district" in c["id"]]
+    if len(district) > 0:
+        res["district_name"] = district[0]["text"]
+    place = [c for c in context if "place" in c["id"]]
+    if len(place) > 0:
+        res["place_name"] = place[0]["text"]
+    locality = [c for c in context if "locality" in c["id"]]
+    if len(locality) > 0:
+        res["locality_name"] = locality[0]["text"]
+    # Create a friendly name for this point which includes the closest city
+    if 'locality_name' in res:
+        res['name'] = res['locality_name']
+    elif 'place_name' in res:
+        res['name'] = res['place_name']
+    elif 'region_name' in res:
+        res['name'] = res['region_name']
+    else:
+        # In this case usually we're left with the country only
+        # so the text attribute works just fine
+        res['name'] = res['text']
+
+    return res

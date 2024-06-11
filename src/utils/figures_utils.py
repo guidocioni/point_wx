@@ -112,5 +112,5 @@ def make_map(lat_center=45, lon_center=10, zoom=3):
                "display": "block"
                },
         dragging=True,
-        scrollWheelZoom=False,
+        scrollWheelZoom=True,
         id='map')
