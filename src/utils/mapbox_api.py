@@ -18,16 +18,12 @@ def get_place_address_reverse(lon, lat):
     country_code = [c["short_code"].upper() for c in context if "country" in c["id"]]
     if country_code is not None:
         country_code = country_code[0]
-    locality = [c["text"] for c in context if "locality" in c["id"]]
-    if locality is not None:
-        locality = locality[0]
     place = [c["text"] for c in context if "place" in c["id"]]
     if place is not None:
         place = place[0]
 
     return {
         "place_name": place_name,
-        "locality": locality,
         "city": place,
         "country_name": country_name,
         "country_code": country_code,

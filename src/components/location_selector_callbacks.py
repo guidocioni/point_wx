@@ -154,7 +154,7 @@ def map_click(click_lat_lng, clickData):
     if lat is not None and lon is not None:
         place_details = get_place_address_reverse(lon, lat)
         locations = pd.DataFrame({"id": 9999999999,
-                                  "name": place_details['locality'],
+                                  "name": place_details['city'],
                                   "latitude": lat,
                                   "longitude": lon,
                                   "elevation": get_elevation(lat, lon),
@@ -210,7 +210,7 @@ def update_location_with_geolocate(_, pos, n_clicks):
         lon = pd.to_numeric(pos['lon'])
         place_details = get_place_address_reverse(lon, lat)
         locations = pd.DataFrame({"id": 9999999999,
-                                  "name": place_details['locality'],
+                                  "name": place_details['city'],
                                   "latitude": lat,
                                   "longitude": lon,
                                   "elevation": float(pos['alt']) if pos['alt'] else get_elevation(pos['lat'], pos['lon']),
