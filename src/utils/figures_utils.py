@@ -98,10 +98,35 @@ def make_map(lat_center=45, lon_center=10, zoom=3):
     )
     return dl.Map(
         [
-            dl.TileLayer(url=mapURL,
-                         attribution=attribution,
-                         tileSize=512,
-                         zoomOffset=-1),
+            dl.FullScreenControl(),
+            dl.LayersControl(
+                [
+                    dl.BaseLayer(
+                        name="Map",
+                        checked=True,
+                        children=dl.TileLayer(
+                            url=mapURL,
+                            attribution=attribution,
+                            tileSize=512,
+                            zoomOffset=-1,
+                        ),
+                    ),
+                    dl.Overlay(
+                        name="Satellite",
+                        checked=False,
+                        children=dl.WMSTileLayer(
+                            id="wms-layer-sat",
+                            url="https://maps.dwd.de/geoserver/ows?",
+                            layers="dwd:Satellite_worldmosaic_3km_world_ir108_3h",
+                            format="image/png",
+                            transparent=True,
+                            opacity=0.7,
+                            version="1.3.0",
+                            detectRetina=True,
+                        ),
+                    ),
+                ]
+            ),
             dl.LayerGroup(id="map-scatter-layer"),
         ],
         center=[lat_center, lon_center],
@@ -113,4 +138,5 @@ def make_map(lat_center=45, lon_center=10, zoom=3):
                },
         dragging=True,
         scrollWheelZoom=True,
+        touchZoom=True,
         id='map')
