@@ -6,18 +6,17 @@ from utils.flags import byName
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
+from io import StringIO
 
 
 @callback(
     Output("submit-button", "disabled"),
-    [Input("locations", "value"),
-     Input("search-button", "n_clicks")],
+    Input("location_search_new", "value"),
 )
-def activate_submit_button(location, _nouse):
-    if location is not None and len(location) >= 2:
-        return False
-    else:
+def activate_submit_button(location):
+    if location is None:
         return True
+    return False
 
 
 # Hide the plots until the button hasn't been clicked
@@ -39,7 +38,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button", "n_clicks"),
     [State("locations-list", "data"),
-     State("locations", "value"),
+     State("location_search_new", "value"),
      State("models-selection", "value"),
      State("clima-switch", "value")],
     prevent_initial_call=True
@@ -49,7 +48,7 @@ def generate_figure(n_clicks, locations, location, model, clima_):
         return no_update, no_update, no_update
 
     # unpack locations data
-    locations = pd.read_json(locations, orient='split', dtype={"id": str})
+    locations = pd.read_json(StringIO(locations), orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location]
 
     try:

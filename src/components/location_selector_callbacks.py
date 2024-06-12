@@ -6,83 +6,40 @@ from utils.figures_utils import make_map
 from utils.flags import byCode, byName
 import pandas as pd
 import dash_leaflet as dl
+from io import StringIO
 
 
 @callback(
     [
-        Output("locations", "options"),
-        Output("locations", "value"),
+        Output("location_search_new", "options", allow_duplicate=True),
         Output("locations-list", "data"),
-        Output("locations-selected", "data"),
-        Output("error-message", "children"),
-        Output("error-modal", "is_open"),
     ],
-    Input("search-button", "n_clicks"),
-    [
-        State("location_search", "value"),
-        State("locations-list", "data"),
-        State("locations-selected", "data"),
-    ],
+    Input("location_search_new", "search_value"),
+    prevent_initial_call=True,
 )
-def get_closest_address(n_clicks, location_search, locations, locations_sel):
-    if n_clicks is None:
-        # In this case it means that the button has not been clicked
-        # so we first check if there are already some locations
-        # saved in the cache
-        # If there is no data in the cache, locations will be an empty dict
-        if len(locations) > 0:
-            locations = pd.read_json(locations, orient="split", dtype={"id": str})
-        else:
-            # In this case it means the button has not been clicked AND
-            # there is no data in the Store component
-            raise PreventUpdate
-    else:
-        # In this case the button has been clicked so we load the data
-        locations = get_locations(location_search)
-        # If no location has been found raise an error
-        if len(locations) < 1:
-            return (
-                no_update,
-                no_update,
-                no_update,
-                no_update,
-                "No location found, change the input!",  # Error message
-                True,
-            )
-
+def suggest_locs_dropdown(value):
+    """
+    When the user types, update the dropdown with locations
+    found with the API
+    """
+    if value is None or len(value) < 4:
+        raise PreventUpdate
+    locations = get_locations(value, count=5)
+    if len(locations) == 0:
+        raise PreventUpdate
     options = []
     for _, row in locations.iterrows():
         options.append(
-            {
-                "label": (
+            dict(
+                label=(
                     f"{row['name']} ({byName(row['country'])} | {row['longitude']:.1f}E, "
                     f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
                 ),
-                "value": str(row["id"]),
-            }
+                value=str(row["id"]),
+            )
         )
-    if len(locations_sel) > 0 and n_clicks is None:
-        # there was something already selected
-        return (
-            options,
-            # Set the dropdown on the value saved in the Store cache
-            locations_sel["value"],
-            # locations saved in Store cache
-            locations.to_json(orient="split"),
-            no_update,  # DO not update the value saved in Store cache
-            None,
-            False,  # Deactivate error popup
-        )
-    else:
-        # there was nothing in the cache so we revert to the first value, and save it
-        return (
-            options,
-            options[0]["value"],
-            locations.to_json(orient="split"),  # locations saved in Store
-            {"value": options[0]["value"]},  # selected location saved in Store
-            None,
-            False,  # Deactivate error popup
-        )
+
+    return options, locations.to_json(orient="split")
 
 
 @callback(
@@ -123,10 +80,14 @@ def create_map(item):
 # Add point on the map when a location is chosen
 @callback(
     [Output("map-scatter-layer", "children"), Output("map", "center")],
-    [Input("locations-list", "data"), Input("locations", "value")],
+    Input("location_search_new", "value"),
+    State("locations-list", "data"),
 )
-def add_point_on_map(locations, location):
-    locations = pd.read_json(locations, orient="split", dtype={"id": str})
+def add_point_on_map(location, locations):
+    if location is None:
+        raise PreventUpdate
+
+    locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location]
 
     return (
@@ -142,11 +103,9 @@ def add_point_on_map(locations, location):
 @callback(
     [
         Output("map-scatter-layer", "children", allow_duplicate=True),
-        Output("locations", "options", allow_duplicate=True),
-        Output("locations", "value", allow_duplicate=True),
+        Output("location_search_new", "options", allow_duplicate=True),
+        Output("location_search_new", "value", allow_duplicate=True),
         Output("locations-list", "data", allow_duplicate=True),
-        Output("locations-selected", "data", allow_duplicate=True),
-        Output("location_search", "value", allow_duplicate=True),
     ],
     [Input("map", "click_lat_lng"), Input("map", "clickData")],
     prevent_initial_call=True,
@@ -202,8 +161,6 @@ def map_click(click_lat_lng, clickData):
             options,
             options[0]["value"],
             locations.to_json(orient="split"),  # locations saved in Store
-            {"value": options[0]["value"]},  # selected location saved in Store
-            "",
         )
     else:
         raise PreventUpdate
@@ -211,11 +168,9 @@ def map_click(click_lat_lng, clickData):
 
 @callback(
     [
-        Output("locations", "options", allow_duplicate=True),
-        Output("locations", "value", allow_duplicate=True),
+        Output("location_search_new", "options", allow_duplicate=True),
+        Output("location_search_new", "value", allow_duplicate=True),
         Output("locations-list", "data", allow_duplicate=True),
-        Output("locations-selected", "data", allow_duplicate=True),
-        Output("location_search", "value", allow_duplicate=True),
     ],
     [
         Input("geolocation", "local_date"),  # need it just to force an update!
@@ -271,17 +226,50 @@ def update_location_with_geolocate(_, pos, n_clicks):
             options,
             options[0]["value"],
             locations.to_json(orient="split"),  # locations saved in Store
-            {"value": options[0]["value"]},  # selected location saved in Store
-            "",
         )
     else:
         raise PreventUpdate
 
 
+# When user selects location, save it into the cache
 @callback(
-    Output("locations-selected", "data", allow_duplicate=True),
-    Input("locations", "value"),
+    Output("location-selected", "data", allow_duplicate=True),
+    Input("location_search_new", "value"),
+    State("location_search_new", "options"),
     prevent_initial_call=True,
 )
-def update_locations_value_selected(value):
-    return {"value": value}
+def save_selected_into_cache(selected_location, locations_options):
+    if locations_options is None or len(locations_options) == 0:
+        raise PreventUpdate
+    return [o for o in locations_options if o["value"] == selected_location]
+
+
+# Every time the address change loads address from cache (if it exists)
+@callback(
+    [Output("location_search_new", "options"), Output("location_search_new", "value")],
+    Input("url", "pathname"),
+    [State("location-selected", "data"), State("locations-list", "data")],
+)
+def load_cache(_, location_selected, locations_list):
+    cache_location_selected = no_update
+    cache_locations_list = no_update
+
+    if location_selected is not None and len(location_selected) == 1:
+        cache_location_selected = location_selected[0]["value"]
+
+    if locations_list is not None:
+        locations_list = pd.read_json(StringIO(locations_list), orient="split", dtype={"id": str})
+        options = []
+        for _, row in locations_list.iterrows():
+            options.append(
+                {
+                    "label": (
+                        f"{row['name']} ({byCode(row['country_code'])} | {row['longitude']:.1f}E, "
+                        f"{row['latitude']:.1f}N, {row['elevation']:.0f}m)"
+                    ),
+                    "value": str(row["id"]),
+                }
+            )
+        cache_locations_list = options
+
+    return cache_locations_list, cache_location_selected

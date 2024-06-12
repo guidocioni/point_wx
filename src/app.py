@@ -33,8 +33,9 @@ def serve_layout():
     return html.Div(
         [
             navbar(),
+            dcc.Location(id="url", refresh=False),
             dcc.Store(id='locations-list', data={}, storage_type='local'),
-            dcc.Store(id='locations-selected', data={}, storage_type='local'),
+            dcc.Store(id='location-selected', data={}, storage_type='local'),
             dcc.Store(id='client-details', data={}, storage_type='session'),
             dcc.Store(id='garbage'),
             dbc.Modal(

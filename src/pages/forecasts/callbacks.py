@@ -9,14 +9,12 @@ import pandas as pd
 
 @callback(
     Output("submit-button-deterministic", "disabled"),
-    [Input("locations", "value"),
-     Input("search-button", "n_clicks")],
+    Input("location_search_new", "value"),
 )
-def activate_submit_button(location, _nouse):
-    if location is not None and len(location) >= 2:
-        return False
-    else:
+def activate_submit_button(location):
+    if location is None:
         return True
+    return False
 
 
 @callback(
@@ -36,7 +34,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-deterministic", "n_clicks"),
     [State("locations-list", "data"),
-     State("locations", "value"),
+     State("location_search_new", "value"),
      State("models-selection-deterministic", "value")],
     prevent_initial_call=True
 )

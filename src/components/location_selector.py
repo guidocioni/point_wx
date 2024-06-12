@@ -1,37 +1,19 @@
 import dash_bootstrap_components as dbc
-from dash import html
+from dash import html, dcc
 
 loc_selector = dbc.Card(
     [
         html.Div(id="geo"),
-        dbc.InputGroup(
-            dbc.Input(
-                placeholder="City/Town",
-                id="location_search",
-                type="text",
-                autocomplete="true",
-                persistence=True,
-            ),
-            className="mb-2",
+        dcc.Dropdown(
+            multi=False,
+            id="location_search_new",
+            className="mt-2 col-12",
         ),
-        dbc.ButtonGroup(
-            [
-                dbc.Button(
-                    "Search", id="search-button", color="secondary", className="col-10"
-                ),
-                dbc.Button(
-                    id="geolocate",
-                    className="fa-solid fa-location-dot col-2",
-                    color="secondary",
-                    outline=True,
-                ),
-            ],
-            className="col-12 mb-2",
-        ),
-        dbc.Spinner(
-            dbc.InputGroup(
-                dbc.Select(id="locations", persistence=False), className="mb-2"
-            ),
+        dbc.Button(
+            id="geolocate",
+            className="fa-solid fa-location-dot col-12 mb-2 mt-2",
+            color="secondary",
+            outline=False,
         ),
         dbc.Accordion(
             id="map-accordion",
