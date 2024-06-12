@@ -9,17 +9,7 @@ from .custom_logger import logging, time_this_func
 @time_this_func
 def make_request(url, payload):
     # Attempt to read a file with the apikey
-    api_key = None
-    if os.path.exists(f"{ROOT_DIR}/.apikey"):
-        try:
-            file1 = open(f"{ROOT_DIR}/.apikey", 'r')
-            for line in file1.readlines():
-                api_key = line.strip()
-        except Exception as e:
-            logging.warning(
-                ".apikey file exists but there was an error reading it")
-            logging.warning(f"ERROR: {repr(e)}")
-            api_key = None
+    api_key = os.getenv('OPENMETEO_KEY',None)
 
     if api_key:
         # In this case we have to prepend the 'customer-' string to the url
