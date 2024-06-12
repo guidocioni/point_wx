@@ -95,7 +95,7 @@ clientside_callback(
             if (targetElement) {
                 setTimeout(function() {
                     targetElement.scrollIntoView({ behavior: 'smooth' });
-                }, 500); // in milliseconds
+                }, 800); // in milliseconds
             }
         return null;
     }
