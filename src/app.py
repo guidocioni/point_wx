@@ -72,6 +72,15 @@ def ip(id):
     return str(request.__dict__)
 
 
+# Callback to update the active state of the navbar links
+@callback(
+    [Output({'type': 'navbar-link', 'index': page["relative_path"].split("/")[-1]}, 'active') for page in dash.page_registry.values()],
+    [Input('url', 'pathname')]
+)
+def update_navbar_links(pathname):
+    return [pathname == page["relative_path"] for page in dash.page_registry.values()]
+
+
 clientside_callback(
     """function (id) {
         var myID = document.getElementById(id)

@@ -400,3 +400,7 @@
   padding-right: 2px;
   padding-bottom: 2px;
 }
+
+.nav-pills .nav-link.active {
+  color: #fff;
+}
