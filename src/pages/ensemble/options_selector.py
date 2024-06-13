@@ -13,7 +13,7 @@ opts_selector = dbc.Card(
                     persistence=True
                 ),
             ],
-            className="mb-2",
+            className="mb-1",
         ),
         dbc.InputGroup(
             [

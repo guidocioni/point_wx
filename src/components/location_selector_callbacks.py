@@ -1,6 +1,6 @@
 from dash import callback, Output, Input, State, no_update, html, dcc
 from utils.openmeteo_api import get_locations, get_elevation
-from utils.mapbox_api import get_place_address_reverse
+from utils.mapbox_api import get_place_address_reverse, create_unique_id
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 from utils.flags import byCode, byName
@@ -194,7 +194,7 @@ def map_click(click_lat_lng, clickData):
         place_details = get_place_address_reverse(lon, lat)
         locations = pd.DataFrame(
             {
-                "id": 9999999999, # Fake id just to have one
+                "id": create_unique_id(lat, lon, place_details["name"]), # Fake id just to have one
                 "name": place_details["name"],
                 "latitude": lat,
                 "longitude": lon,
@@ -261,7 +261,7 @@ def update_location_with_geolocate(_, pos, n_clicks):
         place_details = get_place_address_reverse(lon, lat)
         locations = pd.DataFrame(
             {
-                "id": 9999999999, # Fake id just to have one
+                "id": create_unique_id(lat, lon, place_details["name"]), # Fake id just to have one
                 "name": place_details["name"],
                 "latitude": lat,
                 "longitude": lon,

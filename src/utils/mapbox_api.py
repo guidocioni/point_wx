@@ -1,5 +1,6 @@
 import requests as r
 import json
+import hashlib
 from .settings import cache, MAPBOX_API_KEY, MAPBOX_API_PLACES_URL
 
 
@@ -58,3 +59,20 @@ def get_place_address_reverse(lon, lat):
         res['name'] = res['text']
 
     return res
+
+
+def create_unique_id(latitude, longitude, place_name):
+    '''Useful to create a location unique id
+    based on latitude, longitude and place_name'''
+    # Normalize inputs
+    normalized_string = f"{latitude:.4f}{longitude:.4f}{place_name}"
+    
+    # Create a hash of the concatenated string
+    hash_object = hashlib.md5(normalized_string.encode())
+    hash_hex = hash_object.hexdigest()
+    
+    # Convert hash to an integer and take the first 6 digits
+    unique_id = int(hash_hex, 16) % 1000000
+    
+    # Ensure the unique_id is 6 digits long
+    return f"{unique_id:06d}"
