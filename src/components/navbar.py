@@ -7,7 +7,7 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 
 # package imports
 import dash
-from dash import callback, Output, Input, State, ALL, clientside_callback
+from dash import callback, Output, Input, State, ALL, clientside_callback, html
 import dash_bootstrap_components as dbc
 
 
@@ -35,6 +35,12 @@ def navbar():
                     ),
                     id="navbar-collapse",
                     navbar=True,
+                ),
+                html.Div(
+                    id='navbar-title-for-mobile',
+                    className='d-md-none h5',  # Show only on mobile devices
+                    style={'marginLeft': 'auto',
+                           'color': 'white'}
                 ),
             ]
         ),
