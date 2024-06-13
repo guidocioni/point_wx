@@ -1,7 +1,6 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_vertical_data
 from utils.custom_logger import logging
-from utils.flags import byName
 from .figures import make_figure_vertical
 import pandas as pd
 
@@ -33,7 +32,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-vertical", "n_clicks"),
     [State("locations-list", "data"),
-     State("location_search_new", "value"),
+     State("location-selected", "data"),
      State("models-selection-vertical", "value")],
     prevent_initial_call=True
 )
@@ -43,7 +42,7 @@ def generate_figure(n_clicks, locations, location, model):
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
-    loc = locations[locations['id'] == location]
+    loc = locations[locations['id'] == location[0]['value']]
 
     try:
         df, _, time_axis, vertical_levels, arrs = get_vertical_data(
@@ -51,8 +50,8 @@ def generate_figure(n_clicks, locations, location, model):
             longitude=loc['longitude'].item(),
             model=model)
 
-        loc_label = (
-            f"{loc['name'].item()}, {byName(loc['country'].item())} |📍 {float(df.attrs['longitude']):.1f}E"
+        loc_label = location[0]['label'].split("|")[0] + (
+            f"|📍 {float(df.attrs['longitude']):.1f}E"
             f", {float(df.attrs['latitude']):.1f}N, {float(df.attrs['elevation']):.0f}m | "
             f"{model.upper()}"
         )

@@ -1,7 +1,6 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data
 from utils.custom_logger import logging
-from utils.flags import byName
 from .figures import make_heatmap
 import pandas as pd
 
@@ -33,7 +32,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-heatmap", "n_clicks"),
     [State("locations-list", "data"),
-     State("location_search_new", "value"),
+     State("location-selected", "data"),
      State("models-selection-heatmap", "value"),
      State("variable-selection-heatmap", "value")],
     prevent_initial_call=True
@@ -44,7 +43,7 @@ def generate_figure(n_clicks, locations, location, model, variable):
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
-    loc = locations[locations['id'] == location]
+    loc = locations[locations['id'] == location[0]['value']]
 
     try:
         data = get_ensemble_data(latitude=loc['latitude'].item(),
@@ -53,8 +52,8 @@ def generate_figure(n_clicks, locations, location, model, variable):
                                  decimate=True,
                                  from_now=True)
 
-        loc_label = (
-            f"{loc['name'].item()}, {byName(loc['country'].item())} |📍 {float(data.attrs['longitude']):.1f}E"
+        loc_label = location[0]['label'].split("|")[0] + (
+            f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f"{variable} | "
             f"Ens: {model.upper()}"

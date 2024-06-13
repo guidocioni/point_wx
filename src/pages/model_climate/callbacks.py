@@ -42,7 +42,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-climate", "n_clicks"),
     [State("locations-list", "data"),
-     State("location_search_new", "value"),
+     State("location-selected", "data"),
      State("models-selection-climate", "value"),
      State("date-start-climate", "date"),
      State("date-end-climate", "date")],
@@ -56,7 +56,7 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
-    loc = locations[locations['id'] == location]
+    loc = locations[locations['id'] == location[0]['value']]
 
     try:
         data = compute_monthly_clima(

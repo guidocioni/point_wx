@@ -3,7 +3,6 @@ from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climat
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR
 from utils.custom_logger import logging
-from utils.flags import byName
 from .figures import make_subplot_figure
 import pandas as pd
 
@@ -35,7 +34,7 @@ def toggle_fade(n):
      Output("error-modal", "is_open", allow_duplicate=True)],
     Input("submit-button-meteogram", "n_clicks"),
     [State("locations-list", "data"),
-     State("location_search_new", "value"),
+     State("location-selected", "data"),
      State("models-selection-meteogram", "value")],
     prevent_initial_call=True
 )
@@ -45,7 +44,7 @@ def generate_figure(n_clicks, locations, location, model):
 
     # unpack locations data
     locations = pd.read_json(locations, orient='split', dtype={"id": str})
-    loc = locations[locations['id'] == location]
+    loc = locations[locations['id'] == location[0]['value']]
 
     try:
         data = compute_daily_ensemble_meteogram(
@@ -67,8 +66,8 @@ def generate_figure(n_clicks, locations, location, model):
                                       'precipitation_sum':'daily_prec_clima',
                                       'sunshine_duration':'sunshine_clima'})
 
-        loc_label = (
-            f"{loc['name'].item()}, {byName(loc['country'].item())} |📍 {float(data.attrs['longitude']):.1f}E"
+        loc_label = location[0]['label'].split("|")[0] + (
+            f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f"{model.upper()}"
         )

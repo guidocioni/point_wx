@@ -24,6 +24,7 @@ def make_request(url, payload):
     return resp
 
 
+@cache.memoize(86400)
 def get_locations(name, count=10, language='en'):
     """
     Get a list of locations based on a name
