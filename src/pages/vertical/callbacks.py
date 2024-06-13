@@ -6,31 +6,10 @@ import pandas as pd
 
 
 @callback(
-    Output("submit-button-vertical", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-@callback(
-    Output("fade-vertical", "is_open"),
-    [Input("submit-button-vertical", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
-
-
-@callback(
     [Output("plot-vertical", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button-vertical", "n_clicks"),
+    Input({"type":"submit-button", "index": "vertical"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-vertical", "value")],
@@ -82,7 +61,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('submit-button-vertical', 'n_clicks'),
+    Input({"type":"submit-button", "index": "vertical"}, 'n_clicks'),
     [State('plot-vertical', 'id')],
     prevent_initial_call=True
 )

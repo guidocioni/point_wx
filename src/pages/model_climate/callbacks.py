@@ -10,26 +10,6 @@ from .figures import (make_clouds_climate_figure,
 import pandas as pd
 from datetime import date
 
-@callback(
-    Output("submit-button-climate", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-
-@callback(
-    Output("fade-climate", "is_open"),
-    [Input("submit-button-climate", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
 
 @callback(
     [Output("temp-prec-climate-figure", "figure"),
@@ -40,7 +20,7 @@ def toggle_fade(n):
      Output("winds-rose-climate-figure", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button-climate", "n_clicks"),
+    Input({"type":"submit-button", "index": "monthly"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-climate", "value"),
@@ -109,7 +89,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('submit-button-climate', 'n_clicks'),
+    Input({"type":"submit-button", "index": "monthly"}, 'n_clicks'),
     [State('temp-prec-climate-figure', 'id')],
     prevent_initial_call=True
 )

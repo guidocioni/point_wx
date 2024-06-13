@@ -43,7 +43,7 @@ layout = html.Div(
                         dbc.Col(dbc.Spinner(fig_temp_climate_daily))
                     ]
                 ),
-            ], id="fade-climate-daily",
+            ], id={'type':'fade', 'index':'daily'},
             is_open=False
         )
 

@@ -6,31 +6,10 @@ import pandas as pd
 
 
 @callback(
-    Output("submit-button-heatmap", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-@callback(
-    Output("fade-heatmap", "is_open"),
-    [Input("submit-button-heatmap", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
-
-
-@callback(
     [Output("ensemble-plot-heatmap", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button-heatmap", "n_clicks"),
+    Input({"type":"submit-button", "index": "heatmap"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-heatmap", "value"),
@@ -84,7 +63,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('submit-button-heatmap', 'n_clicks'),
+    Input({"type":"submit-button", "index": "heatmap"}, "n_clicks"),
     [State('ensemble-plot-heatmap', 'id')],
     prevent_initial_call=True
 )

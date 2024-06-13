@@ -6,32 +6,11 @@ import pandas as pd
 
 
 @callback(
-    Output("submit-button-climate-daily", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-@callback(
-    Output("fade-climate-daily", "is_open"),
-    [Input("submit-button-climate-daily", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
-
-
-@callback(
     [Output("prec-climate-daily-figure", "figure"),
      Output("temp-climate-daily-figure", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button-climate-daily", "n_clicks"),
+    Input({"type":"submit-button", "index": "daily"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-climate-daily", "value"),
@@ -100,7 +79,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('submit-button-climate-daily', 'n_clicks'),
+    Input({"type":"submit-button", "index": "daily"}, 'n_clicks'),
     [State('prec-climate-daily-figure', 'id')],
     prevent_initial_call=True
 )

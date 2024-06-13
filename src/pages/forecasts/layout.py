@@ -40,7 +40,7 @@ layout = html.Div(
                 dbc.Collapse(
                     dbc.Col(
                         dbc.Spinner(fig_subplots)),
-                    id="fade-deterministic",
+                    id={'type':'fade', 'index':'deterministic'},
                     is_open=False)
             ]
         ),

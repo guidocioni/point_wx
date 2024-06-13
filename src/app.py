@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Output, Input, clientside_callback
+from dash import html, dcc, callback, Output, Input, clientside_callback, MATCH
 import dash_bootstrap_components as dbc
 from utils.settings import APP_HOST, APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
@@ -102,6 +102,36 @@ def update_navbar_title(pathname, is_open):
         return page_titles.get(pathname, "")
     else:
         return ""
+
+
+@callback(
+    Output({"type":"submit-button", "index": MATCH}, "disabled"),
+    Input("location_search_new", "value"),
+)
+def activate_submit_button(location):
+    '''
+    Disable submit button (on all pages) unless
+    a location has been selected
+    '''
+    if location is None:
+        return True
+    return False
+
+
+@callback(
+    Output({"type":"fade", "index": MATCH}, 'is_open',),
+    Input({"type":"submit-button", "index": MATCH}, "n_clicks"),
+    prevent_initial_call=True
+)
+def toggle_fade(n):
+    '''
+    Open the collapse element containing the plots once 
+    the submit button has been pressed (on all pages)
+    '''
+    if not n:
+        # Button has never been clicked
+        return False
+    return True
 
 
 clientside_callback(

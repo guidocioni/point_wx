@@ -41,7 +41,7 @@ layout = html.Div(
                 dbc.Collapse(
                     dbc.Col(
                         dbc.Spinner(fig_subplots)),
-                    id="fade-heatmap",
+                    id={'type':'fade', 'index':'heatmap'},
                     is_open=False)
             ]
         ),

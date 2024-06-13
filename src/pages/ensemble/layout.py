@@ -47,7 +47,7 @@ layout = html.Div(
                         # dbc.Spinner(fig_polar)
                     ]
                 ),
-                id="fade-ensemble",
+                id={'type':'fade', 'index':'ensemble'},
                 is_open=False)
         ),
     ]

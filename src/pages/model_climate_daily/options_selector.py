@@ -30,7 +30,8 @@ opts_selector = dbc.Card(
             className="mb-2",
         ),
         dbc.Button("Submit",
-                   id="submit-button-climate-daily",
+                   id={"type": "submit-button",
+                       "index": "daily"},
                    className="mb-2 col-12",
                    size='lg',
                    disabled=True)

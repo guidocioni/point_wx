@@ -41,7 +41,7 @@ layout = html.Div(
                         dbc.Spinner(fig_subplots),
                     ]
                 ),
-                id="fade-meteogram",
+                id={'type':'fade', 'index':'meteogram'},
                 is_open=False)
         ),
     ]

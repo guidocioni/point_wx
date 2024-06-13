@@ -9,33 +9,11 @@ from io import StringIO
 
 
 @callback(
-    Output("submit-button", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-# Hide the plots until the button hasn't been clicked
-@callback(
-    Output("fade-ensemble", "is_open"),
-    [Input("submit-button", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
-
-
-@callback(
-    [Output("ensemble-plot", "figure"),
+    [Output('ensemble-plot', "figure"),
      #  Output("polar-plot", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button", "n_clicks"),
+    Input({"type":"submit-button", "index": "ensemble"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection", "value"),
@@ -104,7 +82,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data'),
-    Input('submit-button', 'n_clicks'),
+    Input({"type":"submit-button", "index": "ensemble"}, 'n_clicks'),
     [State('ensemble-plot', 'id')],
     prevent_initial_call=True
 )

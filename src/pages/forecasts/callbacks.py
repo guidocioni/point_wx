@@ -7,31 +7,10 @@ import pandas as pd
 
 
 @callback(
-    Output("submit-button-deterministic", "disabled"),
-    Input("location_search_new", "value"),
-)
-def activate_submit_button(location):
-    if location is None:
-        return True
-    return False
-
-
-@callback(
-    Output("fade-deterministic", "is_open"),
-    [Input("submit-button-deterministic", "n_clicks")],
-)
-def toggle_fade(n):
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
-
-
-@callback(
     [Output("forecast-plot", "figure"),
      Output("error-message", "children", allow_duplicate=True),
      Output("error-modal", "is_open", allow_duplicate=True)],
-    Input("submit-button-deterministic", "n_clicks"),
+    Input({"type":"submit-button", "index": "deterministic"}, "n_clicks"),
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-deterministic", "value")],
@@ -77,6 +56,7 @@ clientside_callback(
     """
     function(n_clicks, element_id) {
             var targetElement = document.getElementById(element_id);
+            console.log(targetElement)
             if (targetElement) {
                 setTimeout(function() {
                     targetElement.scrollIntoView({ behavior: 'smooth' });
@@ -86,7 +66,7 @@ clientside_callback(
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input('submit-button-deterministic', 'n_clicks'),
+    Input({"type":"submit-button", "index": "deterministic"}, 'n_clicks'),
     [State('forecast-plot', 'id')],
     prevent_initial_call=True
 )
