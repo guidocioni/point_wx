@@ -25,6 +25,7 @@ def make_heatmap(df, var, title=None):
         df.loc[:, df.columns.str.contains(var)].T,
         x=df['time'],
         text_auto=True,
+        aspect='auto',
         color_continuous_scale=cmap,
         origin='lower')
 
