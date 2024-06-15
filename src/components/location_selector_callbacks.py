@@ -13,23 +13,36 @@ def create_options(locations):
     """Helper function to create an options element
     for a dropdown component starting from a dataframe of locations.
     locations should always be a pd.Dataframe.
-    Also take care of duplicates by smartly completing with region 
+    Also take care of duplicates by smartly completing with region
     informations"""
     locations = locations.copy()
-    locations['duplicated_name'] = locations.duplicated(subset=['country','name'], keep=False)
-    locations['duplicated_name_and_region'] = locations.duplicated(subset=['country','name', 'admin1'], keep=False)
-    locations = locations.merge(flags_df[['code','emoji','unicode']], left_on='country_code', right_on='code')
+    locations["duplicated_name"] = locations.duplicated(
+        subset=["country", "name"], keep=False
+    )
+    locations["duplicated_name_and_region"] = locations.duplicated(
+        subset=["country", "name", "admin1"], keep=False
+    )
+    locations = locations.merge(
+        flags_df[["code", "emoji", "unicode"]], left_on="country_code", right_on="code"
+    )
+
     def formatter(x):
         return (
-        f"{x['name']}"
-        f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region']  and not pd.isna(x['admin1'])  else ''}"
-        f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
-        f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and pd.isna(x['admin2']) else ''}"
-        f" ({x['emoji']}| {x['longitude']:.1f}E, "
-        f"{x['latitude']:.1f}N, {x['elevation']:.0f}m)")
-    locations['label'] = locations.apply(formatter, axis=1)
-    locations['id'] = locations['id'].astype(str)
-    options = locations[['id','label']].rename(columns={'id': 'value'}).to_dict(orient='records')
+            f"{x['name']}"
+            f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region']  and not pd.isna(x['admin1'])  else ''}"
+            f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
+            f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and pd.isna(x['admin2']) else ''}"
+            f" ({x['emoji']}| {x['longitude']:.1f}E, "
+            f"{x['latitude']:.1f}N, {x['elevation']:.0f}m)"
+        )
+
+    locations["label"] = locations.apply(formatter, axis=1)
+    locations["id"] = locations["id"].astype(str)
+    options = (
+        locations[["id", "label"]]
+        .rename(columns={"id": "value"})
+        .to_dict(orient="records")
+    )
 
     return options
 
@@ -37,9 +50,9 @@ def create_options(locations):
 @callback(
     [Output("location_search_new", "options"), Output("location_search_new", "value")],
     Input("url", "pathname"),
-    [State("location-selected", "data"), State("locations-list", "data")],
+    [State("location-selected", "data"), State("locations-list", "data"), State('location-favorites', 'data')],
 )
-def load_cache(_, location_selected, locations_list):
+def load_cache(_, location_selected, locations_list, locations_favorites):
     """
     Every time the URL of the app changes (which happens when we load or change page)
     then load the selected value (and options) into the app.
@@ -49,14 +62,17 @@ def load_cache(_, location_selected, locations_list):
     cache_location_selected = no_update
     cache_locations_list = no_update
 
-    if location_selected is not None and len(location_selected) == 1:
-        cache_location_selected = location_selected[0]["value"]
-
     if locations_list is not None and len(locations_list) >= 1:
         locations_list = pd.read_json(
             StringIO(locations_list), orient="split", dtype={"id": str}
         )
         cache_locations_list = create_options(locations_list)
+        # Add favorites to options
+        if len(locations_favorites) > 0:
+            cache_locations_list += locations_favorites
+
+    if location_selected is not None and len(location_selected) == 1:
+        cache_location_selected = location_selected[0]["value"]
 
     return cache_locations_list, cache_location_selected
 
@@ -76,7 +92,7 @@ def suggest_locs_dropdown(value):
     """
     if value is None or len(value) < 4:
         raise PreventUpdate
-    locations = get_locations(value, count=5)
+    locations = get_locations(value, count=5) # Get up to a maximum of 5 options
     if len(locations) == 0:
         raise PreventUpdate
     options = create_options(locations)
@@ -85,12 +101,15 @@ def suggest_locs_dropdown(value):
 
 
 @callback(
-    Output("location-selected", "data", allow_duplicate=True),
+    [
+        Output("location-selected", "data", allow_duplicate=True),
+        Output("location-favorites", "data"),
+    ],
     Input("location_search_new", "value"),
-    State("location_search_new", "options"),
+    [State("location_search_new", "options"), State("location-favorites", "data")],
     prevent_initial_call=True,
 )
-def save_selected_into_cache(selected_location, locations_options):
+def save_selected_into_cache(selected_location, locations_options, locations_favorites):
     """
     When the user selects a location (doesn't matter how)
     then save the selected value
@@ -99,7 +118,19 @@ def save_selected_into_cache(selected_location, locations_options):
     """
     if locations_options is None or len(locations_options) == 0:
         raise PreventUpdate
-    return [o for o in locations_options if o["value"] == selected_location]
+    selected = [o for o in locations_options if o["value"] == selected_location]
+    # locations_favorites should be an empty list the first time the user
+    # uses the application
+    if selected[0]["value"] not in [d["value"] for d in locations_favorites]:
+        # Append the new dictionary to the list
+        locations_favorites.append(selected[0])
+    # Ensure the favorite/recent list does not exceed a length of 5
+    if len(locations_favorites) > 5:
+        locations_favorites = locations_favorites[-5:]
+
+    return [
+        o for o in locations_options if o["value"] == selected_location
+    ], locations_favorites
 
 
 @callback(
