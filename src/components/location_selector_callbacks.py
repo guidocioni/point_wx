@@ -71,7 +71,7 @@ def load_cache(_, location_selected, locations_list, locations_favorites):
         if len(locations_favorites) > 0:
             cache_locations_list += locations_favorites
 
-    if location_selected is not None:
+    if location_selected is not None and len(location_selected) >=1:
         cache_location_selected = location_selected[0]["value"]
 
     return cache_locations_list, cache_location_selected
@@ -177,7 +177,7 @@ def create_map(item):
 
 
 @callback(
-    [Output("map-scatter-layer", "children"), Output("map", "center")],
+    [Output("map-scatter-layer", "children"), Output("map", "viewport")],
     Input("location_search_new", "value"),
     State("locations-list", "data"),
 )
@@ -197,7 +197,7 @@ def add_point_on_map(location, locations):
 
     return (
         dl.Marker(position=[loc["latitude"].item(), loc["longitude"].item()]),
-        [loc["latitude"].item(), loc["longitude"].item()],
+        dict(center=[loc["latitude"].item(), loc["longitude"].item()], zoom=9)
     )
 
 
