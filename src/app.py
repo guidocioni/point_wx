@@ -31,7 +31,6 @@ def serve_layout():
     return html.Div(
         [
             navbar(),
-            dcc.Location(id="url", refresh=False),
             dcc.Store(id="locations-list", data={}, storage_type="local"),
             dcc.Store(id="location-selected", data={}, storage_type="local"),
             dcc.Store(id='location-favorites', data=[], storage_type="local"),
@@ -49,6 +48,7 @@ def serve_layout():
                 backdrop="static",
             ),
             dbc.Container(dash.page_container, class_name="my-2", id="content"),
+            dcc.Location(id="url", refresh=False),
             footer,
         ],
         id="app-div",

@@ -71,7 +71,7 @@ def load_cache(_, location_selected, locations_list, locations_favorites):
         if len(locations_favorites) > 0:
             cache_locations_list += locations_favorites
 
-    if location_selected is not None and len(location_selected) == 1:
+    if location_selected is not None:
         cache_location_selected = location_selected[0]["value"]
 
     return cache_locations_list, cache_location_selected
