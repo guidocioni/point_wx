@@ -15,6 +15,12 @@ def navbar():
     return dbc.Navbar(
         dbc.Container(
             [
+                dbc.NavbarBrand('PointWx ⛈️', class_name='fs-2'),
+                html.Div(
+                    id='navbar-title-for-mobile',
+                    className='d-md-none fs-5',  # Show only on mobile devices
+                    style={'color': 'white'}
+                ),
                 dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
                 dbc.Collapse(
                     dbc.Nav(
@@ -36,12 +42,7 @@ def navbar():
                     id="navbar-collapse",
                     navbar=True,
                 ),
-                html.Div(
-                    id='navbar-title-for-mobile',
-                    className='d-md-none h5',  # Show only on mobile devices
-                    style={'marginLeft': 'auto',
-                           'color': 'white'}
-                ),
+                
             ]
         ),
         color="dark",
