@@ -4,6 +4,8 @@ import plotly.io as pio
 import utils.custom_theme
 from utils.custom_logger import logging
 import os
+import platform
+import tempfile
 
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
 ASSETS_DIR = os.path.join(ROOT_DIR, 'src', 'assets')
@@ -13,6 +15,7 @@ APP_PORT = 8083
 URL_BASE_PATHNAME = '/pointwx/'
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", "")
 MAPBOX_API_PLACES_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places'
+CACHE_DIR='/var/cache/pointwx/'
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
@@ -20,8 +23,58 @@ DEFAULT_TEMPLATE = "custom"
 # Now we set the default template throughout the application
 pio.templates.default = DEFAULT_TEMPLATE
 
-cache = Cache(config={'CACHE_TYPE': 'filesystem',
-                      'CACHE_DIR': '/var/cache/pointwx'})
+# Set cache directory for flask_caching.
+# Handle different systems
+def get_cache_directory():
+    system = platform.system()
+    if system == 'Linux' or system == 'Darwin':  # Darwin is MacOS
+        primary_cache_dir = CACHE_DIR
+        fallback_cache_dir = os.path.join(tempfile.gettempdir(), 'pointwx')
+    else:
+        # Default case for unknown systems
+        primary_cache_dir = os.path.join(tempfile.gettempdir(), 'pointwx')
+
+    if os.path.exists(primary_cache_dir):
+        if os.access(primary_cache_dir, os.W_OK):
+            logging.info(f"Using {primary_cache_dir} as cache directory")
+            return primary_cache_dir
+        else:
+            logging.warning(f"Primary cache directory {primary_cache_dir} is not writable.")
+    else:
+        try:
+            os.makedirs(primary_cache_dir, exist_ok=True)
+            if os.access(primary_cache_dir, os.W_OK):
+                logging.info(f"Using {primary_cache_dir} as cache directory")
+                return primary_cache_dir
+        except Exception as e:
+            logging.warning(f"Could not create primary cache directory {primary_cache_dir}: {e}. Falling back.")
+
+    if os.path.exists(fallback_cache_dir):
+        if os.access(fallback_cache_dir, os.W_OK):
+            logging.info(f"Using {fallback_cache_dir} as cache directory")
+            return fallback_cache_dir
+        else:
+            logging.warning(f"Fallback cache directory {fallback_cache_dir} is not writable.")
+    else:
+        try:
+            os.makedirs(fallback_cache_dir, exist_ok=True)
+            if os.access(fallback_cache_dir, os.W_OK):
+                logging.info(f"Using {fallback_cache_dir} as cache directory")
+                return fallback_cache_dir
+        except Exception as e:
+            logging.warning(f"Could not create fallback cache directory {fallback_cache_dir}: {e}")
+    logging.warning("No suitable cache directory found. Disabling cache!")
+
+    return None
+
+cache_dir = get_cache_directory()
+
+if cache_dir:
+    cache = Cache(config={"CACHE_TYPE": "filesystem",
+                          "CACHE_DIR": cache_dir})
+else:
+    cache = Cache(config={"CACHE_TYPE": "null"})
+
 
 images_config = {
     'toImageButtonOptions': {
