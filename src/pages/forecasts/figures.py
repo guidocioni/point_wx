@@ -186,9 +186,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
     fig.update_layout(
         dragmode=False,
-        xaxis=dict(showgrid=True,
-                   range=[data['time'].min() - pd.to_timedelta('1h'),
-                          data['time'].max() + pd.to_timedelta('1h')]),
+        xaxis=dict(showgrid=True),
         height=1000,
         margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
         barmode='overlay',
@@ -247,7 +245,9 @@ def make_subplot_figure(data, models, title=None, sun=None):
                      showgrid=False, minor=dict(showgrid=False))
     fig.update_xaxes(minor=dict(ticks="inside", showgrid=True,
                      gridwidth=1),
-                     tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4)
+                     tickformat='%a %d %b\n%H:%M', showgrid=True, gridwidth=4,
+                     range=[data['time'].min() - pd.to_timedelta('1h'),
+                          data['time'].max() + pd.to_timedelta('1h')])
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14)))
 

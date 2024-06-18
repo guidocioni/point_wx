@@ -299,7 +299,7 @@ def get_ensemble_data(latitude=53.55,
             # First we do a rolling sum over the same period (3 hours) and then take only the
             # first value
             acc_vars = data.loc[:, data.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
-                window='3H', on='time').sum().resample('3h', on='time', origin=data.iloc[0]['time']).first()
+                window='3h', on='time').sum().resample('3h', on='time', origin=data.iloc[0]['time']).first()
             # Now the variables that are instantaneous
             # In this case we can just take the first value directly every 3 hours
             inst_vars = data.loc[:, data.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
@@ -307,7 +307,7 @@ def get_ensemble_data(latitude=53.55,
             # Now variables with different aggregations (like preceding hour maximum)
             if 'windgusts_10m' in data.columns:
                 max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
-                    window='3H', on='time').max().resample('3H', on='time', origin=data.iloc[0]['time']).first()
+                    window='3h', on='time').max().resample('3h', on='time', origin=data.iloc[0]['time']).first()
             # Now merge everything together and overwrite the original data
             data = acc_vars.merge(inst_vars, left_index=True, right_index=True).reset_index()
             if 'windgusts_10m' in data.columns:

@@ -238,7 +238,7 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
 
 @time_this_func
 def make_subplot_figure(data, clima=None, title=None, sun=None):
-    traces_temp = make_lineplot_timeseries(data, "temperature_2m", clima, break_hours='1h')
+    traces_temp = make_lineplot_timeseries(data, "temperature_2m", clima, break_hours='12h')
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     height_graph = 0.0
     subplot_title = ""
@@ -280,10 +280,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         modebar=dict(orientation='v'),
         dragmode=False,
         xaxis=dict(
-            range=[
-                data["time"].min() - pd.to_timedelta("2h"),
-                data["time"].max() + pd.to_timedelta("2h"),
-            ],
             showgrid=True,
             minor=dict(ticks="inside", showgrid=True, gridwidth=3),
             gridwidth=4,
@@ -334,9 +330,9 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
                         args=[
                             {
                                 "xaxis.range[0]": data["time"].min()
-                                - pd.to_timedelta("2h"),
+                                - pd.to_timedelta("1h"),
                                 "xaxis.range[1]": data["time"].max()
-                                + pd.to_timedelta("2h"),
+                                + pd.to_timedelta("1h"),
                             }
                         ],
                     ),
@@ -367,12 +363,15 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_yaxes(
         row=3,
         col=1,
-        range=[0, (data["rain_mean"].max() + data["snowfall_mean"].max()) * 1.1],
+        range=[0, (data["rain_mean"].max() + data["snowfall_mean"].max()) * 1.2],
     )
     fig.update_yaxes(range=[0, 100], row=4, col=1)
     # we need to re-set it here otherwise it only applies to the first plot
     fig.update_yaxes(showgrid=True, gridwidth=4)
-    fig.update_xaxes(showgrid=True, gridwidth=4)
+    fig.update_xaxes(showgrid=True, gridwidth=4, range=[
+                data["time"].min() - pd.to_timedelta("1h"),
+                data["time"].max() + pd.to_timedelta("1h"),
+            ],)
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
