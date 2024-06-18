@@ -70,6 +70,8 @@ def load_cache(_, location_selected, locations_list, locations_favorites):
         # Add favorites to options
         if len(locations_favorites) > 0:
             cache_locations_list += locations_favorites
+        # Remove duplicates
+        cache_locations_list = list({d['value']: d for d in cache_locations_list}.values())
 
     if location_selected is not None and len(location_selected) >=1:
         cache_location_selected = location_selected[0]["value"]
