@@ -3,6 +3,8 @@ from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comp
 from utils.custom_logger import logging
 from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
+from io import StringIO
+
 
 
 @callback(
@@ -23,7 +25,7 @@ def generate_figure(n_clicks, locations, location, model, year):
                 no_update, no_update]
 
     # unpack locations data
-    locations = pd.read_json(locations, orient='split', dtype={"id": str})
+    locations = pd.read_json(StringIO(locations), orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location[0]['value']]
     loc_label = location[0]['label'].split("|")[0] + (
         f"| {float(loc['longitude'].item()):.1f}E"

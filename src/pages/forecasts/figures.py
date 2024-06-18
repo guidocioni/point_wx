@@ -41,7 +41,7 @@ def make_lineplot_timeseries(df, var, models, mode='lines+markers', showlegend=F
 
 
 def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='winddirection_10m', showlegend=False):
-    df = df.resample('3H', on='time').mean().reset_index()
+    df = df.resample('3h', on='time').mean().reset_index()
     traces = []
     # Define cyclical colors to be used
     colors = pio.templates[DEFAULT_TEMPLATE]['layout']['colorway'] * 5
@@ -122,7 +122,7 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
             var_weather_model = 'weather_code'
             var_model = var
         if var_weather_model in data:
-            data = data.resample('12H', on='time').max().reset_index()
+            data = data.resample('12h', on='time').max().reset_index()
             data = get_weather_icons(data,
                                      var=var_weather_model,
                                      icons_path=f"{ASSETS_DIR}/yrno_png/",

@@ -9,6 +9,7 @@ from .figures import (make_clouds_climate_figure,
                       make_wind_rose_figure)
 import pandas as pd
 from datetime import date
+from io import StringIO
 
 
 @callback(
@@ -35,7 +36,7 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
                 no_update, no_update, no_update]
 
     # unpack locations data
-    locations = pd.read_json(locations, orient='split', dtype={"id": str})
+    locations = pd.read_json(StringIO(locations), orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location[0]['value']]
 
     try:

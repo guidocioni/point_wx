@@ -82,7 +82,7 @@ def load_cache(_, location_selected, locations_list):
         Output("locations-list", "data"),
     ],
     Input("location_search_new", "search_value"),
-    State("location-favorites", "data"),
+    State("locations-favorites", "data"),
     prevent_initial_call=True,
 )
 def suggest_locs_dropdown(value, locations_favorites):
@@ -106,11 +106,11 @@ def suggest_locs_dropdown(value, locations_favorites):
 @callback(
     [
         Output("location-selected", "data", allow_duplicate=True),
-        Output("location-favorites", "data"),
+        Output("locations-favorites", "data"),
     ],
     Input("location_search_new", "value"),
     [State("location_search_new", "options"),
-     State("location-favorites", "data"),
+     State("locations-favorites", "data"),
      State("locations-list", "data")],
     prevent_initial_call=True,
 )
@@ -220,7 +220,7 @@ def add_point_on_map(location, locations):
         Input("map", "click_lat_lng"),  # We cover also an outdated Dash leaflet method
         Input("map", "clickData"),
     ],
-    State("location-favorites", "data"),
+    State("locations-favorites", "data"),
     prevent_initial_call=True,
 )
 def map_click(click_lat_lng, clickData, locations_favorites):
@@ -291,7 +291,7 @@ def map_click(click_lat_lng, clickData, locations_favorites):
         Input("geolocation", "position"),
     ],
     [State("geolocate", "n_clicks"),
-     State("location-favorites", "data")],
+     State("locations-favorites", "data")],
     prevent_initial_call=True,
 )
 def update_location_with_geolocate(_, pos, n_clicks, locations_favorites):
