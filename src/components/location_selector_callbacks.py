@@ -50,9 +50,9 @@ def create_options(locations):
 @callback(
     [Output("location_search_new", "options"), Output("location_search_new", "value")],
     Input("url", "pathname"),
-    [State("location-selected", "data"), State("locations-list", "data"), State('location-favorites', 'data')],
+    [State("location-selected", "data"), State("locations-list", "data")],
 )
-def load_cache(_, location_selected, locations_list, locations_favorites):
+def load_cache(_, location_selected, locations_list):
     """
     Every time the URL of the app changes (which happens when we load or change page)
     then load the selected value (and options) into the app.
@@ -67,9 +67,6 @@ def load_cache(_, location_selected, locations_list, locations_favorites):
             StringIO(locations_list), orient="split", dtype={"id": str}
         )
         cache_locations_list = create_options(locations_list)
-        # Add favorites to options
-        if len(locations_favorites) > 0:
-            cache_locations_list += locations_favorites
         # Remove duplicates
         cache_locations_list = list({d['value']: d for d in cache_locations_list}.values())
 
@@ -85,9 +82,10 @@ def load_cache(_, location_selected, locations_list, locations_favorites):
         Output("locations-list", "data"),
     ],
     Input("location_search_new", "search_value"),
+    State("location-favorites", "data"),
     prevent_initial_call=True,
 )
-def suggest_locs_dropdown(value):
+def suggest_locs_dropdown(value, locations_favorites):
     """
     When the user types, update the dropdown with locations
     found with the API
@@ -95,6 +93,9 @@ def suggest_locs_dropdown(value):
     if value is None or len(value) < 4:
         raise PreventUpdate
     locations = get_locations(value, count=5) # Get up to a maximum of 5 options
+    if locations_favorites:
+        locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
+        locations = pd.concat([locations, locations_favorites])
     if len(locations) == 0:
         raise PreventUpdate
     options = create_options(locations)
@@ -108,10 +109,12 @@ def suggest_locs_dropdown(value):
         Output("location-favorites", "data"),
     ],
     Input("location_search_new", "value"),
-    [State("location_search_new", "options"), State("location-favorites", "data")],
+    [State("location_search_new", "options"),
+     State("location-favorites", "data"),
+     State("locations-list", "data")],
     prevent_initial_call=True,
 )
-def save_selected_into_cache(selected_location, locations_options, locations_favorites):
+def save_selected_into_cache(selected_location, locations_options, locations_favorites, locations_list):
     """
     When the user selects a location (doesn't matter how)
     then save the selected value
@@ -120,19 +123,23 @@ def save_selected_into_cache(selected_location, locations_options, locations_fav
     """
     if locations_options is None or len(locations_options) == 0:
         raise PreventUpdate
+    locations_list = pd.read_json(StringIO(locations_list), orient="split", dtype={"id": str})
     selected = [o for o in locations_options if o["value"] == selected_location]
-    # locations_favorites should be an empty list the first time the user
-    # uses the application
-    if selected[0]["value"] not in [d["value"] for d in locations_favorites]:
-        # Append the new dictionary to the list
-        locations_favorites.append(selected[0])
-    # Ensure the favorite/recent list does not exceed a length of 5
-    if len(locations_favorites) > 5:
-        locations_favorites = locations_favorites[-5:]
+    locations_list = locations_list[locations_list["id"] == selected[0]["value"]]
+
+    if locations_favorites:
+        locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
+        if len(locations_list) > 0 and selected[0]["value"] not in locations_favorites['id'].unique():
+            locations_favorites = pd.concat([locations_favorites, locations_list])
+            # Ensure the favorite/recent list does not exceed a length of 5
+            if len(locations_favorites) > 5:
+                locations_favorites = locations_favorites[-5:]
+    else:
+        locations_favorites = locations_list
 
     return [
         o for o in locations_options if o["value"] == selected_location
-    ], locations_favorites
+    ], locations_favorites.to_json(orient="split")
 
 
 @callback(
@@ -213,9 +220,10 @@ def add_point_on_map(location, locations):
         Input("map", "click_lat_lng"),  # We cover also an outdated Dash leaflet method
         Input("map", "clickData"),
     ],
+    State("location-favorites", "data"),
     prevent_initial_call=True,
 )
-def map_click(click_lat_lng, clickData):
+def map_click(click_lat_lng, clickData, locations_favorites):
     """
     When clicking on the map update the selected location with
     the coordinates of the point clicked
@@ -257,6 +265,10 @@ def map_click(click_lat_lng, clickData):
                 "admin4": "",
             }
         )
+        if locations_favorites:
+            locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
+            locations = pd.concat([locations, locations_favorites])
+
         options = create_options(locations)
 
         return (
@@ -278,10 +290,11 @@ def map_click(click_lat_lng, clickData):
         Input("geolocation", "local_date"),  # need it just to force an update!
         Input("geolocation", "position"),
     ],
-    State("geolocate", "n_clicks"),
+    [State("geolocate", "n_clicks"),
+     State("location-favorites", "data")],
     prevent_initial_call=True,
 )
-def update_location_with_geolocate(_, pos, n_clicks):
+def update_location_with_geolocate(_, pos, n_clicks, locations_favorites):
     """
     When a new position with geolocation is obtained
     update the location selection
@@ -320,6 +333,9 @@ def update_location_with_geolocate(_, pos, n_clicks):
                 "admin4": "",
             }
         )
+        if locations_favorites:
+            locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
+            locations = pd.concat([locations, locations_favorites])
         options = create_options(locations)
 
         return (
