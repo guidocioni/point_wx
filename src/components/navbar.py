@@ -18,7 +18,7 @@ def navbar():
                 dbc.NavbarBrand('PointWx ⛈️', class_name='fs-2'),
                 html.Div(
                     id='navbar-title-for-mobile',
-                    className='d-md-none fs-5',  # Show only on mobile devices
+                    className='d-lg-none fs-5',  # Show only on mobile devices
                     style={'color': 'white'}
                 ),
                 dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
@@ -47,6 +47,7 @@ def navbar():
         ),
         color="dark",
         dark=True,
+        expand='lg'
     )
 
 

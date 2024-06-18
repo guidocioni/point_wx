@@ -7,7 +7,7 @@ loc_selector = dbc.Card(
         dcc.Dropdown(
             multi=False,
             id="location_search_new",
-            className="mt-2 col-12",
+            className="col-12",
             style={'fontSize': '15px'},
         ),
         dbc.Button(

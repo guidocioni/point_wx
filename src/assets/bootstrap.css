@@ -408,3 +408,10 @@
 a.modebar-btn {
   font-size:20px !important;
 }
+
+.card-body{
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+}
