@@ -404,3 +404,7 @@
 .nav-pills .nav-link.active {
   color: #fff;
 }
+
+a.modebar-btn {
+  font-size:20px !important;
+}

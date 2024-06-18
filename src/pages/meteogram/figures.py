@@ -218,10 +218,11 @@ def make_subplot_figure(data, title=None, clima=None):
             ), row=1, col=1)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         xaxis=dict(showgrid=True),
         yaxis=dict(showgrid=True,),
-        height=700,
+        height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         barmode='overlay',
         legend=dict(orientation='h', y=-0.04),

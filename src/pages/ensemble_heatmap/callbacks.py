@@ -57,13 +57,14 @@ clientside_callback(
             if (targetElement) {
                 setTimeout(function() {
                     targetElement.scrollIntoView({ behavior: 'smooth' });
-                }, 800); // in milliseconds
+                }, 200); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data', allow_duplicate=True),
-    Input({"type":"submit-button", "index": "heatmap"}, "n_clicks"),
+    # Input({"type":"submit-button", "index": "heatmap"}, "n_clicks"),
+    Input('ensemble-plot-heatmap', 'figure'),
     [State('ensemble-plot-heatmap', 'id')],
     prevent_initial_call=True
 )

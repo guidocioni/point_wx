@@ -173,8 +173,6 @@ def make_subplot_figure(data, models, title=None, sun=None):
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
     # for trace_sunshine in traces_sunshine:
     #     fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
-    fig.add_hline(y=0, line_width=3, row=1, col=1,
-                  line_color="rgba(0,0,0,0.2)")  # 0 isotherm
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
     for trace_snow in traces_snow:
@@ -232,7 +230,9 @@ def make_subplot_figure(data, models, title=None, sun=None):
                 row=1, col=1
             )
 
-    fig.update_yaxes(ticksuffix="°C", row=1, col=1)
+    fig.update_yaxes(ticksuffix="°C", row=1, col=1,
+                     zeroline=True,
+                     zerolinewidth=4, zerolinecolor='rgba(0,0,0,0.2)')
     fig.update_yaxes(ticksuffix="h", row=1, col=1,
                      secondary_y=True, range=[1.0, 0.2],
                      showgrid=False, minor=dict(showgrid=False))

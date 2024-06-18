@@ -56,6 +56,7 @@ def make_prec_figure(df, year, var, title=None):
                       line_color="gray")
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode='stack',
@@ -146,6 +147,7 @@ def make_temp_figure(df, year, var, title=None):
                       line_width=2, line_dash="dash", line_color="gray")
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode='stack',

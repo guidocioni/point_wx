@@ -138,6 +138,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
     fig = go.Figure(traces)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         legend=dict(orientation='h'),
         xaxis=dict(showgrid=True,
@@ -147,7 +148,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
         yaxis=dict(range=[1010, 200],
                    showgrid=True,
                    title_text="Pressure [hPa]"),
-        height=700,
+        height=800,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
             dict(

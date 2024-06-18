@@ -76,13 +76,14 @@ clientside_callback(
             if (targetElement) {
                 setTimeout(function() {
                     targetElement.scrollIntoView({ behavior: 'smooth' });
-                }, 800); // in milliseconds
+                }, 200); // in milliseconds
             }
         return null;
     }
     """,
     Output('garbage', 'data'),
-    Input({"type":"submit-button", "index": "ensemble"}, 'n_clicks'),
+    # Input({"type":"submit-button", "index": "ensemble"}, 'n_clicks'),
+    Input('ensemble-plot', 'figure'),
     [State('ensemble-plot', 'id')],
     prevent_initial_call=True
 )

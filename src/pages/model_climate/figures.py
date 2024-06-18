@@ -72,6 +72,7 @@ def make_temp_prec_climate_figure(df):
         fig.add_trace(trace, row=1, col=1)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         barmode='stack',
@@ -140,6 +141,7 @@ def make_clouds_climate_figure(df):
         fig.add_trace(trace)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         barmode='stack',
@@ -382,6 +384,7 @@ def make_precipitation_climate_figure(df):
         fig.add_trace(trace)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         barmode='stack',
@@ -502,6 +505,7 @@ def make_winds_climate_figure(df):
         fig.add_trace(trace)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
         barmode='stack',
