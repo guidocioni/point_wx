@@ -4,8 +4,6 @@ from math import sin, cos, asin, acos, pi
 import pytz
 from pytz import timezone
 import pandas as pd
-import time
-from .custom_logger import logging, time_this_func
 
 
 """Different constants."""
@@ -348,7 +346,7 @@ class SunTimes():
         else:
             return utc_time
 
-@time_this_func
+
 def find_suntimes(df, latitude, longitude, elevation=0):
     """
     Wrapper to use the library to compute suntimes using

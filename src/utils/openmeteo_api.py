@@ -2,7 +2,7 @@ import pandas as pd
 import requests as r
 import os
 import re
-from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS, ROOT_DIR
+from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
 from .custom_logger import logging, time_this_func
 
 
