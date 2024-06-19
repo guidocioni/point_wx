@@ -27,7 +27,6 @@ opts_selector = dbc.Card(
             allowSingleDateInRange=False,
             clearable=True,
             className="mb-2",
-            amountOfMonths=2,
         ),
         dbc.Button("Submit",
                    id={"type": "submit-button",
