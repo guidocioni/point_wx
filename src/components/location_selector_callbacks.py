@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update, html, dcc
+from dash import callback, Output, Input, State, no_update, html, dcc, clientside_callback
 from utils.openmeteo_api import get_locations, get_elevation
 from utils.mapbox_api import get_place_address_reverse, create_unique_id
 from dash.exceptions import PreventUpdate
@@ -345,3 +345,17 @@ def update_location_with_geolocate(_, pos, n_clicks, locations_favorites):
         )
     else:
         raise PreventUpdate
+
+
+# Remove focus from dropdown once an element has been selected
+clientside_callback(
+    """
+    function(value) {
+        // Remove focus from the dropdown element
+        document.activeElement.blur();
+    }
+    """,
+    Output('garbage', 'data', allow_duplicate=True),
+    Input('location_search_new', 'value'),
+    prevent_initial_call=True
+)
