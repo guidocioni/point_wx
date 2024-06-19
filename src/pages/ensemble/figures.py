@@ -279,16 +279,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
-        xaxis=dict(
-            showgrid=True,
-            minor=dict(ticks="inside", showgrid=True, gridwidth=3),
-            gridwidth=4,
-            tickformat="%a %d %b\n%H:%M",
-        ),
-        yaxis=dict(
-            showgrid=True,
-            gridwidth=4
-        ),
         height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
         barmode="stack",
@@ -371,7 +361,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_xaxes(showgrid=True, gridwidth=4, range=[
                 data["time"].min() - pd.to_timedelta("1h"),
                 data["time"].max() + pd.to_timedelta("1h"),
-            ],)
+            ],tickformat="%a %d %b\n%H:%M", minor=dict(ticks="inside",gridwidth=3))
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14)))
 

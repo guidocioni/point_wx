@@ -185,6 +185,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         fig.add_trace(trace_cloud, row=4, col=1)
 
     fig.update_layout(
+        modebar=dict(orientation='v'),
         dragmode=False,
         xaxis=dict(showgrid=True),
         height=1000,
