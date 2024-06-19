@@ -415,3 +415,7 @@ a.modebar-btn {
   padding-right: 10px;
   padding-bottom: 10px;
 }
+
+.Select.is-open {
+  z-index: 1003;
+}

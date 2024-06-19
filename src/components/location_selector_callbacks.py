@@ -101,12 +101,14 @@ def suggest_locs_dropdown(value, locations_favorites):
     options = create_options(locations)
 
     return options, locations.to_json(orient="split")
-
-
+    
+    
 @callback(
     [
         Output("location-selected", "data", allow_duplicate=True),
         Output("locations-favorites", "data"),
+        Output("location_search_new", "options", allow_duplicate=True),
+        Output("locations-list", "data", allow_duplicate=True)
     ],
     Input("location_search_new", "value"),
     [State("location_search_new", "options"),
@@ -116,10 +118,10 @@ def suggest_locs_dropdown(value, locations_favorites):
 )
 def save_selected_into_cache(selected_location, locations_options, locations_favorites, locations_list):
     """
-    When the user selects a location (doesn't matter how)
-    then save the selected value
-    into the cache, so that we can load if we leave or change
-    page.
+    When the user selects an option in the dropdown
+    - Add the selected location to the favorites list
+    - Update the dropdown options so that they only contain the favorites (including the latest selected option)
+    - Update the location-list store variable so that other functions can find the details
     """
     if locations_options is None or len(locations_options) == 0:
         raise PreventUpdate
@@ -136,10 +138,13 @@ def save_selected_into_cache(selected_location, locations_options, locations_fav
                 locations_favorites = locations_favorites[-5:]
     else:
         locations_favorites = locations_list
+    
+    options = create_options(locations_favorites)
 
     return [
         o for o in locations_options if o["value"] == selected_location
-    ], locations_favorites.to_json(orient="split")
+    ], locations_favorites.to_json(orient="split"), options, locations_favorites.to_json(orient="split")
+
 
 
 @callback(
