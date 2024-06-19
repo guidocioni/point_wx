@@ -8,7 +8,6 @@ from .figures import (make_clouds_climate_figure,
                       make_winds_climate_figure,
                       make_wind_rose_figure)
 import pandas as pd
-from datetime import date
 from io import StringIO
 
 
@@ -25,11 +24,10 @@ from io import StringIO
     [State("locations-list", "data"),
      State("location-selected", "data"),
      State("models-selection-climate", "value"),
-     State("date-start-climate", "date"),
-     State("date-end-climate", "date")],
+     State("date-range-climate", "value")],
     prevent_initial_call=True
 )
-def generate_figure(n_clicks, locations, location, model, ds, de):
+def generate_figure(n_clicks, locations, location, model, dates):
     if n_clicks is None:
         return [no_update, no_update,
                 no_update, no_update, no_update,
@@ -44,16 +42,16 @@ def generate_figure(n_clicks, locations, location, model, ds, de):
             latitude=loc['latitude'].item(),
             longitude=loc['longitude'].item(),
             model=model,
-            start_date=date.fromisoformat(ds).strftime("%Y-%m-%d"),
-            end_date=date.fromisoformat(de).strftime("%Y-%m-%d"))
+            start_date=dates[0],
+            end_date=dates[1])
 
         wind_rose_data = get_historical_daily_data(
             variables='wind_direction_10m_dominant',
             latitude=loc['latitude'].item(),
             longitude=loc['longitude'].item(),
             model=model,
-            start_date=date.fromisoformat(ds).strftime("%Y-%m-%d"),
-            end_date=date.fromisoformat(de).strftime("%Y-%m-%d"))
+            start_date=dates[0],
+            end_date=dates[1])
 
         fig_temp_prec = make_temp_prec_climate_figure(data)
         fig_temperature = make_temperature_climate_figure(data)
