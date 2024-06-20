@@ -187,7 +187,7 @@ def make_subplot_figure(data, title=None, clima=None):
             y0=row['daily_prec_min'],
             x1=row['time'],
             y1=row['daily_prec_max'],
-            line=dict(color='rgba(0,0,0,0.3)', width=3),
+            line=dict(color='rgba(0,0,0,0.3)', width=2),
             row=3, col=1)
 
     fig.add_trace(go.Scatter(

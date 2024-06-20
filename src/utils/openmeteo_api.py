@@ -218,6 +218,12 @@ def get_forecast_daily_data(latitude=53.55,
     data = pd.DataFrame.from_dict(resp.json()['daily'])
     data['time'] = pd.to_datetime(
         data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
+    
+    # Units conversion
+    for col in data.columns[data.columns.str.contains('snowfall_sum')]:
+        data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
     data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
@@ -707,11 +713,9 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         .merge(daily_tmax.min(axis=1).to_frame(name='t_max_min'), left_index=True, right_index=True)\
         .merge(daily_wcode.mode(axis=1)[0].to_frame(name='weather_code').fillna(1).astype(int), left_index=True, right_index=True)\
         .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
-        .merge(daily_prec.quantile(0.25, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
-        .merge(daily_prec.quantile(0.75, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
+        .merge(daily_prec.quantile(0.15, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
+        .merge(daily_prec.quantile(0.95, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
         .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
-        .merge(daily_sunshine.quantile(0.25, axis=1).to_frame(name='sunshine_min'), left_index=True, right_index=True)\
-        .merge(daily_sunshine.quantile(0.75, axis=1).to_frame(name='sunshine_max'), left_index=True, right_index=True)\
         .merge(daily_sunshine.mean(axis=1).to_frame(name='sunshine_mean'), left_index=True, right_index=True)
 
     daily.attrs = data.attrs

@@ -9,22 +9,26 @@ from io import StringIO
 
 
 @callback(
-    [Output("meteogram-plot", "figure"),
-     Output("error-message", "children", allow_duplicate=True),
-     Output("error-modal", "is_open", allow_duplicate=True)],
-    Input({"type":"submit-button", "index": "meteogram"}, "n_clicks"),
-    [State("locations-list", "data"),
-     State("location-selected", "data"),
-     State("models-selection-meteogram", "value")],
-    prevent_initial_call=True
+    [
+        Output("meteogram-plot", "figure"),
+        Output("error-message", "children", allow_duplicate=True),
+        Output("error-modal", "is_open", allow_duplicate=True),
+    ],
+    Input({"type": "submit-button", "index": "meteogram"}, "n_clicks"),
+    [
+        State("locations-list", "data"),
+        State("location-selected", "data"),
+        State("models-selection-meteogram", "value"),
+    ],
+    prevent_initial_call=True,
 )
 def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
         return no_update, no_update, no_update
 
     # unpack locations data
-    locations = pd.read_json(StringIO(locations), orient='split', dtype={"id": str})
-    loc = locations[locations['id'] == location[0]['value']]
+    locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
+    loc = locations[locations["id"] == location[0]["value"]]
 
     try:
         data = compute_daily_ensemble_meteogram(
@@ -36,17 +40,22 @@ def generate_figure(n_clicks, locations, location, model):
                                  mapping_path=f"{ASSETS_DIR}/weather_codes.json")
         # Add daily climatology (quite fast)
         clima = compute_climatology(
-            latitude=loc['latitude'].item(),
-            longitude=loc['longitude'].item(),
+            latitude=loc["latitude"].item(),
+            longitude=loc["longitude"].item(),
             daily=True,
-            model='era5_seamless',
-            variables='temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration')
-        clima = clima.rename(columns={'temperature_2m_max':'t_max_clima',
-                                      'temperature_2m_min':'t_min_clima',
-                                      'precipitation_sum':'daily_prec_clima',
-                                      'sunshine_duration':'sunshine_clima'})
+            model="era5_seamless",
+            variables="temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration",
+        )
+        clima = clima.rename(
+            columns={
+                "temperature_2m_max": "t_max_clima",
+                "temperature_2m_min": "t_min_clima",
+                "precipitation_sum": "daily_prec_clima",
+                "sunshine_duration": "sunshine_clima",
+            }
+        )
 
-        loc_label = location[0]['label'].split("|")[0] + (
+        loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
             f"{model.upper()}"
@@ -56,11 +65,12 @@ def generate_figure(n_clicks, locations, location, model):
 
     except Exception as e:
         logging.error(
-            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}")
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+        )
         return (
             no_update,
             "An error occurred when processing the data",
-            True  # Error message
+            True,  # Error message
         )
 
 
@@ -76,8 +86,8 @@ clientside_callback(
         return null;
     }
     """,
-    Output('garbage', 'data', allow_duplicate=True),
-    Input({"type":"submit-button", "index": "meteogram"}, 'n_clicks'),
-    [State('meteogram-plot', 'id')],
-    prevent_initial_call=True
+    Output("garbage", "data", allow_duplicate=True),
+    Input({"type": "submit-button", "index": "meteogram"}, "n_clicks"),
+    [State("meteogram-plot", "id")],
+    prevent_initial_call=True,
 )
