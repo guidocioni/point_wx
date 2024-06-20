@@ -1,7 +1,7 @@
 import dash
 from dash import html, dcc, callback, Output, Input, clientside_callback, MATCH
 import dash_bootstrap_components as dbc
-from utils.settings import APP_HOST, APP_PORT, URL_BASE_PATHNAME, cache
+from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
 from flask import request
 from utils.custom_logger import logging
@@ -155,6 +155,5 @@ clientside_callback(
 
 if __name__ == "__main__":
     app.run(
-        host=APP_HOST,
         port=APP_PORT,
     )

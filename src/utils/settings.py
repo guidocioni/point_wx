@@ -10,7 +10,6 @@ import tempfile
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
 ASSETS_DIR = os.path.join(ROOT_DIR, 'src', 'assets')
 
-APP_HOST = "0.0.0.0"
 APP_PORT = 8083
 URL_BASE_PATHNAME = '/pointwx/'
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", "")
