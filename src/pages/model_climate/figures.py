@@ -12,7 +12,7 @@ x = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
      'Nov', 'Dec']
 
 
-def make_temp_prec_climate_figure(df):
+def make_temp_prec_climate_figure(df, title=None):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     traces = []
     traces.append(
@@ -74,7 +74,7 @@ def make_temp_prec_climate_figure(df):
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -84,10 +84,16 @@ def make_temp_prec_climate_figure(df):
     fig.update_yaxes(row=1, col=1,
                      secondary_y=False, title='°C', showgrid=False, fixedrange=True)
 
+    if title is not None:
+        fig.update_layout(title_text=title)
+
+    if title is not None:
+        fig.update_layout(title_text=title)
+
     return fig
 
 
-def make_clouds_climate_figure(df):
+def make_clouds_climate_figure(df, title=None):
     fig = make_subplots()
     traces = []
 
@@ -143,7 +149,7 @@ def make_clouds_climate_figure(df):
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -151,10 +157,13 @@ def make_clouds_climate_figure(df):
     fig.update_yaxes(showgrid=False)
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
+    if title is not None:
+        fig.update_layout(title_text=title)
+
     return fig
 
 
-def make_temperature_climate_figure(df):
+def make_temperature_climate_figure(df, title=None):
     fig = make_subplots()
     traces = []
 
@@ -275,7 +284,7 @@ def make_temperature_climate_figure(df):
 
     fig.update_layout(
         dragmode=False,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -283,10 +292,13 @@ def make_temperature_climate_figure(df):
     fig.update_yaxes(showgrid=False)
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
+    if title is not None:
+        fig.update_layout(title_text=title)
+
     return fig
 
 
-def make_precipitation_climate_figure(df):
+def make_precipitation_climate_figure(df, title=None):
     fig = make_subplots()
     traces = []
 
@@ -386,7 +398,7 @@ def make_precipitation_climate_figure(df):
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -394,10 +406,13 @@ def make_precipitation_climate_figure(df):
     fig.update_yaxes(showgrid=False)
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
+    if title is not None:
+        fig.update_layout(title_text=title)
+
     return fig
 
 
-def make_winds_climate_figure(df):
+def make_winds_climate_figure(df, title=None):
     fig = make_subplots()
     traces = []
 
@@ -507,7 +522,7 @@ def make_winds_climate_figure(df):
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
-        margin={"r": 0.1, "t": 0.1, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode='stack',
         legend=dict(orientation='h')
     )
@@ -515,10 +530,13 @@ def make_winds_climate_figure(df):
     fig.update_yaxes(showgrid=False)
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
+    if title is not None:
+        fig.update_layout(title_text=title)
+
     return fig
 
 
-def make_wind_rose_figure(df):
+def make_wind_rose_figure(df, title=None):
     def degree_to_direction(degree):
         """Convert angle to cardinal (categorical direction)"""
         directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
@@ -535,12 +553,12 @@ def make_wind_rose_figure(df):
     for i, group in df.groupby(df.time.dt.month):
         frequencies = pd.cut(group['wind_direction_10m_dominant'],
                              bins=np.linspace(0, 360, 17)).value_counts(sort=False).to_frame().reset_index()
-        frequencies['index'] = frequencies['index'].astype(str)
-        frequencies['dir'] = frequencies['index'].apply(
+        frequencies['wind_direction_10m_dominant'] = frequencies['wind_direction_10m_dominant'].astype(str)
+        frequencies['dir'] = frequencies['wind_direction_10m_dominant'].apply(
             lambda x: degree_to_direction(float(x.split(',')[0][1:])))
 
         fig.add_trace(go.Barpolar(
-            r=frequencies['wind_direction_10m_dominant'],
+            r=frequencies['count'],
             theta=frequencies['dir'],
             marker_color='rgb(106,81,163)',
             showlegend=False,
@@ -552,6 +570,9 @@ def make_wind_rose_figure(df):
                       dragmode=False,
                       height=150
                       )
+
+    if title is not None:
+        fig.update_layout(title_text=title)
 
     return fig
 

@@ -36,6 +36,11 @@ def generate_figure(n_clicks, locations, location, model, dates):
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient='split', dtype={"id": str})
     loc = locations[locations['id'] == location[0]['value']]
+    loc_label = location[0]['label'].split("|")[0] + (
+        f"| {float(loc['longitude'].item()):.1f}E"
+        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
+        f"{dates[0]} to {dates[1]}"
+    )
 
     try:
         data = compute_monthly_clima(
@@ -53,15 +58,15 @@ def generate_figure(n_clicks, locations, location, model, dates):
             start_date=dates[0],
             end_date=dates[1])
 
-        fig_temp_prec = make_temp_prec_climate_figure(data)
-        fig_temperature = make_temperature_climate_figure(data)
-        fig_precipitation = make_precipitation_climate_figure(data)
-        fig_clouds = make_clouds_climate_figure(data)
-        fig_winds = make_winds_climate_figure(data)
-        # fig_winds_rose = make_wind_rose_figure(wind_rose_data)
+        fig_temp_prec = make_temp_prec_climate_figure(data, title=loc_label)
+        fig_temperature = make_temperature_climate_figure(data, title=loc_label)
+        fig_precipitation = make_precipitation_climate_figure(data, title=loc_label)
+        fig_clouds = make_clouds_climate_figure(data, title=loc_label)
+        fig_winds = make_winds_climate_figure(data, title=loc_label)
+        fig_winds_rose = make_wind_rose_figure(wind_rose_data)
 
         return [fig_temp_prec, fig_clouds, fig_temperature,
-                fig_precipitation, fig_winds, None, None, False]
+                fig_precipitation, fig_winds, fig_winds_rose, None, False]
 
     except Exception as e:
         logging.error(
