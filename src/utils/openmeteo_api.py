@@ -559,12 +559,12 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     #
     bool_cols = daily.dtypes[daily.dtypes == bool].index
     # Compute monthly stats
-    monthly = daily[bool_cols].resample('1M').sum().add_suffix('_days')
-    monthly['monthly_rain'] = daily['precipitation_sum'].resample('1M').sum()
-    monthly['t2m_max_mean'] = daily['temperature_2m_max'].resample('1M').mean()
-    monthly['t2m_min_mean'] = daily['temperature_2m_min'].resample('1M').mean()
-    monthly['t2m_min_min'] = daily['temperature_2m_min'].resample('1M').min()
-    monthly['t2m_max_max'] = daily['temperature_2m_max'].resample('1M').max()
+    monthly = daily[bool_cols].resample('1ME').sum().add_suffix('_days')
+    monthly['monthly_rain'] = daily['precipitation_sum'].resample('1ME').sum()
+    monthly['t2m_max_mean'] = daily['temperature_2m_max'].resample('1ME').mean()
+    monthly['t2m_min_mean'] = daily['temperature_2m_min'].resample('1ME').mean()
+    monthly['t2m_min_min'] = daily['temperature_2m_min'].resample('1ME').min()
+    monthly['t2m_max_max'] = daily['temperature_2m_max'].resample('1ME').max()
     stats = monthly.groupby(monthly.index.month).mean().round(1)
 
     return stats
