@@ -54,17 +54,19 @@ def make_windarrow_timeseries(df, models, var_speed='windgusts_10m', var_dir='wi
             var_speed_model = var_speed
             var_dir_model = var_dir
         if var_speed_model in df.columns and var_dir_model in df.columns:
+            marker = dict(size=10, color=colors[i],
+                                symbol='arrow',
+                                line=dict(width=1, color="DarkSlateGrey"))
+            # If there's any NaNs in the direction prevents an error
+            if not df.loc[:, var_dir_model].isnull().any():
+                marker['angle'] = df.loc[:, var_dir_model] - 180.
             traces.append(
                 go.Scatter(
                     x=df.loc[:, 'time'],
                     y=df.loc[:, var_speed_model],
                     mode='markers',
                     name=model,
-                    marker=dict(size=10, color=colors[i],
-                                symbol='arrow',
-                                angle=df.loc[:, var_dir_model] - 180.,
-                                line=dict(width=1, color="DarkSlateGrey"),
-                                ),
+                    marker=marker,
                     hoverinfo='skip',
                     showlegend=showlegend),
             )
