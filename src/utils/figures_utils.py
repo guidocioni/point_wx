@@ -4,10 +4,12 @@ import dash_leaflet as dl
 import os
 
 
-def get_weather_icons(df,
-                      icons_path="../src/assets/yrno_png/",
-                      mapping_path="../src/assets/weather_codes.json",
-                      var='weather_code'):
+def get_weather_icons(
+    df,
+    icons_path="../src/assets/yrno_png/",
+    mapping_path="../src/assets/weather_codes.json",
+    var="weather_code",
+):
     """
     Given an input dataframe with columns 'weather_code' and 'is_day'
     creates two new columns containing the path to the image describing
@@ -19,21 +21,21 @@ def get_weather_icons(df,
     icons = []
     descriptions = []
     for _, row in df.iterrows():
-        time_day = 'day'
-        if 'is_day' in df.columns:
-            if row['is_day'] == 1:
-                time_day = 'day'
+        time_day = "day"
+        if "is_day" in df.columns:
+            if row["is_day"] == 1:
+                time_day = "day"
             else:
-                time_day = 'night'
+                time_day = "night"
         if str(int(row[var])) in j.keys():
-            icons.append(icons_path+j[str(int(row[var]))][time_day]['image'])
-            descriptions.append(j[str(int(row[var]))][time_day]['description'])
+            icons.append(icons_path + j[str(int(row[var]))][time_day]["image"])
+            descriptions.append(j[str(int(row[var]))][time_day]["description"])
         else:
-            icons.append('')
-            descriptions.append('')
+            icons.append("")
+            descriptions.append("")
 
-    df['icons'] = icons
-    df['weather_descriptions'] = descriptions
+    df["icons"] = icons
+    df["weather_descriptions"] = descriptions
 
     return df
 
@@ -58,9 +60,19 @@ def attach_alpha_to_hex_color(alpha, color):
 
 def hex2rgba(x):
     if len(x) < 6:
-        return "rgba" + str(tuple(17 * int(x[n+1], 16) * (1 if n < 3 else 1/255) for n in range(len(x) - 1)))
+        return "rgba" + str(
+            tuple(
+                17 * int(x[n + 1], 16) * (1 if n < 3 else 1 / 255)
+                for n in range(len(x) - 1)
+            )
+        )
     else:
-        return "rgba" + str(tuple(int(x[2*n+1:2*n+3], 16) * (1 if n < 3 else 1/255) for n in range(len(x) // 2)))
+        return "rgba" + str(
+            tuple(
+                int(x[2 * n + 1 : 2 * n + 3], 16) * (1 if n < 3 else 1 / 255)
+                for n in range(len(x) // 2)
+            )
+        )
 
 
 def make_map(lat_center=45, lon_center=10, zoom=3):
@@ -71,7 +83,7 @@ def make_map(lat_center=45, lon_center=10, zoom=3):
     attribution = (
         '© <a href="https://www.mapbox.com/feedback/">'
         'Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">'
-        'OpenStreetMap</a>'
+        "OpenStreetMap</a>"
     )
     return dl.Map(
         [
@@ -108,12 +120,9 @@ def make_map(lat_center=45, lon_center=10, zoom=3):
         ],
         center=[lat_center, lon_center],
         zoom=zoom,
-        style={'width': '100%',
-               'height': '35vh',
-               'margin': "auto",
-               "display": "block"
-               },
+        style={"width": "100%", "height": "35vh", "margin": "auto", "display": "block"},
         dragging=True,
         scrollWheelZoom=True,
         touchZoom=True,
-        id='map')
+        id="map",
+    )

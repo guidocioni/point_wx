@@ -1,6 +1,5 @@
 import plotly.graph_objects as go
 import pandas as pd
-import numpy as np
 from dash import dcc
 from utils.settings import images_config
 

@@ -23,14 +23,14 @@ from flask import session
 logging.basicConfig(
     level=logging.INFO,
     # format='%(asctime)s %(session_id)s %(levelname)s %(module)s - %(funcName)s: %(message)s', # figure out why session_id is not working
-    format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
+    format="%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-#old_factory = logging.getLogRecordFactory()
+# old_factory = logging.getLogRecordFactory()
 # logging.setLogRecordFactory(_record_factory)
 
-logging.getLogger('werkzeug').setLevel(logging.ERROR)
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 
 def time_this_func(func):
@@ -40,7 +40,7 @@ def time_this_func(func):
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
         total_time = end_time - start_time
-        logging.info(f'Function {func.__name__} took {total_time:.2f} seconds')
+        logging.info(f"Function {func.__name__} took {total_time:.2f} seconds")
         return result
 
     return timeit_wrapper

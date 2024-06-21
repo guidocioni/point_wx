@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import compute_monthly_clima, get_historical_daily_data
 from utils.custom_logger import logging
 from .figures import (

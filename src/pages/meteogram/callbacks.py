@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR

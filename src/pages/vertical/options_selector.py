@@ -1,5 +1,5 @@
 import dash_bootstrap_components as dbc
-from utils.settings import DETERMINISTIC_MODELS, ENSEMBLE_VARS
+from utils.settings import DETERMINISTIC_MODELS
 
 opts_selector = dbc.Card(
     [

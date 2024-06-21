@@ -1,5 +1,5 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_forecast_data, get_forecast_daily_data
+from dash import callback, Output, Input, State, no_update
+from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
 from .figures import make_subplot_figure

@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_ensemble_data
 from utils.custom_logger import logging
 from .figures import make_heatmap

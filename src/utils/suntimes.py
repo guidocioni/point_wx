@@ -44,21 +44,21 @@ def fraction_day_to_hms(f):
     # convert a fraction of a day in hours, minutes, seconds
     hms = f * 24 * 3600
     h = hms // 3600
-    m = (hms - 3600*h) // 60
-    s = hms - 3600*h - 60*m
-    return (int(h), int(m), int(s), int(s % 1*1000))
+    m = (hms - 3600 * h) // 60
+    s = hms - 3600 * h - 60 * m
+    return (int(h), int(m), int(s), int(s % 1 * 1000))
 
 
 def round_fractionDay_toHM(f):
     # round a fraction of a day into hours and minutes
-    h = int(f*24)
-    m = round(f*60*24 - h*60)
+    h = int(f * 24)
+    m = round(f * 60 * 24 - h * 60)
     if m < 60:
         h = h
         m = m
     else:
         m = 0
-        h = h+1
+        h = h + 1
         if h == 24:
             m = 59
             h = 23
@@ -67,7 +67,7 @@ def round_fractionDay_toHM(f):
 
 def hms_to_fraction_day(h, m, s=0):
     # return fraction of a day (float between 0 and 1) from time of the day
-    return (h*60*60 + m*60 + s)/(24*60*60)
+    return (h * 60 * 60 + m * 60 + s) / (24 * 60 * 60)
 
 
 def is_leap_year(y):
@@ -99,7 +99,7 @@ def days_year(year):
     days = []
     for m in range(12):
         for d in range(length_month(year)[m]):
-            day = (year, m+1, d+1)
+            day = (year, m + 1, d + 1)
             days.append(day)
     return days
 
@@ -130,11 +130,11 @@ def roundTime(dt=None, roundTo=60):
     if dt is None:
         dt = datetime.now()
     seconds = (dt - dt.min).seconds
-    rounding = (seconds+roundTo/2) // roundTo * roundTo
-    return dt + timedelta(0, rounding-seconds, -dt.microsecond)
+    rounding = (seconds + roundTo / 2) // roundTo * roundTo
+    return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
 
-class SunTimes():
+class SunTimes:
     """
     A place is characterized by longitude, latitude, altitude
     -longitude: float between -180 and 180; negative for west longitudes, positive for east longitudes
@@ -162,7 +162,7 @@ class SunTimes():
         Jdate = gcal2jd(date.year, date.month, date.day)
         Jdate = Jdate[0] + Jdate[1] + 0.5
         n = Jdate - JULIAN_DAYS_2000 + JULIAN_DAYS_LEAP
-        JJ = n - self.longitude/360
+        JJ = n - self.longitude / 360
         return JJ
 
     def solar_mean_anomaly(self, date):
@@ -172,8 +172,11 @@ class SunTimes():
 
     def equation_center(self, date):
         M = self.solar_mean_anomaly(date)
-        C = CENTER_C0 * sin(M*pi/180) + CENTER_C1 * \
-            sin(2*M*pi/180) + CENTER_C2 * sin(3*M*pi/180)
+        C = (
+            CENTER_C0 * sin(M * pi / 180)
+            + CENTER_C1 * sin(2 * M * pi / 180)
+            + CENTER_C2 * sin(3 * M * pi / 180)
+        )
         return C
 
     def ecliptic_longitude(self, date):
@@ -186,21 +189,28 @@ class SunTimes():
         JJ = self.mean_solar_noon(date)
         M = self.solar_mean_anomaly(date)
         le = self.ecliptic_longitude(date)
-        J_transit = JULIAN_DAYS_2000 + JJ + TIME_0 * \
-            sin(M*pi/180) - TIME_1*sin(2*le*pi/180)
+        J_transit = (
+            JULIAN_DAYS_2000
+            + JJ
+            + TIME_0 * sin(M * pi / 180)
+            - TIME_1 * sin(2 * le * pi / 180)
+        )
         return J_transit
 
     def declination_sun(self, date):
         le = self.ecliptic_longitude(date)
-        delta = asin(sin(le*pi/180) * sin(OBLIQUITY*pi/180))
+        delta = asin(sin(le * pi / 180) * sin(OBLIQUITY * pi / 180))
         return delta
 
     def getOmega0(self, date):
-        elevation = CORRECTION_REFRACTION + \
-            CORRECTION_ELEVATION*(self.altitude**(1/2))/60
+        elevation = (
+            CORRECTION_REFRACTION
+            + CORRECTION_ELEVATION * (self.altitude ** (1 / 2)) / 60
+        )
         delta = self.declination_sun(date)
-        cosOmega0 = (sin(elevation*pi/180) - sin(self.latitude*pi/180)
-                     * sin(delta))/(cos(self.latitude*pi/180) * cos(delta))
+        cosOmega0 = (
+            sin(elevation * pi / 180) - sin(self.latitude * pi / 180) * sin(delta)
+        ) / (cos(self.latitude * pi / 180) * cos(delta))
         return cosOmega0
 
     def hour_angle(self, date):
@@ -218,8 +228,8 @@ class SunTimes():
         J_transit = self.solar_transit(date)
         omega0 = self.hour_angle(date)
         if not isinstance(omega0, str):
-            J_rise = J_transit - (omega0*180/pi)/360
-            J_set = J_transit + (omega0*180/pi)/360
+            J_rise = J_transit - (omega0 * 180 / pi) / 360
+            J_set = J_transit + (omega0 * 180 / pi) / 360
             J_rise_greg = jd2gcal(int(J_rise), J_rise - int(J_rise))
             J_set_greg = jd2gcal(int(J_set), J_set - int(J_set))
             return [J_rise_greg, J_set_greg]
@@ -233,8 +243,9 @@ class SunTimes():
         j_day = self.J_rise_set_greg(date)[0]
         if not isinstance(j_greg[-1], str):
             hms = round_fractionDay_toHM(j_day[3])
-            date_hms = datetime(int(j_day[0]), int(
-                j_day[1]), int(j_day[2]), hms[0], hms[1])
+            date_hms = datetime(
+                int(j_day[0]), int(j_day[1]), int(j_day[2]), hms[0], hms[1]
+            )
             return date_hms
         else:
             return j_greg[-1]
@@ -244,8 +255,9 @@ class SunTimes():
         j_day = self.J_rise_set_greg(date)[1]
         if not isinstance(j_greg[-1], str):
             hms = round_fractionDay_toHM(j_day[3])
-            date_hms = datetime(int(j_day[0]), int(
-                j_day[1]), int(j_day[2]), hms[0], hms[1])
+            date_hms = datetime(
+                int(j_day[0]), int(j_day[1]), int(j_day[2]), hms[0], hms[1]
+            )
             return date_hms
         else:
             return j_greg[-1]
@@ -254,7 +266,8 @@ class SunTimes():
         utc_time = self.riseutc(date)
         if not isinstance(utc_time, str):
             local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(
-                pytz.timezone('Europe/Berlin'))
+                pytz.timezone("Europe/Berlin")
+            )
             return local_time
         else:
             return utc_time
@@ -263,7 +276,8 @@ class SunTimes():
         utc_time = self.setutc(date)
         if not isinstance(utc_time, str):
             local_time = utc_time.replace(tzinfo=pytz.utc).astimezone(
-                pytz.timezone('Europe/Berlin'))
+                pytz.timezone("Europe/Berlin")
+            )
             return local_time
         else:
             return utc_time
@@ -302,12 +316,11 @@ class SunTimes():
         sunrise = self.riseutc(date)
         sunset = self.setutc(date)
         if not isinstance(sunrise, str) and not isinstance(sunset, str):
-
-            return (sunset - sunrise)
+            return sunset - sunrise
         elif isinstance(sunrise, str) and isinstance(sunset, str):
-            return 'Not calculable : {sunrise}'
+            return "Not calculable : {sunrise}"
         else:
-            return 'Not calculable : changement jour/nuit polaire'
+            return "Not calculable : changement jour/nuit polaire"
 
     def durationtuple(self, date):
         delta = self.durationdelta(date)
@@ -330,8 +343,9 @@ class SunTimes():
     def risewhere(self, date, elsewhere):
         utc_time = self.riseutc(date)
         if not isinstance(utc_time, str):
-            else_time = utc_time.replace(
-                tzinfo=pytz.utc).astimezone(timezone(elsewhere))
+            else_time = utc_time.replace(tzinfo=pytz.utc).astimezone(
+                timezone(elsewhere)
+            )
             return else_time
         else:
             return utc_time
@@ -340,8 +354,9 @@ class SunTimes():
         utc_time = self.setutc(date)
 
         if not isinstance(utc_time, str):
-            else_time = utc_time.replace(
-                tzinfo=pytz.utc).astimezone(timezone(elsewhere))
+            else_time = utc_time.replace(tzinfo=pytz.utc).astimezone(
+                timezone(elsewhere)
+            )
             return else_time
         else:
             return utc_time
@@ -362,18 +377,25 @@ def find_suntimes(df, latitude, longitude, elevation=0):
 
     # Create a dataframe with only daily data, we don't actually care
     # about the time but only about the data
-    daily = df[['time']].resample('1D', on='time').first().reset_index()
+    daily = df[["time"]].resample("1D", on="time").first().reset_index()
 
     # Function to apply to every row of this dataframe
     def find_times(df):
-        sunrise = sun.riseutc(df['time']).replace(
-            tzinfo=pytz.utc).astimezone(df['time'].tz)
-        sunset = sun.setutc(df['time']).replace(
-            tzinfo=pytz.utc).astimezone(df['time'].tz)
+        sunrise = (
+            sun.riseutc(df["time"]).replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
+        )
+        sunset = (
+            sun.setutc(df["time"]).replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
+        )
 
         return sunrise, sunset
 
-    daily = daily.merge(daily.apply(lambda x: find_times(x), axis=1).apply(pd.Series).rename(columns={0: 'sunrise', 1: 'sunset'}),
-                        left_index=True, right_index=True)
+    daily = daily.merge(
+        daily.apply(lambda x: find_times(x), axis=1)
+        .apply(pd.Series)
+        .rename(columns={0: "sunrise", 1: "sunset"}),
+        left_index=True,
+        right_index=True,
+    )
 
     return daily
