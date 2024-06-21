@@ -9,8 +9,8 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection",
                     options=ENSEMBLE_MODELS,
-                    value=ENSEMBLE_MODELS[0]['value'],
-                    persistence=True
+                    value=ENSEMBLE_MODELS[0]["value"],
+                    persistence=True,
                 ),
             ],
             className="mb-1",
@@ -21,18 +21,20 @@ opts_selector = dbc.Card(
                     dbc.Checkbox(
                         id="clima-switch",
                         value=False,
-                    )),
-                dbc.Input(placeholder='Compute climatology', disabled=True)
+                    )
+                ),
+                dbc.Input(placeholder="Compute climatology", disabled=True),
             ],
             className="mb-2",
         ),
-        dbc.Button("Submit",
-                   id={"type": "submit-button",
-                       "index": "ensemble"},
-                   className="col-12",
-                   size='lg',
-                   disabled=True)
+        dbc.Button(
+            "Submit",
+            id={"type": "submit-button", "index": "ensemble"},
+            className="col-12",
+            size="lg",
+            disabled=True,
+        ),
     ],
     body=True,
-    className="mb-2"
+    className="mb-2",
 )

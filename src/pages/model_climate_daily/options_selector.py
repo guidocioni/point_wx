@@ -22,19 +22,21 @@ opts_selector = dbc.Card(
                     id="year-selection-climate",
                     value=date.today().year,
                     autocomplete="true",
-                    type='number',
+                    type="number",
                     max=date.today().year,
-                    min=1981
+                    min=1981,
                 ),
             ],
             className="mb-2",
         ),
-        dbc.Button("Submit",
-                   id={"type": "submit-button",
-                       "index": "daily"},
-                   className="mb-2 col-12",
-                   size='lg',
-                   disabled=True)
+        dbc.Button(
+            "Submit",
+            id={"type": "submit-button", "index": "daily"},
+            className="mb-2 col-12",
+            size="lg",
+            disabled=True,
+        ),
     ],
-    body=True, className="mb-2"
+    body=True,
+    className="mb-2",
 )

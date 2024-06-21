@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, callback, Output, Input, clientside_callback, MATCH
+from dash import html, dcc, callback, Output, Input, clientside_callback, MATCH, State, ALL
 import dash_bootstrap_components as dbc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
@@ -11,12 +11,12 @@ app = dash.Dash(
     url_base_pathname=URL_BASE_PATHNAME,
     use_pages=True,
     external_stylesheets=[dbc.themes.FLATLY, dbc.icons.FONT_AWESOME],
-    # meta_tags=[
-    #     {   # check if device is a mobile device.
-    #         'name': 'viewport',
-    #         'content': 'width=device-width, initial-scale=1'
-    #     }
-    # ],
+    meta_tags=[
+        {   # check if device is a mobile device.
+            'name': 'viewport',
+            'content': 'width=device-width, initial-scale=1'
+        }
+    ],
     suppress_callback_exceptions=True,
     title="Point WX",
 )
@@ -90,15 +90,15 @@ page_titles = {
 }
 
 
-@callback(Output("navbar-title-for-mobile", "children"),
-          [Input("url", "pathname"),
-           Input("navbar-collapse", "is_open")]
-          )
+@callback(
+    Output("navbar-title-for-mobile", "children"),
+    [Input("url", "pathname"), Input("navbar-collapse", "is_open")],
+)
 def update_navbar_title(pathname, is_open):
-    '''
-    Update the navbar title (only on mobile) with the page title every time 
+    """
+    Update the navbar title (only on mobile) with the page title every time
     the page is changed. Also check if navbar is collapsed
-    '''
+    """
     if not is_open:
         return page_titles.get(pathname, "")
     else:
@@ -106,29 +106,32 @@ def update_navbar_title(pathname, is_open):
 
 
 @callback(
-    Output({"type":"submit-button", "index": MATCH}, "disabled"),
+    Output({"type": "submit-button", "index": MATCH}, "disabled"),
     Input("location_search_new", "value"),
 )
 def activate_submit_button(location):
-    '''
+    """
     Disable submit button (on all pages) unless
     a location has been selected
-    '''
+    """
     if location is None:
         return True
     return False
 
 
 @callback(
-    Output({"type":"fade", "index": MATCH}, 'is_open',),
-    Input({"type":"submit-button", "index": MATCH}, "n_clicks"),
-    prevent_initial_call=True
+    Output(
+        {"type": "fade", "index": MATCH},
+        "is_open",
+    ),
+    Input({"type": "submit-button", "index": MATCH}, "n_clicks"),
+    prevent_initial_call=True,
 )
 def toggle_fade(n):
-    '''
-    Open the collapse element containing the plots once 
+    """
+    Open the collapse element containing the plots once
     the submit button has been pressed (on all pages)
-    '''
+    """
     if not n:
         # Button has never been clicked
         return False
@@ -151,6 +154,28 @@ clientside_callback(
     }""",
     Output("back-to-top-button", "id"),
     Input("back-to-top-button", "id"),
+)
+
+
+clientside_callback(
+    """
+    function(n_clicks, element_id) {
+        element_id = element_id[0];
+        if (!(typeof element_id === 'string' || element_id instanceof String)) {
+            element_id = JSON.stringify(element_id, Object.keys(element_id).sort());
+        };
+            var targetElement = document.getElementById(element_id);
+            if (targetElement) {
+                setTimeout(function() {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }, 200); // in milliseconds
+            }
+        return null;
+    }
+    """,
+    Input(dict(type="figure", id=ALL), "figure"),
+    State(dict(type="figure", id=ALL), "id"),
+    prevent_initial_call=True,
 )
 
 if __name__ == "__main__":

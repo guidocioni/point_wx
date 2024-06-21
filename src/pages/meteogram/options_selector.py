@@ -10,17 +10,19 @@ opts_selector = dbc.Card(
                     id="models-selection-meteogram",
                     options=ENSEMBLE_MODELS,
                     value="gfs_seamless",
-                    persistence=True
+                    persistence=True,
                 ),
             ],
             className="mb-2",
         ),
-        dbc.Button("Submit",
-                   id={"type": "submit-button",
-                       "index": "meteogram"},
-                   className="mb-2 col-12",
-                   size='lg',
-                   disabled=True)
+        dbc.Button(
+            "Submit",
+            id={"type": "submit-button", "index": "meteogram"},
+            className="mb-2 col-12",
+            size="lg",
+            disabled=True,
+        ),
     ],
-    body=True, className="mb-2"
+    body=True,
+    className="mb-2",
 )

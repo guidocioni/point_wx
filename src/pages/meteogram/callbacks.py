@@ -10,7 +10,7 @@ from io import StringIO
 
 @callback(
     [
-        Output("meteogram-plot", "figure"),
+        Output(dict(type="figure", id="meteogram"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -32,12 +32,15 @@ def generate_figure(n_clicks, locations, location, model):
 
     try:
         data = compute_daily_ensemble_meteogram(
-            latitude=loc['latitude'].item(),
-            longitude=loc['longitude'].item(),
-            model=model).reset_index()
-        data = get_weather_icons(data,
-                                 icons_path=f"{ASSETS_DIR}/yrno_png/",
-                                 mapping_path=f"{ASSETS_DIR}/weather_codes.json")
+            latitude=loc["latitude"].item(),
+            longitude=loc["longitude"].item(),
+            model=model,
+        ).reset_index()
+        data = get_weather_icons(
+            data,
+            icons_path=f"{ASSETS_DIR}/yrno_png/",
+            mapping_path=f"{ASSETS_DIR}/weather_codes.json",
+        )
         # Add daily climatology (quite fast)
         clima = compute_climatology(
             latitude=loc["latitude"].item(),
@@ -72,22 +75,3 @@ def generate_figure(n_clicks, locations, location, model):
             "An error occurred when processing the data",
             True,  # Error message
         )
-
-
-clientside_callback(
-    """
-    function(n_clicks, element_id) {
-            var targetElement = document.getElementById(element_id);
-            if (targetElement) {
-                setTimeout(function() {
-                    targetElement.scrollIntoView({ behavior: 'smooth' });
-                }, 800); // in milliseconds
-            }
-        return null;
-    }
-    """,
-    Output("garbage", "data", allow_duplicate=True),
-    Input({"type": "submit-button", "index": "meteogram"}, "n_clicks"),
-    [State("meteogram-plot", "id")],
-    prevent_initial_call=True,
-)

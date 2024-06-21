@@ -238,7 +238,9 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
 
 @time_this_func
 def make_subplot_figure(data, clima=None, title=None, sun=None):
-    traces_temp = make_lineplot_timeseries(data, "temperature_2m", clima, break_hours='12h')
+    traces_temp = make_lineplot_timeseries(
+        data, "temperature_2m", clima, break_hours="12h"
+    )
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     height_graph = 0.0
     subplot_title = ""
@@ -277,7 +279,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         fig.add_trace(trace_clouds, row=4, col=1)
 
     fig.update_layout(
-        modebar=dict(orientation='v'),
+        modebar=dict(orientation="v"),
         dragmode=False,
         height=800,
         margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
@@ -344,12 +346,22 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
                 col=1,
             )
 
-    fig.update_yaxes(ticksuffix="°C", row=1, col=1,
-                     zeroline=True,
-                     zerolinewidth=4, zerolinecolor='rgba(0,0,0,0.2)')
-    fig.update_yaxes(ticksuffix="°C", row=2, col=1,
-                     zeroline=True,
-                     zerolinewidth=4, zerolinecolor='rgba(0,0,0,0.2)')
+    fig.update_yaxes(
+        ticksuffix="°C",
+        row=1,
+        col=1,
+        zeroline=True,
+        zerolinewidth=4,
+        zerolinecolor="rgba(0,0,0,0.2)",
+    )
+    fig.update_yaxes(
+        ticksuffix="°C",
+        row=2,
+        col=1,
+        zeroline=True,
+        zerolinewidth=4,
+        zerolinecolor="rgba(0,0,0,0.2)",
+    )
     fig.update_yaxes(
         row=3,
         col=1,
@@ -358,10 +370,16 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_yaxes(range=[0, 100], row=4, col=1)
     # we need to re-set it here otherwise it only applies to the first plot
     fig.update_yaxes(showgrid=True, gridwidth=4)
-    fig.update_xaxes(showgrid=True, gridwidth=4, range=[
-                data["time"].min() - pd.to_timedelta("1h"),
-                data["time"].max() + pd.to_timedelta("1h"),
-            ],tickformat="%a %d %b\n%H:%M", minor=dict(ticks="inside",gridwidth=3))
+    fig.update_xaxes(
+        showgrid=True,
+        gridwidth=4,
+        range=[
+            data["time"].min() - pd.to_timedelta("1h"),
+            data["time"].max() + pd.to_timedelta("1h"),
+        ],
+        tickformat="%a %d %b\n%H:%M",
+        minor=dict(ticks="inside", gridwidth=3),
+    )
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14)))
 
@@ -371,6 +389,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
 # Figures for layout
 
 
-fig_subplots = dcc.Graph(id='ensemble-plot', config=images_config)
+fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"), config=images_config)
 # fig_polar = dcc.Graph(id='polar-plot',
 #                       config={**images_config, 'displayModeBar': False})

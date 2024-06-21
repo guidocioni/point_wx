@@ -9,8 +9,8 @@ opts_selector = dbc.Card(
                 dbc.Select(
                     id="models-selection-heatmap",
                     options=ENSEMBLE_MODELS,
-                    value=ENSEMBLE_MODELS[0]['value'],
-                    persistence=True
+                    value=ENSEMBLE_MODELS[0]["value"],
+                    persistence=True,
                 ),
             ],
             className="mb-2",
@@ -20,21 +20,22 @@ opts_selector = dbc.Card(
                 dbc.InputGroupText("Variable"),
                 dbc.Select(
                     id="variable-selection-heatmap",
-                    options=ENSEMBLE_VARS + ['accumulated_precip',
-                                             'accumulated_liquid',
-                                             'accumulated_snow'],
+                    options=ENSEMBLE_VARS
+                    + ["accumulated_precip", "accumulated_liquid", "accumulated_snow"],
                     value=ENSEMBLE_VARS[0],
-                    persistence=True
+                    persistence=True,
                 ),
             ],
             className="mb-2",
         ),
-        dbc.Button("Submit",
-                   id={"type": "submit-button",
-                       "index": "heatmap"},
-                   className="mb-2 col-12",
-                   size='lg',
-                   disabled=True)
+        dbc.Button(
+            "Submit",
+            id={"type": "submit-button", "index": "heatmap"},
+            className="mb-2 col-12",
+            size="lg",
+            disabled=True,
+        ),
     ],
-    body=True, className="mb-2"
+    body=True,
+    className="mb-2",
 )

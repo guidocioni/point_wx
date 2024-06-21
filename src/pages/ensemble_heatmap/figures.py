@@ -75,4 +75,4 @@ def make_heatmap(df, var, title=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id='ensemble-plot-heatmap', config=images_config)
+fig_subplots = dcc.Graph(id=dict(type='figure', id='ensemble-heatmap'), config=images_config)
