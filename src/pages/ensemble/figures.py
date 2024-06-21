@@ -32,7 +32,7 @@ def make_boxplot_timeseries(df, var, clima=None):
         )
         clima = clima.sort_values(by="time")
         traces.append(
-            go.Scatter(
+            go.Scattergl(
                 x=clima["time"],
                 y=clima[var],
                 mode="lines",
@@ -49,7 +49,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
         traces.append(
-            go.Scatter(
+            go.Scattergl(
                 x=df.loc[
                     df.time <= df.time.iloc[0] + pd.to_timedelta(break_hours), "time"
                 ],
@@ -68,7 +68,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         )
     for col in df.columns[df.columns.str.contains(var)]:
         traces.append(
-            go.Scatter(
+            go.Scattergl(
                 x=df.loc[
                     df.time >= df.time.iloc[0] + pd.to_timedelta(break_hours), "time"
                 ],
@@ -86,7 +86,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         )
     # Additional shading
     traces.append(
-        go.Scatter(
+        go.Scattergl(
             x=df.loc[:, "time"],
             y=df.loc[:, df.columns.str.contains(var)].min(axis=1),
             mode="lines",
@@ -96,7 +96,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         )
     )
     traces.append(
-        go.Scatter(
+        go.Scattergl(
             x=df.loc[:, "time"],
             y=df.loc[:, df.columns.str.contains(var)].max(axis=1),
             mode="lines",
@@ -119,7 +119,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         clima = clima.sort_values(by="time")
 
         traces.append(
-            go.Scatter(
+            go.Scattergl(
                 x=clima["time"],
                 y=clima[var],
                 mode="lines",
@@ -138,7 +138,7 @@ def make_scatterplot_timeseries(df, var):
     traces = []
     for col in df.columns[df.columns.str.contains(var)]:
         traces.append(
-            go.Scatter(
+            go.Scattergl(
                 x=df.loc[:, "time"],
                 y=df.loc[:, col],
                 mode="markers",
@@ -153,7 +153,7 @@ def make_scatterplot_timeseries(df, var):
         )
     # add line with the average
     traces.append(
-        go.Scatter(
+        go.Scattergl(
             x=df.loc[:, "time"],
             y=df.loc[:, f"{var}_mean"],
             mode="lines",
