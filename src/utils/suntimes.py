@@ -150,8 +150,6 @@ class SunTimes:
             raise ValueError("longitude must be between -180 and +180")
         if not (-90 <= latitude <= 90):
             raise ValueError("latitude must be between -90 and +90")
-        if not (-66.56 <= latitude <= 66.56):
-            print("Au-delà des cercles polaires / Beyond the polar circles ")
         if altitude < 0:
             raise ValueError("altitude must be positive")
         self.longitude = longitude
@@ -381,12 +379,22 @@ def find_suntimes(df, latitude, longitude, elevation=0):
 
     # Function to apply to every row of this dataframe
     def find_times(df):
-        sunrise = (
-            sun.riseutc(df["time"]).replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
-        )
-        sunset = (
-            sun.setutc(df["time"]).replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
-        )
+        sunrise = sun.riseutc(df["time"])
+        sunset = sun.setutc(df["time"])
+        # Handle polar nights/polar days
+        if sunrise == 'PD' or sunset == 'PD':
+            sunrise = df["time"]
+            sunset  = df["time"] + pd.Timedelta('24h')
+        elif sunrise == 'PN' or sunset == 'PN':
+            sunrise = df["time"]
+            sunset  = df["time"]
+        else:
+            sunrise = (
+                sunrise.replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
+            )
+            sunset = (
+                sunset.replace(tzinfo=pytz.utc).astimezone(df["time"].tz)
+            )
 
         return sunrise, sunset
 

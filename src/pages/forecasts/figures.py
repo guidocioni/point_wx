@@ -165,9 +165,10 @@ def make_subplot_figure(data, models, title=None, sun=None):
     #     data, 'sunshine_duration', models=models,
     #     fill="tozeroy", alpha=0.3)
     traces_precipitation = make_barplot_timeseries(data, "precipitation", models=models)
-    traces_snow = make_barplot_timeseries(
-        data, "snowfall", models=models, color="rgb(214, 138, 219)"
-    )
+    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+        traces_snow = make_barplot_timeseries(
+            data, "snowfall", models=models, color="rgb(214, 138, 219)"
+        )
     traces_wind = make_lineplot_timeseries(
         data, "windgusts_10m", mode="lines", models=models
     )
@@ -181,7 +182,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.032,
-        row_heights=[0.45, 0.3, 0.3, 0.25],
+        row_heights=[0.45, 0.25, 0.3, 0.2],
         subplot_titles=["", "Precip[mm] / Snow[cm]", "Winds [km/h]", "Clouds [%]"],
         specs=[
             [{"secondary_y": True, "r": -0.05}],
@@ -198,8 +199,9 @@ def make_subplot_figure(data, models, title=None, sun=None):
     #     fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
     for trace_precipitation in traces_precipitation:
         fig.add_trace(trace_precipitation, row=2, col=1)
-    for trace_snow in traces_snow:
-        fig.add_trace(trace_snow, row=2, col=1, secondary_y=True)
+    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+        for trace_snow in traces_snow:
+            fig.add_trace(trace_snow, row=2, col=1, secondary_y=True)
     for trace_wind in traces_wind:
         fig.add_trace(trace_wind, row=3, col=1)
     for trace_wind_dir in traces_wind_dir:
@@ -211,7 +213,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         modebar=dict(orientation="v"),
         dragmode=False,
         xaxis=dict(showgrid=True),
-        height=1000,
+        height=800,
         margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
         barmode="overlay",
         legend=dict(orientation="h", y=-0.04),
@@ -299,16 +301,17 @@ def make_subplot_figure(data, models, title=None, sun=None):
     )
     fig.update_yaxes(tickangle=-90, row=3, col=1)
     fig.update_yaxes(row=4, col=1, tickangle=-90)
-    fig.update_yaxes(
-        tickangle=-90,
-        row=2,
-        col=1,
-        secondary_y=True,
-        autorange="reversed",
-        color="rgb(214, 138, 219)",
-        showgrid=False,
-        minor=dict(showgrid=False),
-    )
+    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+        fig.update_yaxes(
+            tickangle=-90,
+            row=2,
+            col=1,
+            secondary_y=True,
+            autorange="reversed",
+            color="rgb(214, 138, 219)",
+            showgrid=False,
+            minor=dict(showgrid=False),
+        )
     fig.update_xaxes(
         minor=dict(ticks="inside", showgrid=True, gridwidth=1),
         tickformat="%a %d %b\n%H:%M",
