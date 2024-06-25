@@ -1,29 +1,18 @@
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from utils.settings import DETERMINISTIC_MODELS
 
 opts_selector = dbc.Card(
     [
-        dbc.InputGroup(
-            [
-                dbc.InputGroupText("Model"),
-                dbc.Select(
-                    id="models-selection-vertical",
-                    # Manually remove models that do not have vertical level coverage
-                    options=[
-                        d
-                        for d in DETERMINISTIC_MODELS
-                        if d["value"]
-                        not in [
-                            "metno_nordic",
-                            "meteofrance_arome_france_hd",
-                            "bom_access_global",
-                        ]
-                    ],
-                    value="best_match",
-                    persistence=True,
-                ),
-            ],
+        dmc.Select(
+            label='Model',
+            id="models-selection-vertical",
+            data=DETERMINISTIC_MODELS,
+            value="best_match",
+            persistence="true",
             className="mb-2",
+            searchable=True,
+            clearable=True
         ),
         dbc.Button(
             "Submit",

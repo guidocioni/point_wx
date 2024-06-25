@@ -2,7 +2,7 @@ import pandas as pd
 import requests as r
 import os
 import re
-from .settings import cache, ENSEMBLE_VARS, ENSEMBLE_MODELS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
+from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
 from .custom_logger import logging, time_this_func
 
 
@@ -82,7 +82,7 @@ def get_forecast_data(latitude=53.55,
                       longitude=9.99,
                       variables=",".join(DETERMINISTIC_VARS),
                       timezone='auto',
-                      model=DETERMINISTIC_MODELS[0]['value'],
+                      model="best_match",
                       forecast_days=7,
                       from_now=True,
                       past_days=None,
@@ -189,7 +189,7 @@ def get_forecast_daily_data(latitude=53.55,
                             longitude=9.99,
                             variables="precipitation_sum",
                             timezone='auto',
-                            model=DETERMINISTIC_MODELS[0]['value'],
+                            model="best_match",
                             forecast_days=7,
                             past_days=None,
                             start_date=None,
@@ -237,7 +237,7 @@ def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
                       variables=",".join(ENSEMBLE_VARS),
                       timezone='auto',
-                      model=ENSEMBLE_MODELS[0]['value'],
+                      model="icon_seamless",
                       from_now=False,
                       decimate=False):
     """

@@ -1,33 +1,30 @@
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS
 
 opts_selector = dbc.Card(
     [
-        dbc.InputGroup(
-            [
-                dbc.InputGroupText("Model"),
-                dbc.Select(
-                    id="models-selection-heatmap",
-                    options=ENSEMBLE_MODELS,
-                    value=ENSEMBLE_MODELS[0]["value"],
-                    persistence=True,
-                ),
-            ],
-            className="mb-2",
+        dmc.Select(
+            label='Model',
+            id="models-selection-heatmap",
+            data=ENSEMBLE_MODELS,
+            value="icon_seamless",
+            persistence="true",
+            className="mb-1",
+            searchable=True,
+            clearable=True
         ),
-        dbc.InputGroup(
-            [
-                dbc.InputGroupText("Variable"),
-                dbc.Select(
-                    id="variable-selection-heatmap",
-                    options=ENSEMBLE_VARS
+        dmc.Select(
+            label='Variable',
+            id="variable-selection-heatmap",
+            data=ENSEMBLE_VARS
                     + ["accumulated_precip", "accumulated_liquid", "accumulated_snow"],
-                    value=ENSEMBLE_VARS[0],
-                    persistence=True,
-                ),
-            ],
+            value="temperature_2m",
+            persistence="true",
             className="mb-2",
-        ),
+            clearable=True,
+            searchable=True
+            ),
         dbc.Button(
             "Submit",
             id={"type": "submit-button", "index": "heatmap"},

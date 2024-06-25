@@ -20,7 +20,7 @@ from io import StringIO
         State("locations-list", "data"),
         State("location-selected", "data"),
         State("models-selection", "value"),
-        State("clima-switch", "value"),
+        State("clima-switch", "checked"),
     ],
     prevent_initial_call=True,
 )

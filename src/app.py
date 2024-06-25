@@ -1,20 +1,33 @@
 import dash
-from dash import html, dcc, callback, Output, Input, clientside_callback, MATCH, State, ALL
+from dash import (
+    html,
+    dcc,
+    callback,
+    Output,
+    Input,
+    clientside_callback,
+    MATCH,
+    State,
+    ALL,
+)
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
-from flask import request
+from flask import request, redirect
 from utils.custom_logger import logging
 
 app = dash.Dash(
     __name__,
     url_base_pathname=URL_BASE_PATHNAME,
     use_pages=True,
-    external_stylesheets=[dbc.themes.FLATLY, dbc.icons.FONT_AWESOME],
+    external_stylesheets=[dbc.themes.FLATLY,
+                          dbc.icons.FONT_AWESOME,
+                          "https://unpkg.com/@mantine/dates@7/styles.css"],
     meta_tags=[
-        {   # check if device is a mobile device.
-            'name': 'viewport',
-            'content': 'width=device-width, initial-scale=1'
+        {  # check if device is a mobile device.
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1",
         }
     ],
     suppress_callback_exceptions=True,
@@ -22,36 +35,46 @@ app = dash.Dash(
 )
 
 server = app.server
+
+
+# Redirect the root to the home (to be tested)
+@server.route("/")
+def redirect_to_basepath():
+    return redirect(request.url_root.rstrip("/") + URL_BASE_PATHNAME)
+
+
 # Initialize cache
 cache.init_app(server)
 
 
 def serve_layout():
     """Define the layout of the application"""
-    return html.Div(
-        [
-            navbar(),
-            dcc.Store(id="locations-list", data={}, storage_type="local"),
-            dcc.Store(id="location-selected", data={}, storage_type="local"),
-            dcc.Store(id="locations-favorites", storage_type="local"),
-            dcc.Store(id="client-details", data={}, storage_type="session"),
-            dcc.Store(id="garbage"),
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Error"),
-                    dbc.ModalBody(
-                        "", id="error-message"
-                    ),  # Placeholder for error message
-                ],
-                id="error-modal",
-                size="lg",
-                backdrop="static",
-            ),
-            dbc.Container(dash.page_container, class_name="my-2", id="content"),
-            dcc.Location(id="url", refresh=False),
-            footer,
-        ],
-        id="app-div",
+    return dmc.MantineProvider(
+        html.Div(
+            [
+                navbar(),
+                dcc.Store(id="locations-list", data={}, storage_type="local"),
+                dcc.Store(id="location-selected", data={}, storage_type="local"),
+                dcc.Store(id="locations-favorites", storage_type="local"),
+                dcc.Store(id="client-details", data={}, storage_type="session"),
+                dcc.Store(id="garbage"),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader("Error"),
+                        dbc.ModalBody(
+                            "", id="error-message"
+                        ),  # Placeholder for error message
+                    ],
+                    id="error-modal",
+                    size="lg",
+                    backdrop="static",
+                ),
+                dbc.Container(dash.page_container, class_name="my-2", id="content"),
+                dcc.Location(id="url", refresh=False),
+                footer,
+            ],
+            id="app-div",
+        )
     )
 
 

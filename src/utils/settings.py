@@ -7,14 +7,14 @@ import os
 import platform
 import tempfile
 
-ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
-ASSETS_DIR = os.path.join(ROOT_DIR, 'src', 'assets')
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "../.."))
+ASSETS_DIR = os.path.join(ROOT_DIR, "src", "assets")
 
 APP_PORT = 8083
-URL_BASE_PATHNAME = '/pointwx/'
+URL_BASE_PATHNAME = "/pointwx/"
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", "")
-MAPBOX_API_PLACES_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places'
-CACHE_DIR='/var/cache/pointwx/'
+MAPBOX_API_PLACES_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
+CACHE_DIR = "/var/cache/pointwx/"
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
@@ -22,23 +22,26 @@ DEFAULT_TEMPLATE = "custom"
 # Now we set the default template throughout the application
 pio.templates.default = DEFAULT_TEMPLATE
 
+
 # Set cache directory for flask_caching.
 # Handle different systems
 def get_cache_directory():
     system = platform.system()
-    if system == 'Linux' or system == 'Darwin':  # Darwin is MacOS
+    if system == "Linux" or system == "Darwin":  # Darwin is MacOS
         primary_cache_dir = CACHE_DIR
-        fallback_cache_dir = os.path.join(tempfile.gettempdir(), 'pointwx')
+        fallback_cache_dir = os.path.join(tempfile.gettempdir(), "pointwx")
     else:
         # Default case for unknown systems
-        primary_cache_dir = os.path.join(tempfile.gettempdir(), 'pointwx')
+        primary_cache_dir = os.path.join(tempfile.gettempdir(), "pointwx")
 
     if os.path.exists(primary_cache_dir):
         if os.access(primary_cache_dir, os.W_OK):
             logging.info(f"Using {primary_cache_dir} as cache directory")
             return primary_cache_dir
         else:
-            logging.warning(f"Primary cache directory {primary_cache_dir} is not writable.")
+            logging.warning(
+                f"Primary cache directory {primary_cache_dir} is not writable."
+            )
     else:
         try:
             os.makedirs(primary_cache_dir, exist_ok=True)
@@ -46,14 +49,18 @@ def get_cache_directory():
                 logging.info(f"Using {primary_cache_dir} as cache directory")
                 return primary_cache_dir
         except Exception as e:
-            logging.warning(f"Could not create primary cache directory {primary_cache_dir}: {e}. Falling back.")
+            logging.warning(
+                f"Could not create primary cache directory {primary_cache_dir}: {e}. Falling back."
+            )
 
     if os.path.exists(fallback_cache_dir):
         if os.access(fallback_cache_dir, os.W_OK):
             logging.info(f"Using {fallback_cache_dir} as cache directory")
             return fallback_cache_dir
         else:
-            logging.warning(f"Fallback cache directory {fallback_cache_dir} is not writable.")
+            logging.warning(
+                f"Fallback cache directory {fallback_cache_dir} is not writable."
+            )
     else:
         try:
             os.makedirs(fallback_cache_dir, exist_ok=True)
@@ -61,94 +68,153 @@ def get_cache_directory():
                 logging.info(f"Using {fallback_cache_dir} as cache directory")
                 return fallback_cache_dir
         except Exception as e:
-            logging.warning(f"Could not create fallback cache directory {fallback_cache_dir}: {e}")
+            logging.warning(
+                f"Could not create fallback cache directory {fallback_cache_dir}: {e}"
+            )
     logging.warning("No suitable cache directory found. Disabling cache!")
 
     return None
 
+
 cache_dir = get_cache_directory()
 
 if cache_dir:
-    cache = Cache(config={"CACHE_TYPE": "filesystem",
-                          "CACHE_DIR": cache_dir})
+    cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": cache_dir})
 else:
     cache = Cache(config={"CACHE_TYPE": "null"})
 
 
 images_config = {
-    'toImageButtonOptions': {
-        'format': 'png',  # one of png, svg, jpeg, webp
-        'height': None,
-        'width': None,
-        'scale': 1.5  # Multiply title/legend/axis/canvas sizes by this factor
+    "toImageButtonOptions": {
+        "format": "png",  # one of png, svg, jpeg, webp
+        "height": None,
+        "width": None,
+        "scale": 1.5,  # Multiply title/legend/axis/canvas sizes by this factor
     },
-    'modeBarButtonsToRemove': ['select', 'lasso2d', 'zoomIn',
-                               'zoomOut', 'resetScale', 'autoScale'],
-    'displaylogo': False
+    "modeBarButtonsToRemove": [
+        "select",
+        "lasso2d",
+        "zoomIn",
+        "zoomOut",
+        "resetScale",
+        "autoScale",
+    ],
+    "displaylogo": False,
 }
 
 ENSEMBLE_MODELS = [
-    {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
-    {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
-    {"label": "IFS (🌐, 25km, 51 members)", "value": "ecmwf_ifs025"},
-    {"label": "GEM (🌐, 25km, 21 members)", "value": "gem_global"},
-    {"label": "ICON-EPS (🌐, 26km, 40 members)", "value": "icon_global"},
-    {"label": "GFS ENS (🌐, 25km, 31 members)", "value": "gfs025"},
-    {"label": "GFS ENS (🌐, 50km, 31 members)", "value": "gfs05"},
-    {"label": "ACCESS-GE (🌐, 40km, 18 members)",
-     "value": "bom_access_global_ensemble"},
-    {"label": "ICON-EU-EPS (🇪🇺, 13km, 40 members)", "value": "icon_eu"},
-    {"label": "ICON-D2-EPS (🇩🇪, 2km, 20 members)", "value": "icon_d2"},
+    {
+        "group": "Seamless",
+        "items": [
+            {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
+            {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
+        ],
+    },
+    {
+        "group": "Global",
+        "items": [
+            {"label": "IFS (🌐, 25km, 51 members)", "value": "ecmwf_ifs025"},
+            {"label": "GEM (🌐, 25km, 21 members)", "value": "gem_global"},
+            {"label": "ICON-EPS (🌐, 26km, 40 members)", "value": "icon_global"},
+            {"label": "GFS ENS (🌐, 25km, 31 members)", "value": "gfs025"},
+            {"label": "GFS ENS (🌐, 50km, 31 members)", "value": "gfs05"},
+            {
+                "label": "ACCESS-GE (🌐, 40km, 18 members)",
+                "value": "bom_access_global_ensemble",
+            },
+        ],
+    },
+    {
+        "group": "Regional",
+        "items": [
+            {"label": "ICON-EU-EPS (🇪🇺, 13km, 40 members)", "value": "icon_eu"},
+            {"label": "ICON-D2-EPS (🇩🇪, 2km, 20 members)", "value": "icon_d2"},
+        ],
+    },
 ]
 
 # The variables we download by default for ensemble models
-ENSEMBLE_VARS = ["temperature_2m", "cloudcover", "rain",
-                 "snowfall", "precipitation", "freezinglevel_height",
-                 "snow_depth", "windgusts_10m", "wind_direction_10m",
-                 "temperature_850hPa", "sunshine_duration"]
+ENSEMBLE_VARS = [
+    "temperature_2m",
+    "cloudcover",
+    "rain",
+    "snowfall",
+    "precipitation",
+    "freezinglevel_height",
+    "snow_depth",
+    "windgusts_10m",
+    "wind_direction_10m",
+    "temperature_850hPa",
+    "sunshine_duration",
+]
 
 # All the models available in the APIs for Forecasts
 DETERMINISTIC_MODELS = [
-    # Seamless
-    {"label": "Best Match 🌐", "value": "best_match"},
-    {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
-    {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
-    {"label": "MeteoFrance Seamless 🌐", "value": "meteofrance_seamless"},
-    {"label": "JMA Seamless 🌐", "value": "jma_seamless"},
-    {"label": "GEM Seamless 🌐", "value": "gem_seamless"},
-    # Global
-    {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
-    {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
-    {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
-    {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
-    {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
-    {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
-    {"label": "GSM (🌐, 55km)", "value": "jma_gsm"},
-    {"label": "CMA GRAPES (🌐, 15km)", "value": "cma_grapes_global"},
-    {"label": "GEM Global (🌐, 15km)", "value": "gem_global"},
-    {"label": "ACCESS-G (🌐, 15km)", "value": "bom_access_global"},
-    # Regional
-    {"label": "ICON-EU (🇪🇺, 7km)", "value": "icon_eu"},
-    {"label": "ICON-D2 (🇩🇪, 2.2km)", "value": "icon_d2"},
-    {"label": "MetNo (🇳🇴🇸🇪🇫🇮, 1km)", "value": "metno_nordic"},
-    {"label": "Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
-    {"label": "Arpege (🇫🇷, 2.5km)", "value": "meteofrance_arome_france"},
-    {"label": "Arpege HD (🇫🇷, 1.5km)",
-     "value": "meteofrance_arome_france_hd"},
-    {"label": "COSMO Seamless 🇪🇺", "value": "arpae_cosmo_seamless"},
-    {"label": "COSMO-2I (🇮🇹, 2.2km)", "value": "arpae_cosmo_2i"},
-    {"label": "COSMO-2I-RUC (🇮🇹, 2.2km)", "value": "arpae_cosmo_2i_ruc"},
-    {"label": "COSMO-5M (🇪🇺, 5km)", "value": "arpae_cosmo_5m"},
-    {"label": "HRRR (🇺🇸, 3km)", "value": "gfs_hrrr"},
-    {"label": "MSM (🇯🇵, 5km)", "value": "jma_msm"},
-    {"label": "GEM Regional (🇺🇸, 10km)", "value": "gem_regional"},
-    {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},
+    {
+        "group": "Seamless",
+        "items": [
+            {"label": "Best Match 🌐", "value": "best_match"},
+            {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
+            {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
+            {"label": "MeteoFrance Seamless 🌐", "value": "meteofrance_seamless"},
+            {"label": "JMA Seamless 🌐", "value": "jma_seamless"},
+            {"label": "GEM Seamless 🌐", "value": "gem_seamless"},
+        ],
+    },
+    {
+        "group": "Global",
+        "items": [
+            {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
+            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
+            {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
+            {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
+            {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
+            {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
+            {"label": "GSM (🌐, 55km)", "value": "jma_gsm"},
+            {"label": "CMA GRAPES (🌐, 15km)", "value": "cma_grapes_global"},
+            {"label": "GEM Global (🌐, 15km)", "value": "gem_global"},
+            {"label": "ACCESS-G (🌐, 15km)", "value": "bom_access_global"},
+        ],
+    },
+    {
+        "group": "Regional (🇪🇺)",
+        "items": [
+            {"label": "ICON-EU (🇪🇺, 7km)", "value": "icon_eu"},
+            {"label": "ICON-D2 (🇩🇪, 2.2km)", "value": "icon_d2"},
+            {"label": "MetNo (🇳🇴🇸🇪🇫🇮, 1km)", "value": "metno_nordic"},
+            {"label": "Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
+            {"label": "Arpege (🇫🇷, 2.5km)", "value": "meteofrance_arome_france"},
+            {"label": "Arpege HD (🇫🇷, 1.5km)", "value": "meteofrance_arome_france_hd"},
+            {"label": "COSMO Seamless 🇪🇺", "value": "arpae_cosmo_seamless"},
+            {"label": "COSMO-2I (🇮🇹, 2.2km)", "value": "arpae_cosmo_2i"},
+            {"label": "COSMO-2I-RUC (🇮🇹, 2.2km)", "value": "arpae_cosmo_2i_ruc"},
+            {"label": "COSMO-5M (🇪🇺, 5km)", "value": "arpae_cosmo_5m"},
+        ],
+    },
+    {
+        "group": "Regional (others)",
+        "items": [
+            {"label": "HRRR (🇺🇸, 3km)", "value": "gfs_hrrr"},
+            {"label": "MSM (🇯🇵, 5km)", "value": "jma_msm"},
+            {"label": "GEM Regional (🇺🇸, 10km)", "value": "gem_regional"},
+            {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},
+        ],
+    },
 ]
 
 # The variables we download by default for deterministic models
-DETERMINISTIC_VARS = ["temperature_2m", "precipitation", "rain", "snowfall",
-                      "snow_depth", "cloudcover", "winddirection_10m",
-                      "windgusts_10m", "weather_code", "sunshine_duration"]
+DETERMINISTIC_VARS = [
+    "temperature_2m",
+    "precipitation",
+    "rain",
+    "snowfall",
+    "snow_depth",
+    "cloudcover",
+    "winddirection_10m",
+    "windgusts_10m",
+    "weather_code",
+    "sunshine_duration",
+]
 
 REANALYSIS_MODELS = [
     {"label": "Best Match (🌐, IFS+ERA5)", "value": "best_match"},
@@ -156,5 +222,5 @@ REANALYSIS_MODELS = [
     {"label": "ERA5 (🌐, 25km)", "value": "era5"},
     {"label": "ERA5-Land (🌐, 10km)", "value": "era5_land"},
     {"label": "ECMWF-IFS (🌐, 9km, 2017 onwards)", "value": "ecmwf_ifs"},
-    {"label": "CERRA (🇪🇺, 5km, 1985-2021)", "value": "cerra"}
+    {"label": "CERRA (🇪🇺, 5km, 1985-2021)", "value": "cerra"},
 ]

@@ -5,28 +5,27 @@ from utils.settings import REANALYSIS_MODELS
 
 opts_selector = dbc.Card(
     [
-        dbc.InputGroup(
-            [
-                dbc.InputGroupText("Model"),
-                dbc.Select(
-                    id="models-selection-climate",
-                    options=REANALYSIS_MODELS,
-                    value="era5_seamless",
-                ),
-            ],
+        dmc.Select(
+            label='Model',
+            id="models-selection-climate",
+            data=REANALYSIS_MODELS,
+            value="era5_seamless",
             className="mb-2",
+            searchable=True,
+            clearable=True
         ),
-        dmc.DateRangePicker(
+        dmc.DatePicker(
             label="Date Range",
             id="date-range-climate",
             value=["1991-01-01", "2020-12-31"],
             minDate="1950-01-01",
             maxDate=(date.today() - timedelta(days=6)).strftime("%Y-%m-%d"),
-            inputFormat="DD/MM/YYYY",
+            valueFormat="DD/MM/YYYY",
             firstDayOfWeek=1,
             allowSingleDateInRange=False,
             clearable=True,
             className="mb-2",
+            type='range'
         ),
         dbc.Button(
             "Submit",
