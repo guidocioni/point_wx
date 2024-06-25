@@ -90,10 +90,7 @@ def make_temp_prec_climate_figure(df, title=None):
     )
 
     if title is not None:
-        fig.update_layout(title_text=title)
-
-    if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -167,7 +164,7 @@ def make_clouds_climate_figure(df, title=None):
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -312,7 +309,7 @@ def make_temperature_climate_figure(df, title=None):
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -434,7 +431,7 @@ def make_precipitation_climate_figure(df, title=None):
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -567,7 +564,7 @@ def make_winds_climate_figure(df, title=None):
     fig.update_yaxes(showgrid=False, fixedrange=True)
 
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -639,7 +636,7 @@ def make_wind_rose_figure(df, title=None):
     )
 
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 

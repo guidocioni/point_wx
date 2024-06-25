@@ -71,7 +71,7 @@ def make_prec_figure(df, year, var, title=None):
         yaxis=dict(showgrid=True, title="Yearly accumulated precipitation [mm]"),
     )
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
@@ -172,7 +172,7 @@ def make_temp_figure(df, year, var, title=None):
         yaxis=dict(showgrid=True, title="Temperature [°C]"),
     )
     if title is not None:
-        fig.update_layout(title_text=title)
+        fig.update_layout(title_text=title, font=dict(size=11))
 
     return fig
 
