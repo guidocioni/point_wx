@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data, compute_climatology
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
@@ -79,3 +79,16 @@ def generate_figure(n_clicks, locations, location, model, clima_):
             "An error occurred when processing the data",
             True,  # Error message
         )
+
+
+# Remove focus from dropdown once an element has been selected
+clientside_callback(
+    """
+    function(value) {
+        // Remove focus from the dropdown element
+        document.activeElement.blur();
+    }
+    """,
+    Input('models-selection', 'value'),
+    prevent_initial_call=True
+)

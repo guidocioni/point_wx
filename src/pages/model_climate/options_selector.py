@@ -11,7 +11,6 @@ opts_selector = dbc.Card(
             data=REANALYSIS_MODELS,
             value="era5_seamless",
             className="mb-2",
-            searchable=True,
             clearable=True
         ),
         dmc.DatePicker(

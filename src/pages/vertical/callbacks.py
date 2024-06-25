@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_vertical_data
 from utils.custom_logger import logging
 from .figures import make_figure_vertical
@@ -56,3 +56,15 @@ def generate_figure(n_clicks, locations, location, model):
             "An error occurred when processing the data",
             True,  # Error message
         )
+
+
+clientside_callback(
+    """
+    function(value) {
+        // Remove focus from the dropdown element
+        document.activeElement.blur();
+    }
+    """,
+    Input('models-selection-vertical', 'value'),
+    prevent_initial_call=True
+)

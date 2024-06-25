@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
 from .figures import make_prec_figure, make_temp_figure
@@ -71,3 +71,15 @@ def generate_figure(n_clicks, locations, location, model, year):
             "An error occurred when processing the data",
             True,  # Error message
         )
+
+
+clientside_callback(
+    """
+    function(value) {
+        // Remove focus from the dropdown element
+        document.activeElement.blur();
+    }
+    """,
+    Input('models-selection-climate-daily', 'value'),
+    prevent_initial_call=True
+)

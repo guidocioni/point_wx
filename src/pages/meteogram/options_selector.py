@@ -11,7 +11,6 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-2",
-            searchable=True,
             clearable=True
         ),
         dbc.Button(

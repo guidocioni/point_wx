@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR
@@ -75,3 +75,15 @@ def generate_figure(n_clicks, locations, location, model):
             "An error occurred when processing the data",
             True,  # Error message
         )
+
+
+clientside_callback(
+    """
+    function(value) {
+        // Remove focus from the dropdown element
+        document.activeElement.blur();
+    }
+    """,
+    Input('models-selection-meteogram', 'value'),
+    prevent_initial_call=True
+)

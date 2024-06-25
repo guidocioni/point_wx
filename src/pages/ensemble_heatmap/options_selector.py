@@ -11,7 +11,6 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-1",
-            searchable=True,
             clearable=True
         ),
         dmc.Select(
@@ -23,7 +22,6 @@ opts_selector = dbc.Card(
             persistence="true",
             className="mb-2",
             clearable=True,
-            searchable=True
             ),
         dbc.Button(
             "Submit",
