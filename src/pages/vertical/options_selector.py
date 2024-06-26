@@ -12,7 +12,7 @@ opts_selector = dbc.Card(
             persistence="true",
             className="mb-2",
             searchable=True,
-            clearable=True
+            allowDeselect=False
         ),
         dbc.Button(
             "Submit",

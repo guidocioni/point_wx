@@ -12,7 +12,7 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-2",
-            clearable=True
+            allowDeselect=False
         ),
         dmc.Switch(
             id="clima-switch",

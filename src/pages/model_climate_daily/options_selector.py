@@ -11,7 +11,7 @@ opts_selector = dbc.Card(
             data=REANALYSIS_MODELS,
             value="era5_seamless",
             className="mb-2",
-            clearable=True
+            allowDeselect=False
         ),
         dmc.NumberInput(
             id="year-selection-climate",

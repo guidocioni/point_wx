@@ -11,7 +11,7 @@ opts_selector = dbc.Card(
             data=REANALYSIS_MODELS,
             value="era5_seamless",
             className="mb-2",
-            clearable=True
+            allowDeselect=False
         ),
         dmc.DatePicker(
             label="Date Range",
@@ -22,7 +22,6 @@ opts_selector = dbc.Card(
             valueFormat="DD/MM/YYYY",
             firstDayOfWeek=1,
             allowSingleDateInRange=False,
-            clearable=True,
             className="mb-2",
             type='range'
         ),

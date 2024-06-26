@@ -11,7 +11,7 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-1",
-            clearable=True
+            allowDeselect=False
         ),
         dmc.Select(
             label='Variable',
