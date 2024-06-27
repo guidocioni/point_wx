@@ -1,0 +1,14 @@
+dash==2.17.1
+dash-bootstrap-components
+dash_leaflet==1.0.16rc2
+dash_mantine_components==0.14.3
+Flask
+Flask-Caching
+gunicorn
+jdcal
+numpy
+orjson
+pandas
+plotly
+requests
+Pillow

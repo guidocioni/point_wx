@@ -2,22 +2,19 @@ import pandas as pd
 import requests as r
 import os
 import re
-from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, DETERMINISTIC_MODELS
+from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
 from .custom_logger import logging, time_this_func
 
 
 @time_this_func
 def make_request(url, payload):
-    # Attempt to read a file with the apikey
-    api_key = os.getenv('OPENMETEO_KEY',None)
-
-    if api_key:
+    if OPENMETEO_KEY:
         # In this case we have to prepend the 'customer-' string to the url
         # and add &apikey=... at the end
         url = url.replace("https://", "https://customer-")
-        payload['apikey'] = api_key
+        payload['apikey'] = OPENMETEO_KEY
 
-    logging.info(f"{'Commercial' if api_key else 'Free'} API | Sending request, payload={payload}, url={url}")
+    logging.info(f"{'Commercial' if OPENMETEO_KEY else 'Free'} API | Sending request, payload={payload}, url={url}")
     resp = r.get(url=url, params=payload)
     resp.raise_for_status()
 
