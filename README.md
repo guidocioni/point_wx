@@ -51,3 +51,32 @@ killasgroup=true
 stderr_logfile=/var/log/pointwx/point_wx.err.log
 stdout_logfile=/var/log/pointwx/point_wx.err.log
 ```
+
+Or with systemd 
+
+```
+[Unit]
+Description=Gunicorn instance to serve point_wx
+After=network.target
+
+[Service]
+User=user
+Group=group
+WorkingDirectory=/home/user/point_wx/src
+Environment="MAPBOX_KEY=<mapbox-key-for-geocoding-api>"
+Environment="OPENMETEO_KEY=<commercial-key-otherwise-free-is-used>"
+Environment="REACT_VERSION=18.2.0" # Needed for dash mantine
+ExecStart=/bin/bash -c "source /home/user/miniconda3/bin/activate dash && exec gunicorn -b 127.0.0.1:8000 --workers=3 --timeout=90 app:server"
+StandardOutput=append:/var/log/pointwx/point_wx.log
+StandardError=append:/var/log/pointwx/point_wx.log
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Or with Docker
+
+```
+docker build -t pointwx .
+docker run -p 8083:8000 pointwx
+```
