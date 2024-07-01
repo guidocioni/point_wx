@@ -46,7 +46,7 @@ RUN mkdir -p $CACHE_DIR && chown appuser:appgroup $CACHE_DIR
 EXPOSE 8000
 
 # Command to run the app with gunicorn
-CMD gunicorn -b $GUNICORN_BIND -w $GUNICORN_WORKERS app:server
+CMD gunicorn -b $GUNICORN_BIND -w $GUNICORN_WORKERS --preload app:server
 
 # Set the user to run the application
 USER appuser

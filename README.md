@@ -12,11 +12,12 @@ Install the requirements
 
 - `dash`
 - `dash-bootstrap-components`, for styling the whole application
-- `dash-leaflet`, to show the small map4
+- `dash-mantine-components`, for the new styling components
+- `dash-leaflet`, to show the small map
 - `pandas`, for data manipulation
 - `plotly`, for plotting
 - `requests`, used to download data from the openmeteo API
-- `flask-cache`, used to cache all data functions
+- `flask-caching`, used to cache all data functions
 - `jdcal`, for `suntimes.py` to work. We use this to show the sunrise/sunset times on the plot.
 - `Pillow`, to add weather icons
 
