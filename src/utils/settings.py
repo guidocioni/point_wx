@@ -7,15 +7,15 @@ import os
 import platform
 import tempfile
 
-ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "../.."))
-ASSETS_DIR = os.path.join(ROOT_DIR, "src", "assets")
+ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 
 APP_PORT = 8083
 URL_BASE_PATHNAME = os.getenv("URL_BASE_PATHNAME", "/pointwx/")
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", None)
 OPENMETEO_KEY = os.getenv("OPENMETEO_KEY", None)
 MAPBOX_API_PLACES_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
-CACHE_DIR = os.getenv("CACHE_DIR", "/var/cache/pointwx/") 
+CACHE_DIR = os.getenv("CACHE_DIR", "/var/cache/pointwx/")
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there

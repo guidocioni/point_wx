@@ -38,21 +38,7 @@ To deploy in production something like this should work
 gunicorn -b 127.0.0.1:8000 --timeout=90 app:server
 ```
 
-You can setup a service using `supervisor` and using the following configuration as a `.conf` file
-
-```
-[program:point_wx]
-directory=/home/ubuntu/point_wx/src/
-command=gunicorn -b 127.0.0.1:8000 --timeout=90 app:server
-autostart=true
-autorestart=true
-stopasgroup=true
-killasgroup=true
-stderr_logfile=/var/log/pointwx/point_wx.err.log
-stdout_logfile=/var/log/pointwx/point_wx.err.log
-```
-
-Or with systemd 
+You can setup a service using `systemd`
 
 ```
 [Unit]
@@ -66,7 +52,7 @@ WorkingDirectory=/home/user/point_wx/src
 Environment="MAPBOX_KEY=<mapbox-key-for-geocoding-api>"
 Environment="OPENMETEO_KEY=<commercial-key-otherwise-free-is-used>"
 Environment="REACT_VERSION=18.2.0" # Needed for dash mantine
-ExecStart=/bin/bash -c "source /home/user/miniconda3/bin/activate dash && exec gunicorn -b 127.0.0.1:8000 --workers=3 --timeout=90 app:server"
+ExecStart=/bin/bash -c "source /home/user/miniconda3/bin/activate dash && exec gunicorn -b 127.0.0.1:8000 --workers=3 --timeout=90 --preload app:server"
 StandardOutput=append:/var/log/pointwx/point_wx.log
 StandardError=append:/var/log/pointwx/point_wx.log
 
@@ -78,5 +64,5 @@ Or with Docker
 
 ```
 docker build -t pointwx .
-docker run -p 8083:8000 -it pointwx
+docker run -p 8083:8000 -it -e MAPBOX_KEY=<mapbox-key-for-geocoding-api> -e OPENMETEO_KEY=<commercial-key-otherwise-free-is-used> pointwx
 ```
