@@ -11,6 +11,7 @@ from .figures import (
 )
 import pandas as pd
 from io import StringIO
+from datetime import date, timedelta
 
 
 @callback(
@@ -107,6 +108,11 @@ def generate_figure(n_clicks, locations, location, model, dates):
         )
 
 
+@callback(Output("date-range-climate", "maxDate"), Input("date-range-climate", "id"))
+def update_max_date(_):
+    return (date.today() - timedelta(days=6)).strftime("%Y-%m-%d")
+
+
 clientside_callback(
     """
     function(value) {
@@ -114,6 +120,6 @@ clientside_callback(
         document.activeElement.blur();
     }
     """,
-    Input('models-selection-climate', 'value'),
-    prevent_initial_call=True
+    Input("models-selection-climate", "value"),
+    prevent_initial_call=True,
 )

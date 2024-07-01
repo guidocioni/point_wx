@@ -6,8 +6,7 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 """
 
 # package imports
-import dash
-from dash import callback, Output, Input, State, ALL, clientside_callback, html
+from dash import callback, Output, Input, State, ALL, clientside_callback, html, page_registry
 import dash_bootstrap_components as dbc
 
 
@@ -35,7 +34,7 @@ def navbar():
                                     href=page["relative_path"],
                                 )
                             )
-                            for page in dash.page_registry.values()
+                            for page in page_registry.values()
                         ],
                         pills=True,
                     ),

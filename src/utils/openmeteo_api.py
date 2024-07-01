@@ -1,5 +1,6 @@
 import pandas as pd
 import requests as r
+import numpy as np
 import os
 import re
 from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
@@ -49,6 +50,8 @@ def get_locations(name, count=10, language='en'):
         data = pd.DataFrame.from_dict(resp.json()['results'])
     else:
         data = pd.DataFrame()
+
+    data = data.loc[data['elevation'] == 9999, 'elevation'] = np.nan
 
     return data
 

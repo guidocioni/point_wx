@@ -4,6 +4,7 @@ from utils.custom_logger import logging
 from .figures import make_prec_figure, make_temp_figure
 import pandas as pd
 from io import StringIO
+from datetime import date
 
 
 @callback(
@@ -73,6 +74,17 @@ def generate_figure(n_clicks, locations, location, model, year):
         )
 
 
+@callback(
+    [
+        Output("year-selection-climate", "value"),
+        Output("year-selection-climate", "max"),
+    ],
+    Input("year-selection-climate", "id"),
+)
+def update_max_date(_):
+    return date.today().year, date.today().year
+
+
 clientside_callback(
     """
     function(value) {
@@ -80,6 +92,6 @@ clientside_callback(
         document.activeElement.blur();
     }
     """,
-    Input('models-selection-climate-daily', 'value'),
-    prevent_initial_call=True
+    Input("models-selection-climate-daily", "value"),
+    prevent_initial_call=True,
 )
