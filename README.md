@@ -78,5 +78,5 @@ Or with Docker
 
 ```
 docker build -t pointwx .
-docker run -p 8083:8000 pointwx
+docker run -p 8083:8000 -it pointwx
 ```

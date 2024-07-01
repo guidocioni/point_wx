@@ -7,7 +7,7 @@ ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     GUNICORN_WORKERS=3 \
-    GUNICORN_BIND="127.0.0.1:8000" \
+    GUNICORN_BIND="0.0.0.0:8000" \
     REACT_VERSION="18.2.0" \
     URL_BASE_PATHNAME="/pointwx/" \
     MAPBOX_API_KEY="" \
@@ -22,6 +22,8 @@ COPY requirements.txt /app/
 RUN set -ex \
     && apt-get update -y && apt-get upgrade -y --no-install-recommends \
     && pip install --no-cache-dir -r requirements.txt \
+    # Remove dependencies that pip installs but are not necessary
+    && pip uninstall -y dash-core-components dash-html-components dash-table \
     # Create a non-root user
     && addgroup --system --gid 1001 appgroup \
     && adduser --system --uid 1001 --gid 1001 --no-create-home appuser \
