@@ -48,10 +48,10 @@ def get_locations(name, count=10, language='en'):
 
     if 'results' in resp.json():
         data = pd.DataFrame.from_dict(resp.json()['results'])
+        data.loc[data['elevation'] == 9999, 'elevation'] = np.nan
     else:
         data = pd.DataFrame()
 
-    data = data.loc[data['elevation'] == 9999, 'elevation'] = np.nan
 
     return data
 
