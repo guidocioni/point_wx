@@ -58,7 +58,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
                 ],
                 mode="lines+markers",
                 name=col,
-                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
                 + var
                 + " = %{y}",
                 marker=dict(size=4),
@@ -77,7 +77,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
                 ],
                 mode="lines",
                 name=col,
-                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
                 + var
                 + " = %{y}",
                 line=dict(width=1),
@@ -125,7 +125,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
                 mode="lines",
                 name="climatology",
                 line=dict(width=4, color="rgba(0, 0, 0, 0.4)", dash="dot"),
-                hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, " + var + " = %{y}",
+                hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
                 showlegend=False,
             )
         )
@@ -145,7 +145,7 @@ def make_scatterplot_timeseries(df, var):
                 name=col,
                 marker=dict(size=4),
                 line=dict(width=1),
-                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
                 + var
                 + " = %{y:.1f}",
                 showlegend=False,
@@ -159,7 +159,7 @@ def make_scatterplot_timeseries(df, var):
             mode="lines",
             name="Mean",
             line=dict(width=4, color="black"),
-            hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, " + var + " = %{y}",
+            hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
             showlegend=False,
         ),
     )
@@ -186,7 +186,7 @@ def make_barplot_timeseries(df, var, color="cadetblue"):
         text=df[f"{var}_prob"],
         name=var,
         textposition="outside",
-        hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b>, "
+        hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
         + var
         + " = %{y:.1f}",
         showlegend=False,
@@ -377,7 +377,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
             data["time"].min() - pd.to_timedelta("1h"),
             data["time"].max() + pd.to_timedelta("1h"),
         ],
-        tickformat="%a %d %b\n%H:%M",
+        tickformat="%a %-d %b\n%H:%M",
         minor=dict(ticks="inside", gridwidth=3),
     )
     if title is not None:

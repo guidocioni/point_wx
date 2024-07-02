@@ -40,7 +40,7 @@ def generate_figure(n_clicks, locations, location, model, variable):
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
-            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m | "
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m) | "
             f"{variable} | "
             f"Ens: {model.upper()}"
         )

@@ -17,7 +17,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             textposition="top right",
             textfont=dict(color="rgba(227, 56, 30, 1)", size=14),
             name="Maximum temperature",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
             line=dict(width=2, color="rgba(227, 56, 30, 1)"),
             showlegend=showlegend,
         ),
@@ -31,7 +31,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             textposition="top right",
             textfont=dict(color="rgba(58, 91, 139, 1)", size=14),
             name="Minimum temperature",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
             line=dict(width=2, color="rgba(58, 91, 139, 1)"),
             showlegend=showlegend,
         ),
@@ -43,7 +43,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -56,7 +56,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             fillcolor="rgba(58, 91, 139, 0.2)",
             fill="tonexty",
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -67,7 +67,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -80,7 +80,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             fillcolor="rgba(227, 56, 30, 0.2)",
             fill="tonexty",
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -93,7 +93,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
                 y=df["t_min_clima"],
                 mode="markers",
                 name="Minimum temperature (clima)",
-                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Min. T (clima) = %{y:.1f} °C",
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T (clima) = %{y:.1f} °C",
                 marker=dict(
                     color="rgba(58, 91, 139, 0.5)",
                     symbol="diamond-tall",
@@ -109,7 +109,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
                 y=df["t_max_clima"],
                 mode="markers",
                 name="Maximum temperature (clima)",
-                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, Max. T (clima) = %{y:.1f} °C",
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T (clima) = %{y:.1f} °C",
                 marker=dict(
                     color="rgba(227, 56, 30, 0.5)",
                     symbol="diamond-tall",
@@ -143,7 +143,7 @@ def make_barplot_timeseries(
             name="",
             textposition="auto",
             texttemplate=text_formatting,
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, " + var + " = %{y:.1f}",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,
             marker_color=color,
         )
@@ -157,7 +157,7 @@ def make_barplot_timeseries(
                 y=df[var.replace("_mean", "_clima")],
                 mode="markers",
                 name="",
-                hovertemplate="<extra></extra><b>%{x|%a %d %b}</b>, "
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, "
                 + var
                 + " (clima) = %{y:.1f}",
                 marker=dict(
@@ -202,7 +202,7 @@ def make_subplot_figure(data, title=None, clima=None):
         row_heights=[0.15, 0.5, 0.5],
         subplot_titles=[
             "",
-            "<b>Temperature",
+            "<b>Temperature (°C)",
             "<b>Precipitation (mm), Probability (%), Sunshine",
         ],
         specs=[
@@ -235,13 +235,13 @@ def make_subplot_figure(data, title=None, clima=None):
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[3] * len(data["time"]),
+            y=[2.5] * len(data["time"]),
             mode="lines+text",
-            text=data["time"].dt.strftime("<b>%a</b><br>%d %b"),
+            text=data["time"].dt.strftime("<b>%a</b><br>%-d-%-m"),
             customdata=data["weather_descriptions"],
-            hovertemplate="<extra></extra><b>%{x|%a %d %b}</b><br>%{customdata}",
-            textposition="top left",
-            textfont=dict(color="rgba(1, 1, 1, 1)", size=14),
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b><br>%{customdata}",
+            textposition="top center",
+            textfont=dict(color="rgba(1, 1, 1, 1)", size=12),
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
             showlegend=False,
@@ -259,8 +259,8 @@ def make_subplot_figure(data, title=None, clima=None):
                     yref="y",
                     y=1,
                     sizex=12 * 24 * 10 * 60 * 1000,
-                    sizey=2,
-                    xanchor="right",
+                    sizey=1.5,
+                    xanchor="center",
                     yanchor="bottom",
                 ),
                 row=1,
@@ -275,17 +275,17 @@ def make_subplot_figure(data, title=None, clima=None):
             showgrid=True,
         ),
         height=800,
-        margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
         barmode="overlay",
         legend=dict(orientation="h", y=-0.04),
     )
 
-    fig.update_yaxes(ticksuffix="°C", row=2, col=1)
-    fig.update_yaxes(ticksuffix=" mm", row=3, col=1)
+    fig.update_yaxes(ticksuffix="", row=2, col=1)
+    fig.update_yaxes(ticksuffix="", row=3, col=1)
     fig.update_yaxes(showgrid=True, gridwidth=2, fixedrange=True)
     fig.update_xaxes(
         minor=dict(showgrid=False),
-        tickformat="%a %d %b\n%H:%M",
+        tickformat="%a %-d %b",
         showgrid=True,
         gridwidth=2,
     )

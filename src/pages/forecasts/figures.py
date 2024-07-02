@@ -31,7 +31,7 @@ def make_lineplot_timeseries(
                     marker=dict(size=5, color=color),
                     line=dict(width=2, color=color),
                     fillcolor=color,
-                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, " + var + " = %{y}",
+                    hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
                     showlegend=showlegend,
                     fill=fill,
                 ),
@@ -101,7 +101,7 @@ def make_barplot_timeseries(df, var, models, color="rgb(26, 118, 255)"):
                     name=model,
                     opacity=0.6,
                     marker=dict(color=color),
-                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, " + var + " = %{y:.1f}",
+                    hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y:.1f}",
                     showlegend=False,
                 ),
             )
@@ -112,7 +112,7 @@ def make_barplot_timeseries(df, var, models, color="rgb(26, 118, 255)"):
                     y=df.loc[df[var_model] >= 0.05, var_model],
                     mode="markers",
                     name=model,
-                    hovertemplate="<b>%{x|%a %d %b %H:%M}</b>, " + var + " = %{y:.1f}",
+                    hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y:.1f}",
                     marker=dict(size=5, color=colors[i]),
                     showlegend=False,
                 ),
@@ -314,7 +314,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         )
     fig.update_xaxes(
         minor=dict(ticks="inside", showgrid=True, gridwidth=1),
-        tickformat="%a %d %b\n%H:%M",
+        tickformat="%a %-d %b\n%H:%M",
         showgrid=True,
         gridwidth=4,
         range=[

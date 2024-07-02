@@ -28,7 +28,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
             name="Temp",
             showlegend=True,
             legendgroup="Temp",
-            hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}hPa<br>Temperature = %{z}",
         )
     )
     # Contour line for 0 isotherm
@@ -133,7 +133,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                         arrs[3][::every, i_level], arrs[2][::every, i_level]
                     )
                 ],
-                hovertemplate="<extra></extra><b>%{x|%a %d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}",
+                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}hPa<br>%{customdata}",
                 legendgroup="Winds",
                 name="Winds",
                 showlegend=True if i_level == 0 else False,
@@ -148,13 +148,13 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
         legend=dict(orientation="h"),
         xaxis=dict(
             showgrid=True,
-            tickformat="%a %d %b\n%H:%M",
+            tickformat="%a %-d %b\n%H:%M",
             range=[
                 time_axis.min() - pd.to_timedelta("0.5h"),
                 time_axis.max() + pd.to_timedelta("0.5h"),
             ],
         ),
-        yaxis=dict(range=[1010, 200], showgrid=True, title_text="Pressure [hPa]"),
+        yaxis=dict(range=[1010, 200], showgrid=True, title_text=""),
         height=800,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
