@@ -136,21 +136,44 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
 def make_scatterplot_timeseries(df, var):
     df[f"{var}_mean"] = df.iloc[:, df.columns.str.contains(var)].mean(axis=1)
     traces = []
-    for col in df.columns[df.columns.str.contains(var)]:
-        traces.append(
-            go.Scattergl(
-                x=df.loc[:, "time"],
-                y=df.loc[:, col],
-                mode="markers",
-                name=col,
-                marker=dict(size=4),
-                line=dict(width=1),
-                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
-                + var
-                + " = %{y:.1f}",
-                showlegend=False,
-            ),
-        )
+    # for col in df.columns[df.columns.str.contains(var)]:
+    #     traces.append(
+    #         go.Scattergl(
+    #             x=df.loc[:, "time"],
+    #             y=df.loc[:, col],
+    #             mode="markers",
+    #             name=col,
+    #             marker=dict(size=4),
+    #             line=dict(width=1),
+    #             hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
+    #             + var
+    #             + " = %{y:.1f}",
+    #             showlegend=False,
+    #         ),
+    #     )
+    # Define the bins
+    bins = [i for i in range(0, 110, 10)]
+
+    # Create a function to compute the percentage of values in each bin
+    def compute_bin_percentages(row, bins):
+        bin_counts = np.histogram(row, bins=bins)[0]
+        bin_percentages = bin_counts / len(row) * 100
+        return bin_percentages
+
+    # Apply the function to each row
+    bin_percentages_df = df.iloc[:, df.columns.str.contains(var)].apply(
+        lambda row: compute_bin_percentages(row, bins), axis=1, result_type="expand"
+    )
+    traces.append(
+        go.Heatmap(
+            x=df.loc[:, "time"],
+            colorscale="YlGnBu_r",
+            hoverinfo="skip",
+            y=bins,
+            z=bin_percentages_df.values.T,
+            showscale=False,
+        ),
+    )
     # add line with the average
     traces.append(
         go.Scattergl(
@@ -158,7 +181,7 @@ def make_scatterplot_timeseries(df, var):
             y=df.loc[:, f"{var}_mean"],
             mode="lines",
             name="Mean",
-            line=dict(width=4, color="black"),
+            line=dict(width=2, color="white"),
             hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
             showlegend=False,
         ),
@@ -249,21 +272,22 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
             data, "temperature_850hPa", break_hours="0h"
         )
         height_graph = 0.4
-        subplot_title = "850hPa T"
+        subplot_title = "<b>850hPa Temp"
     trace_rain = make_barplot_timeseries(data, "rain", color="cadetblue")
-    trace_snow = make_barplot_timeseries(data, "snowfall", color="rebeccapurple")
+    if data.loc[:, data.columns.str.contains("snowfall")].max().max() >= 0.1:
+        trace_snow = make_barplot_timeseries(data, "snowfall", color="rebeccapurple")
     traces_clouds = make_scatterplot_timeseries(data, "cloudcover")
 
     fig = make_subplots(
         rows=4,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.03,
+        vertical_spacing=0.032,
         subplot_titles=[
-            "",
+            "<b>2m Temp",
             subplot_title,
-            "Rain [mm] | Snow [cm] | Prob. [%]",
-            "Clouds [%]",
+            "<b>Rain [mm] | Snow [cm] | Prob. [%]",
+            "<b>Clouds [%]",
         ],
         row_heights=[0.35, height_graph, 0.3, 0.25],
     )
@@ -274,7 +298,8 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         for trace_temp_850 in traces_temp_850:
             fig.add_trace(trace_temp_850, row=2, col=1)
     fig.add_trace(trace_rain, row=3, col=1)
-    fig.add_trace(trace_snow, row=3, col=1)
+    if data.loc[:, data.columns.str.contains("snowfall")].max().max() >= 0.1:
+        fig.add_trace(trace_snow, row=3, col=1)
     for trace_clouds in traces_clouds:
         fig.add_trace(trace_clouds, row=4, col=1)
 
@@ -282,7 +307,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         modebar=dict(orientation="v"),
         dragmode=False,
         height=800,
-        margin={"r": 5, "t": 40, "l": 0.1, "b": 0.1},
+        margin={"r": 5, "t": 50, "l": 0.1, "b": 0.1},
         barmode="stack",
         updatemenus=[
             dict(
@@ -347,7 +372,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
             )
 
     fig.update_yaxes(
-        ticksuffix="°C",
+        ticksuffix="",
         row=1,
         col=1,
         zeroline=True,
@@ -355,7 +380,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         zerolinecolor="rgba(0,0,0,0.2)",
     )
     fig.update_yaxes(
-        ticksuffix="°C",
+        ticksuffix="",
         row=2,
         col=1,
         zeroline=True,
@@ -365,7 +390,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_yaxes(
         row=3,
         col=1,
-        range=[0, (data["rain_mean"].max() + data["snowfall_mean"].max()) * 1.2],
+        range=[0, (data["rain_mean"].max()) * 1.5],
     )
     fig.update_yaxes(range=[0, 100], row=4, col=1)
     # we need to re-set it here otherwise it only applies to the first plot
