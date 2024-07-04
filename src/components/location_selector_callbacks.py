@@ -123,7 +123,7 @@ def save_selected_into_cache(selected_location, locations_options, locations_fav
     - Update the dropdown options so that they only contain the favorites (including the latest selected option)
     - Update the location-list store variable so that other functions can find the details
     """
-    if locations_options is None or len(locations_options) == 0:
+    if locations_options is None or len(locations_options) == 0 or selected_location is None:
         raise PreventUpdate
     locations_list = pd.read_json(StringIO(locations_list), orient="split", dtype={"id": str})
     selected = [o for o in locations_options if o["value"] == selected_location]
