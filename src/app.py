@@ -57,7 +57,6 @@ def serve_layout():
                 dcc.Store(id="location-selected", data={}, storage_type="local"),
                 dcc.Store(id="locations-favorites", storage_type="local"),
                 dcc.Store(id="client-details", data={}, storage_type="session"),
-                dcc.Store(id="garbage"),
                 dbc.Modal(
                     [
                         dbc.ModalHeader("Error"),

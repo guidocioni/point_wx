@@ -1,8 +1,7 @@
-import plotly.graph_objects as go
 import json
 import dash_leaflet as dl
 import os
-
+from utils.settings import MAPBOX_API_KEY
 
 def get_weather_icons(
     df,
@@ -78,7 +77,7 @@ def hex2rgba(x):
 def make_map(lat_center=45, lon_center=10, zoom=3):
     mapURL = (
         'https://api.mapbox.com/styles/v1/guidocioni/ckmun175t3ejv17k7al4aax4b/tiles/{z}/{x}/{y}{r}'
-        f"?access_token={os.environ['MAPBOX_KEY']}"
+        f"?access_token={MAPBOX_API_KEY}"
     )
     attribution = (
         '© <a href="https://www.mapbox.com/feedback/">'

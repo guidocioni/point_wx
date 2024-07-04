@@ -360,7 +360,6 @@ clientside_callback(
         document.activeElement.blur();
     }
     """,
-    Output('garbage', 'data', allow_duplicate=True),
     Input('location_search_new', 'value'),
     prevent_initial_call=True
 )

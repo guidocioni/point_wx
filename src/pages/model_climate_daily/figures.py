@@ -69,6 +69,8 @@ def make_prec_figure(df, year, var, title=None):
         barmode="stack",
         legend=dict(orientation="h"),
         yaxis=dict(showgrid=True, title="Yearly accumulated precipitation [mm]"),
+        xaxis=dict(range=[df.dummy_date.min(),
+                          df.dropna(subset=[f"{var}_yearly_acc"]).dummy_date.max() + pd.Timedelta('5 days')])
     )
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
@@ -169,7 +171,9 @@ def make_temp_figure(df, year, var, title=None):
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h"),
-        yaxis=dict(showgrid=True, title="Temperature [°C]"),
+        yaxis=dict(showgrid=True, title="Temperature [°C]", autorange="min"),
+        xaxis=dict(range=[df.dummy_date.min(),
+                          df.dropna(subset=[var]).dummy_date.max() + pd.Timedelta('5 days')])
     )
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))

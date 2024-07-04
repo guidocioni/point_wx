@@ -1,7 +1,6 @@
 import pandas as pd
 import requests as r
 import numpy as np
-import os
 import re
 from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
 from .custom_logger import logging, time_this_func
