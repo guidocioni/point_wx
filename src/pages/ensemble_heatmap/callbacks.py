@@ -30,6 +30,10 @@ def generate_figure(n_clicks, locations, location, model, variable):
     loc = locations[locations["id"] == location[0]["value"]]
 
     try:
+        # Note that we do not specify variables so that the default is used
+        # This way we get to load the cache that most likely has already been 
+        # created for the ensemble page! In theory this first loads all variables
+        # in data, which is not optimal, but avoid downloading new data
         data = get_ensemble_data(
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
@@ -37,6 +41,9 @@ def generate_figure(n_clicks, locations, location, model, variable):
             decimate=True,
             from_now=True,
         )
+
+        # Filter data beforehand to avoid bringing on too many columns
+        data = data.loc[:, data.columns.str.contains(f'{variable}|time')]
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"

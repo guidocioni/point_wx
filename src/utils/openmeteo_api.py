@@ -5,8 +5,6 @@ import re
 from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
 from .custom_logger import logging, time_this_func
 
-
-@time_this_func
 def make_request(url, payload):
     if OPENMETEO_KEY:
         # In this case we have to prepend the 'customer-' string to the url
@@ -235,7 +233,7 @@ def get_forecast_daily_data(latitude=53.55,
 def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
                       variables=",".join(ENSEMBLE_VARS),
-                      timezone='auto',
+                      timezone="auto",
                       model="icon_seamless",
                       from_now=False,
                       decimate=False):

@@ -292,6 +292,27 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         row_heights=[0.35, height_graph, 0.3, 0.25],
     )
 
+    # Manually calculate tick values and labels
+    tickvals = pd.date_range(start=data["time"].min().normalize(),
+                             end=data["time"].max().normalize(),
+                             freq='D')
+    ticktext = [date.strftime('%a %d %b') for date in tickvals]
+
+    # Add annotations for the first subplot
+    for i, tick in enumerate(tickvals):
+        fig.add_annotation(
+            x=tick, y=1, text=ticktext[i], showarrow=False, textangle=-90,
+            xref='x', yref='y domain', yanchor='top', xanchor='center',
+            font=dict(size=11, color='rgba(1, 1, 1, 0.3)'),
+        )
+
+    for i, tick in enumerate(tickvals):
+        fig.add_annotation(
+            x=tick, y=1, text=ticktext[i], showarrow=False, textangle=-90,
+            xref='x', yref='y3 domain', yanchor='top', xanchor='center',
+            font=dict(size=11, color='rgba(1, 1, 1, 0.3)')
+        )
+
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
     if len(data.loc[:, data.columns.str.contains("temperature_850hPa")].dropna() > 0):

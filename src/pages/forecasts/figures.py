@@ -192,6 +192,27 @@ def make_subplot_figure(data, models, title=None, sun=None):
         ],
     )
 
+    # Manually calculate tick values and labels
+    tickvals = pd.date_range(start=data["time"].min().normalize(),
+                             end=data["time"].max().normalize(),
+                             freq='D')
+    ticktext = [date.strftime('%a %d %b') for date in tickvals]
+
+    # Add annotations for the first subplot
+    for i, tick in enumerate(tickvals):
+        fig.add_annotation(
+            x=tick, y=1, text=ticktext[i], showarrow=False, textangle=-90,
+            xref='x', yref='y domain', yanchor='top', xanchor='center',
+            font=dict(size=12, color='rgba(1, 1, 1, 0.3)'),
+        )
+
+    for i, tick in enumerate(tickvals):
+        fig.add_annotation(
+            x=tick, y=1, text=ticktext[i], showarrow=False, textangle=-90,
+            xref='x', yref='y5 domain', yanchor='top', xanchor='center',
+            font=dict(size=12, color='rgba(1, 1, 1, 0.3)')
+        )
+
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
