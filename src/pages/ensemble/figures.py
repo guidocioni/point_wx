@@ -259,7 +259,6 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     return fig
 
 
-@time_this_func
 def make_subplot_figure(data, clima=None, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
         data, "temperature_2m", clima, break_hours="12h"

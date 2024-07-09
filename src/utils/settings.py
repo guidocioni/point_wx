@@ -134,9 +134,13 @@ ENSEMBLE_MODELS = [
     },
 ]
 
-# The variables we download by default for ensemble models
+# The variables that we decide to expose as dropdown for ensemble models
 ENSEMBLE_VARS = [
     "temperature_2m",
+    "temperature_850hPa",
+    "dew_point_2m",
+    "apparent_temperature",
+    "relative_humidity_2m",
     "cloudcover",
     "rain",
     "snowfall",
@@ -145,7 +149,8 @@ ENSEMBLE_VARS = [
     "snow_depth",
     "windgusts_10m",
     "wind_direction_10m",
-    "temperature_850hPa",
+    "pressure_msl",
+    "wind_speed_10m",
     "sunshine_duration",
 ]
 
@@ -201,20 +206,6 @@ DETERMINISTIC_MODELS = [
             {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},
         ],
     },
-]
-
-# The variables we download by default for deterministic models
-DETERMINISTIC_VARS = [
-    "temperature_2m",
-    "precipitation",
-    "rain",
-    "snowfall",
-    "snow_depth",
-    "cloudcover",
-    "winddirection_10m",
-    "windgusts_10m",
-    "weather_code",
-    "sunshine_duration",
 ]
 
 REANALYSIS_MODELS = [

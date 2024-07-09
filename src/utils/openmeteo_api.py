@@ -3,7 +3,7 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
+from .settings import cache, OPENMETEO_KEY
 from .custom_logger import logging, time_this_func
 
 def make_request(url, payload):
@@ -78,7 +78,7 @@ def get_elevation(latitude=53.55, longitude=9.99):
 @cache.memoize(1800)
 def get_forecast_data(latitude=53.55,
                       longitude=9.99,
-                      variables=",".join(DETERMINISTIC_VARS),
+                      variables="temperature_2m",
                       timezone='auto',
                       model="best_match",
                       forecast_days=7,
@@ -233,7 +233,7 @@ def get_forecast_daily_data(latitude=53.55,
 @cache.memoize(3600)
 def get_ensemble_data(latitude=53.55,
                       longitude=9.99,
-                      variables=",".join(ENSEMBLE_VARS),
+                      variables="temperature_2m",
                       timezone="auto",
                       model="icon_seamless",
                       from_now=False,
@@ -321,9 +321,11 @@ def get_ensemble_data(latitude=53.55,
                     .first()
                 )
             inst_vars = None
+            # TODO, listing all the vars is fucking ugly...any way to avoid this?
+            # Maybe in settings.py make a list with istantaneous vars, accumulated vars...
             if any(
                 data.columns.str.contains(
-                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
                 )
             ):
                 # Now the variables that are instantaneous
@@ -332,7 +334,7 @@ def get_ensemble_data(latitude=53.55,
                     data.loc[
                         :,
                         data.columns.str.contains(
-                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
                         ),
                     ]
                     .resample("3h", on="time", origin=data.iloc[0]["time"])
@@ -394,14 +396,14 @@ def get_ensemble_data(latitude=53.55,
             inst_vars = None
             if any(
                 after_48_hrs.columns.str.contains(
-                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
                 )
             ):
                 inst_vars = (
                     after_48_hrs.loc[
                         :,
                         after_48_hrs.columns.str.contains(
-                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
                         ),
                     ]
                     .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])

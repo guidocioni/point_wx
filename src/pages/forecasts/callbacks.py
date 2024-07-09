@@ -35,6 +35,7 @@ def generate_figure(n_clicks, locations, location, models):
             longitude=loc["longitude"].item(),
             model=",".join(models),
             forecast_days=8,
+            variables='temperature_2m,precipitation,snowfall,windgusts_10m,cloudcover,winddirection_10m'
         )
 
         sun = find_suntimes(

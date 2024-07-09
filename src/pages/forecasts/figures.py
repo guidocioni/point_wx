@@ -172,7 +172,9 @@ def make_subplot_figure(data, models, title=None, sun=None):
     traces_wind = make_lineplot_timeseries(
         data, "windgusts_10m", mode="lines", models=models
     )
-    traces_wind_dir = make_windarrow_timeseries(data, models=models)
+    traces_wind_dir = make_windarrow_timeseries(data, models=models,
+                                                var_speed="windgusts_10m",
+                                                var_dir="winddirection_10m")
     traces_cloud = make_lineplot_timeseries(
         data, "cloudcover", mode="markers", models=models
     )
