@@ -16,6 +16,7 @@ layout = html.Div(
                     dbc.AccordionItem(
                         html.Div(["A vertical meteogram"]),
                         title="Description (click to show)",
+                        class_name="help-accordion-padding",
                     )
                 ],
                 start_collapsed=True,

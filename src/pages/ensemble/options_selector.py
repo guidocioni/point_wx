@@ -28,7 +28,7 @@ opts_selector = dbc.Card(
             "Submit",
             id={"type": "submit-button", "index": "ensemble"},
             className="col-12",
-            size="lg",
+            size="md",
             disabled=True,
         ),
     ],

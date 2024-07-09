@@ -23,7 +23,8 @@ layout = html.Div(
                         "The historical data starts from 1981.",
                     ]
                 ),
-                title='Description (click to show)')],
+                title='Description (click to show)',
+                class_name="help-accordion-padding",)],
             start_collapsed=True, className="mb-2"),
         dbc.Row(
             [

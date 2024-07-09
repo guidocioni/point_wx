@@ -401,6 +401,20 @@
   padding-bottom: 2px;
 }
 
+.map-accordion-body-padding .accordion-button {
+  padding-top: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-bottom: 8px;
+}
+
+.help-accordion-padding .accordion-button {
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+}
+
 .nav-pills .nav-link.active {
   color: #fff;
 }

@@ -25,7 +25,8 @@ layout = html.Div(
                             html.Br(),
                         ]
                     ),
-                    title='Description (click to show)')
+                    title='Description (click to show)',
+                    class_name="help-accordion-padding",)
             ], start_collapsed=True, className="mb-2")
         ),
         dbc.Row(

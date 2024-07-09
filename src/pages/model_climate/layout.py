@@ -32,6 +32,7 @@ layout = html.Div(
                             ]
                         ),
                         title="Description (click to show)",
+                        class_name="help-accordion-padding",
                     )
                 ],
                 start_collapsed=True,
