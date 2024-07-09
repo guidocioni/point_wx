@@ -14,7 +14,7 @@ def make_request(url, payload):
         payload['apikey'] = OPENMETEO_KEY
 
     logging.info(f"{'Commercial' if OPENMETEO_KEY else 'Free'} API | Sending request, payload={payload}, url={url}")
-    resp = r.get(url=url, params=payload, verify=False)
+    resp = r.get(url=url, params=payload)
     resp.raise_for_status()
 
     return resp
