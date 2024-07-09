@@ -39,6 +39,7 @@ def generate_figure(n_clicks, locations, location, model, clima_):
             model=model,
             decimate=True,
             from_now=True,
+            variables='temperature_2m,temperature_850hPa,rain,snowfall,cloudcover'
         )
 
         if clima_:

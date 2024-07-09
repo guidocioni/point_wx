@@ -38,12 +38,10 @@ def generate_figure(n_clicks, locations, location, model, variable):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
+            variables=variable,
             decimate=True,
             from_now=True,
         )
-
-        # Filter data beforehand to avoid bringing on too many columns
-        data = data.loc[:, data.columns.str.contains(f'{variable}|time')]
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"

@@ -2,6 +2,7 @@ import pandas as pd
 import requests as r
 import numpy as np
 import re
+from functools import reduce
 from .settings import cache, ENSEMBLE_VARS, DETERMINISTIC_VARS, OPENMETEO_KEY
 from .custom_logger import logging, time_this_func
 
@@ -13,7 +14,7 @@ def make_request(url, payload):
         payload['apikey'] = OPENMETEO_KEY
 
     logging.info(f"{'Commercial' if OPENMETEO_KEY else 'Free'} API | Sending request, payload={payload}, url={url}")
-    resp = r.get(url=url, params=payload)
+    resp = r.get(url=url, params=payload, verify=False)
     resp.raise_for_status()
 
     return resp
@@ -298,23 +299,67 @@ def get_ensemble_data(latitude=53.55,
             # resampling every 3 hours from that starting point, otherwise it will resample
             # at 0, 3, 6, 9, 12, 18, as the data always starts at 00 UTC.
             #
-            # Consider only the variables that are defined as accumulation over the last hour
-            # First we do a rolling sum over the same period (3 hours) and then take only the
-            # first value
-            acc_vars = data.loc[:, data.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
-                window='3h', on='time').sum().resample('3h', on='time', origin=data.iloc[0]['time']).first()
-            # Now the variables that are instantaneous
-            # In this case we can just take the first value directly every 3 hours
-            inst_vars = data.loc[:, data.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
-                '3h', on='time', origin=data.iloc[0]['time']).first()
-            # Now variables with different aggregations (like preceding hour maximum)
-            if 'windgusts_10m' in data.columns:
-                max_vars = data.loc[:, data.columns.str.contains('time|windgusts_10m')].rolling(
-                    window='3h', on='time').max().resample('3h', on='time', origin=data.iloc[0]['time']).first()
+            acc_vars = None
+            if any(
+                data.columns.str.contains(
+                    "rain|snowfall|precipitation|sunshine_duration"
+                )
+            ):
+                # Consider only the variables that are defined as accumulation over the last hour
+                # First we do a rolling sum over the same period (3 hours) and then take only the
+                # first value
+                acc_vars = (
+                    data.loc[
+                        :,
+                        data.columns.str.contains(
+                            "time|rain|snowfall|precipitation|sunshine_duration"
+                        ),
+                    ]
+                    .rolling(window="3h", on="time")
+                    .sum()
+                    .resample("3h", on="time", origin=data.iloc[0]["time"])
+                    .first()
+                )
+            inst_vars = None
+            if any(
+                data.columns.str.contains(
+                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                )
+            ):
+                # Now the variables that are instantaneous
+                # In this case we can just take the first value directly every 3 hours
+                inst_vars = (
+                    data.loc[
+                        :,
+                        data.columns.str.contains(
+                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                        ),
+                    ]
+                    .resample("3h", on="time", origin=data.iloc[0]["time"])
+                    .first()
+                )
+            max_vars = None
+            if any(data.columns.str.contains("windgusts_10m")):
+                # Now variables with different aggregations (like preceding hour maximum)
+                max_vars = (
+                    data.loc[:, data.columns.str.contains("time|windgusts_10m")]
+                    .rolling(window="3h", on="time")
+                    .max()
+                    .resample("3h", on="time", origin=data.iloc[0]["time"])
+                    .first()
+                )
             # Now merge everything together and overwrite the original data
-            data = acc_vars.merge(inst_vars, left_index=True, right_index=True).reset_index()
-            if 'windgusts_10m' in data.columns:
-                data = data.merge(max_vars.reset_index(), left_on='time', right_on='time')
+            dfs = [inst_vars, acc_vars, max_vars]
+            # Remove None objects
+            dfs = [df for df in dfs if df is not None]
+            # Merge all dataframes
+            data = reduce(
+                lambda left, right: pd.merge(
+                    left, right, left_index=True, right_index=True
+                ),
+                dfs,
+            )
+            data = data.reset_index()
         elif model in ['icon_seamless', 'icon_global', 'icon_eu']:
             # For these models we want to preserve the original hourly resolution
             # because it is the original one! Actually, for ICON-EPS the data
@@ -327,21 +372,66 @@ def get_ensemble_data(latitude=53.55,
             t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48h')
             after_48_hrs = data.loc[data.time >=
                                     t48_start_date + pd.to_timedelta('3h'), :]
-            # For this sector does the same trick as before
-            acc_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|rain|snowfall|precipitation|sunshine_duration')].rolling(
-                window='3h', on='time').sum().resample('3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
-            inst_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa')].resample(
-                '3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
-            max_vars = after_48_hrs.loc[:, after_48_hrs.columns.str.contains('time|windgusts_10m')].rolling(
-                window='3h', on='time').max().resample('3h', on='time', origin=after_48_hrs.iloc[0]['time']).first()
-            #
-            after_48_hrs = acc_vars.merge(inst_vars, left_index=True, right_index=True).merge(
-                max_vars, left_index=True, right_index=True).reset_index()
+            # For this section does the same trick as before
+            acc_vars = None
+            if any(
+                after_48_hrs.columns.str.contains(
+                    "rain|snowfall|precipitation|sunshine_duration"
+                )
+            ):
+                acc_vars = (
+                    after_48_hrs.loc[
+                        :,
+                        after_48_hrs.columns.str.contains(
+                            "time|rain|snowfall|precipitation|sunshine_duration"
+                        ),
+                    ]
+                    .rolling(window="3h", on="time")
+                    .sum()
+                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
+                    .first()
+                )
+            inst_vars = None
+            if any(
+                after_48_hrs.columns.str.contains(
+                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                )
+            ):
+                inst_vars = (
+                    after_48_hrs.loc[
+                        :,
+                        after_48_hrs.columns.str.contains(
+                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa"
+                        ),
+                    ]
+                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
+                    .first()
+                )
+            max_vars = None
+            if any(after_48_hrs.columns.str.contains("windgusts_10m")):
+                max_vars = (
+                    after_48_hrs.loc[
+                        :, after_48_hrs.columns.str.contains("time|windgusts_10m")
+                    ]
+                    .rolling(window="3h", on="time")
+                    .max()
+                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
+                    .first()
+                )
+            # Now merge everything together and overwrite the original data
+            dfs = [inst_vars, acc_vars, max_vars]
+            # Remove None objects
+            dfs = [df for df in dfs if df is not None]
+            # Merge all dataframes
+            after_48_hrs = reduce(
+                lambda left, right: pd.merge(
+                    left, right, left_index=True, right_index=True
+                ),
+                dfs,
+            )
+            after_48_hrs = after_48_hrs.reset_index()
             data = pd.concat(
-                [
-                    data.loc[data.time <= t48_start_date, :],
-                    after_48_hrs
-                ]
+                [data.loc[data.time <= t48_start_date, :], after_48_hrs]
             ).reset_index(drop=True)
 
     # Units conversion
