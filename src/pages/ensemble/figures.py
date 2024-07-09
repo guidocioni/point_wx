@@ -290,6 +290,8 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         ],
         row_heights=[0.35, height_graph, 0.3, 0.25],
     )
+    # Update subplot titles font size
+    fig.update_annotations(font=dict(size=13))
 
     # Manually calculate tick values and labels
     tickvals = pd.date_range(start=data["time"].min().normalize(),
@@ -426,7 +428,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         minor=dict(ticks="inside", gridwidth=3),
     )
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14)))
+        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
     return fig
 

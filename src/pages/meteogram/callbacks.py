@@ -60,8 +60,8 @@ def generate_figure(n_clicks, locations, location, model):
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
-            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m) | "
-            f"{model.upper()}"
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
+            f"<sup>Ens = {model.upper()}</sup>"
         )
 
         return make_subplot_figure(data, title=loc_label, clima=clima), None, False

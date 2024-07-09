@@ -13,6 +13,7 @@ opts_selector = dbc.Card(
             className="mb-2",
             searchable=True,
             clearable=True,
+            hidePickedOptions=True
         ),
         dbc.Button(
             "Submit",

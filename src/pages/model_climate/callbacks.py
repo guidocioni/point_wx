@@ -52,8 +52,8 @@ def generate_figure(n_clicks, locations, location, model, dates):
     loc = locations[locations["id"] == location[0]["value"]]
     loc_label = location[0]["label"].split("|")[0] + (
         f"| {float(loc['longitude'].item()):.1f}E"
-        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)  -  "
-        f"{dates[0]} to {dates[1]}"
+        f", {float(loc['latitude'].item()):.1f}N, {float(loc['elevation'].item()):.0f}m)<br>"
+        f"<sup>{dates[0]} to {dates[1]}</sup>"
     )
 
     try:

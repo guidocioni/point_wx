@@ -208,7 +208,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
     )
 
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14)))
+        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
     return fig
 

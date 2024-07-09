@@ -184,8 +184,13 @@ def make_subplot_figure(data, models, title=None, sun=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.032,
-        row_heights=[0.45, 0.25, 0.3, 0.2],
-        subplot_titles=["", "Precip[mm] / Snow[cm]", "Winds [km/h]", "Clouds [%]"],
+        row_heights=[0.44, 0.25, 0.3, 0.2],
+        subplot_titles=[
+            "<b>2m Temp",
+            "<b>Precip[mm] / Snow[cm]",
+            "<b>Winds [km/h]",
+            "<b>Clouds [%]",
+        ],
         specs=[
             [{"secondary_y": True, "r": -0.05}],
             [{"secondary_y": True, "r": -0.05}],
@@ -193,6 +198,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
             [{"secondary_y": False, "r": -0.05}],
         ],
     )
+    # Update subplot titles font size
+    fig.update_annotations(font=dict(size=13))
 
     # Manually calculate tick values and labels
     tickvals = pd.date_range(start=data["time"].min().normalize(),
@@ -237,7 +244,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         dragmode=False,
         xaxis=dict(showgrid=True),
         height=800,
-        margin={"r": 1, "t": 40, "l": 1, "b": 0.1},
+        margin={"r": 1, "t": 50, "l": 1, "b": 0.1},
         barmode="overlay",
         legend=dict(orientation="h", y=-0.04),
         updatemenus=[
@@ -346,7 +353,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         ],
     )
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14)))
+        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
     return fig
 

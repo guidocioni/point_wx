@@ -275,7 +275,7 @@ def make_subplot_figure(data, title=None, clima=None):
             showgrid=True,
         ),
         height=800,
-        margin={"r": 0.1, "t": 40, "l": 0.1, "b": 0.1},
+        margin={"r": 0.1, "t": 10, "l": 0.1, "b": 0.1},
         barmode="overlay",
         legend=dict(orientation="h", y=-0.04),
     )
@@ -308,7 +308,7 @@ def make_subplot_figure(data, title=None, clima=None):
         showticklabels=False,
     )
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14)))
+        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
     return fig
 
