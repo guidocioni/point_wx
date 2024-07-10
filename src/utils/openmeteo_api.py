@@ -13,7 +13,7 @@ def make_request(url, payload):
         url = url.replace("https://", "https://customer-")
         payload['apikey'] = OPENMETEO_KEY
 
-    logging.info(f"{'Commercial' if OPENMETEO_KEY else 'Free'} API | Sending request, payload={payload}, url={url}")
+    logging.debug(f"{'Commercial' if OPENMETEO_KEY else 'Free'} API | Sending request, payload={payload}, url={url}")
     resp = r.get(url=url, params=payload)
     resp.raise_for_status()
 

@@ -1,4 +1,5 @@
 import dash
+import uuid
 from dash import (
     html,
     dcc,
@@ -10,6 +11,7 @@ from dash import (
     State,
     ALL,
 )
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
@@ -82,11 +84,30 @@ app.layout = serve_layout
 
 @callback(Output("client-details", "data"), Input("app-div", "id"))
 def ip(id):
-    # client_details = request.__dict__
-    client_address = request.environ.get("HTTP_X_REAL_IP", request.remote_addr)
-    logging.info(f"New session for IP {client_address}")
+    client_details = {}
+    client_details["session_id"] = str(uuid.uuid4())
+    client_details["real_address"] = request.environ.get(
+        "HTTP_X_REAL_IP", request.remote_addr
+    )
+    logging.info(
+        f"New session id {client_details['session_id']} for IP {client_details['real_address']}"
+    )
 
-    return str(request.__dict__)
+    return client_details
+
+
+@callback(
+    Input({"type": "submit-button", "index": ALL}, "n_clicks"),
+    [State("location-selected", "data"),
+     State("client-details", "data"),
+     State("url", "pathname")],
+    prevent_initial_call=True,
+)
+def log_user_location(n, location, client, pathname):
+    if not n:
+        raise PreventUpdate
+    if location and len(location) >0:
+        logging.info(f"SUBMIT => Session {client['session_id']}, Page {pathname}, selected location {location[0]['label']}")
 
 
 @callback(
