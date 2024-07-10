@@ -14,7 +14,6 @@ layout = html.Div(
     [
         dbc.Row(
             dmc.Accordion(
-                # variant="contained",
                 children=[
                     dmc.AccordionItem(
                         value='help',
@@ -22,7 +21,7 @@ layout = html.Div(
                             dmc.AccordionControl("click to show",
                                                  icon=DashIconify(icon="ion:information",width=30),),
                             dmc.AccordionPanel(
-                                html.Div(
+                                dmc.Text(
                                     [
                                         "Usually in weather prediction model you only get one realization for every variable. "
                                         "Instead, ensemble is a special tecnique of weather forecasting which combines "

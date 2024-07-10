@@ -8,16 +8,18 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 # package imports
 from dash import callback, Output, Input, State, ALL, clientside_callback, html, page_registry
 import dash_bootstrap_components as dbc
+from dash_iconify import DashIconify
 
 
 def navbar():
     return dbc.Navbar(
         dbc.Container(
             [
-                dbc.NavbarBrand('PointWx ⛈️', class_name='fs-2'),
+                dbc.NavbarBrand(['PointWx',
+                                 DashIconify(icon="meteocons:thunderstorms-day-fill",width=60)], class_name='fs-2'),
                 html.Div(
                     id='navbar-title-for-mobile',
-                    className='d-lg-none fs-5',  # Show only on mobile devices
+                    className='d-lg-none fs-6',  # Show only on mobile devices
                     style={'color': 'white'}
                 ),
                 dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),

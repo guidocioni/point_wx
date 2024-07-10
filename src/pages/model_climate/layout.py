@@ -1,7 +1,9 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from components.location_selector import loc_selector
+from dash_iconify import DashIconify
 from .options_selector import opts_selector
 from .figures import (
     fig_temp_prec_climate,
@@ -18,10 +20,15 @@ dash.register_page(__name__, path="/climate", title="Climate (monthly)")
 layout = html.Div(
     [
         dbc.Row(
-            dbc.Accordion(
-                [
-                    dbc.AccordionItem(
-                        html.Div(
+            dmc.Accordion(
+                children=[
+                    dmc.AccordionItem(
+                        value='help',
+                        children=[
+                            dmc.AccordionControl("click to show",
+                                                 icon=DashIconify(icon="ion:information",width=30),),
+                            dmc.AccordionPanel(
+                                dmc.Text(
                             [
                                 "In this page you can reconstruct the climate of a certain area with high detail. ",
                                 html.Br(),
@@ -30,14 +37,13 @@ layout = html.Div(
                                 "Notice that if results are cached but, if the cliamte for a certain place has not been "
                                 "computed before, it will take a while (15 seconds) before results appear",
                             ]
-                        ),
-                        title="Description (click to show)",
-                        class_name="help-accordion-padding",
+                                ),
+                            ),
+                        ],
                     )
                 ],
-                start_collapsed=True,
                 className="mb-2",
-            )
+            ),
         ),
         dbc.Row(
             [

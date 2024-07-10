@@ -1,6 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 from components.location_selector import loc_selector
 from .options_selector import opts_selector
 from .figures import fig_subplots
@@ -15,19 +17,30 @@ dash.register_page(
 layout = html.Div(
     [
         dbc.Row(
-            dbc.Accordion([
-                dbc.AccordionItem(
-                    html.Div(
-                        [
-                            "Simple meteogram",
-                            html.Br(),
-                            "",
-                            html.Br(),
-                        ]
-                    ),
-                    title='Description (click to show)',
-                    class_name="help-accordion-padding",)
-            ], start_collapsed=True, className="mb-2")
+            dmc.Accordion(
+                children=[
+                    dmc.AccordionItem(
+                        value='help',
+                        children=[
+                            dmc.AccordionControl("click to show",
+                                                 icon=DashIconify(icon="ion:information",width=30),),
+                            dmc.AccordionPanel(
+                                dmc.Text(
+                                    [
+                                        "A simple meteogram showing daily maximum/minimum temperatures, and weather.",
+                                        html.Br(),
+                                        "The first plot shows the temepratures extreme, the spread (gray shading)",
+                                        "The bottom plot shows the sunshine hours, precipitation amount, probability and range.",
+                                        html.Br(),
+                                        "The diamond symbols represent the 1991-2020 climatology"
+                                    ]
+                                ),
+                            ),
+                        ],
+                    )
+                ],
+                className="mb-2",
+            )
         ),
         dbc.Row(
             [

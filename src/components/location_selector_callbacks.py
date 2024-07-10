@@ -159,21 +159,20 @@ def start_geolocation_section(n):
     """
     return html.Div(
         [
-            dcc.Geolocation(id="geolocation", high_accuracy=True),
+            dcc.Geolocation(id="geolocation", high_accuracy=True, show_alert=True),
         ]
     )
 
 
 @callback(
-    Output("geolocation", "update_now"),
-    Input("geolocate", "n_clicks"),
+    [Output("geolocation", "update_now"),
+     Output("geolocate", "loading")],
+    Input("geo", "children"),
+    prevent_initial_call=True
 )
-def update_now(click):
+def update_now(_children):
     """Trigger update of geolocation"""
-    if not click:
-        raise PreventUpdate
-    else:
-        return True
+    return True, True
 
 
 @callback(
@@ -290,6 +289,7 @@ def map_click(click_lat_lng, clickData, locations_favorites):
         Output("location_search_new", "options", allow_duplicate=True),
         Output("location_search_new", "value", allow_duplicate=True),
         Output("locations-list", "data", allow_duplicate=True),
+        Output("geolocate", "loading", allow_duplicate=True),
     ],
     [
         Input("geolocation", "local_date"),  # need it just to force an update!
@@ -347,6 +347,7 @@ def update_location_with_geolocate(_, pos, n_clicks, locations_favorites):
             options,
             options[0]["value"],
             locations.to_json(orient="split"),  # locations saved in Store
+            False
         )
     else:
         raise PreventUpdate

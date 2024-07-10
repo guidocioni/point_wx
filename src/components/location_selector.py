@@ -18,9 +18,10 @@ loc_selector = dbc.Card(
             id="geolocate",
             leftSection=DashIconify(icon="ion:location-outline", width=20),
             className="col-12 mb-2 mt-1",
-            # variant="light",
+            loaderProps={"type": "dots"},
             size='xs',
             color='gray',
+            loading=False
         ),
         dbc.Accordion(
             id="map-accordion",
