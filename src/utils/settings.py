@@ -136,22 +136,40 @@ ENSEMBLE_MODELS = [
 
 # The variables that we decide to expose as dropdown for ensemble models
 ENSEMBLE_VARS = [
-    "temperature_2m",
-    "temperature_850hPa",
-    "dew_point_2m",
-    "apparent_temperature",
-    "relative_humidity_2m",
-    "cloudcover",
-    "rain",
-    "snowfall",
-    "precipitation",
-    "freezinglevel_height",
-    "snow_depth",
-    "windgusts_10m",
-    "wind_direction_10m",
-    "pressure_msl",
-    "wind_speed_10m",
-    "sunshine_duration",
+    {
+        "group": "Istantaneous",
+        "items": [
+            {"label": "2m Temperature", "value": "temperature_2m"},
+            {"label": "850hPa Temperature", "value": "temperature_850hPa"},
+            {"label": "2m Dew Point", "value": "dew_point_2m"},
+            {"label": "Apparent Temperature", "value": "apparent_temperature"},
+            {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},
+            {"label": "Total Cloud Cover", "value": "cloudcover"},
+            {"label": "Freezing level", "value": "freezinglevel_height"},
+            {"label": "Snow depth", "value": "snow_depth"},
+            {"label": "10m Wind Speed", "value": "wind_speed_10m"},
+            {"label": "10m Wind Direction", "value": "wind_direction_10m"},
+            {"label": "MSL Pressure", "value": "pressure_msl"},
+        ],
+    },
+    {
+        "group": "Accumulated",
+        "items": [
+            {"label": "Rain", "value": "rain"},
+            {"label": "Snowfall", "value": "snowfall"},
+            {"label": "Precipitation", "value": "precipitation"},
+            {"label": "Sunshine duration", "value": "sunshine_duration"},
+            {"label": "Accumulated precipitation (total)", "value": "accumulated_precip"},
+            {"label": "Accumulated precipitation (liquid)", "value": "accumulated_liquid"},
+            {"label": "Accumulated precipitation (solid)", "value": "accumulated_snow"},
+        ],
+    },
+    {
+        "group": "Preceding hour maximum",
+        "items": [
+            {"label": "10m Wind Gusts", "value": "windgusts_10m"},
+        ],
+    },
 ]
 
 # All the models available in the APIs for Forecasts
@@ -208,6 +226,8 @@ DETERMINISTIC_MODELS = [
     },
 ]
 
+# All the models available in the APIs for Historical
+# No need for groups here
 REANALYSIS_MODELS = [
     {"label": "Best Match (🌐, IFS+ERA5)", "value": "best_match"},
     {"label": "ERA5 seamless (🌐, ERA5+ERA5-Land)", "value": "era5_seamless"},

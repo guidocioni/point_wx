@@ -16,8 +16,7 @@ opts_selector = dbc.Card(
         dmc.Select(
             label='Variable',
             id="variable-selection-heatmap",
-            data=ENSEMBLE_VARS
-                    + ["accumulated_precip", "accumulated_liquid", "accumulated_snow"],
+            data=ENSEMBLE_VARS,
             value="temperature_2m",
             persistence="true",
             className="mb-2",

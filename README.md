@@ -13,6 +13,7 @@ Install the requirements
 - `dash`
 - `dash-bootstrap-components`, for styling the whole application
 - `dash-mantine-components`, for the new styling components
+- `dash-iconify`, for the new icons
 - `dash-leaflet`, to show the small map
 - `pandas`, for data manipulation
 - `plotly`, for plotting
