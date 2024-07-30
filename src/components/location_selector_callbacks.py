@@ -29,9 +29,9 @@ def create_options(locations):
     def formatter(x):
         return (
             f"{x['name']}"
-            f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region']  and not pd.isna(x['admin1'])  else ''}"
-            f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
-            f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and pd.isna(x['admin2']) and not pd.isna(x['admin3']) else ''}"
+            f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region'] and 'admin1' in x and not pd.isna(x['admin1']) else ''}"
+            f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and 'admin2' in x and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
+            f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and 'admin2' in x and 'admin3' in x and pd.isna(x['admin2']) and not pd.isna(x['admin3']) else ''}"
             f" ({x['emoji']}| {x['longitude']:.1f}E, "
             f"{x['latitude']:.1f}N, {x['elevation']:.0f}m)"
         )
