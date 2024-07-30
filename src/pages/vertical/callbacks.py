@@ -38,7 +38,7 @@ def generate_figure(n_clicks, locations, location, model):
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(df.attrs['longitude']):.1f}E"
             f", {float(df.attrs['latitude']):.1f}N, {float(df.attrs['elevation']):.0f}m)<br>"
-            f"<sup> Model = {model.upper()}</sup>"
+            f"<sup>Model = <b>{model.upper()}</b></sup>"
         )
 
         return (
