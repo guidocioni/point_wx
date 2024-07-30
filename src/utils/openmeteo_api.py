@@ -3,7 +3,7 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, OPENMETEO_KEY
+from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS
 from .custom_logger import logging, time_this_func
 
 def make_request(url, payload):
@@ -115,8 +115,12 @@ def get_forecast_data(latitude=53.55,
                        how='all')
     # Optionally subset data to start only from previous hour
     if from_now:
-        data = data[data.time >= pd.to_datetime(
-            'now', utc=True).tz_convert(resp.json()['timezone']).floor('h')]
+        data = data[
+            data.time
+            >= (pd.to_datetime("now", utc=True) - pd.to_timedelta("1hour"))
+            .tz_convert(resp.json()["timezone"])
+            .floor("h")
+        ]
 
     # Units conversion
     for col in data.columns[data.columns.str.contains('snow_depth')]:
@@ -231,35 +235,44 @@ def get_forecast_daily_data(latitude=53.55,
 
 
 @cache.memoize(3600)
-def get_ensemble_data(latitude=53.55,
-                      longitude=9.99,
-                      variables="temperature_2m",
-                      timezone="auto",
-                      model="icon_seamless",
-                      from_now=False,
-                      decimate=False):
+def get_ensemble_data(
+    latitude=53.55,
+    longitude=9.99,
+    variables="temperature_2m",
+    timezone="auto",
+    model="icon_seamless",
+    from_now=False,
+    decimate=False,
+):
     """
     Get the ensemble data
     """
     # Adjust forecast_days depending on the model
-    if model in ['icon_seamless', 'icon_global']:
+    if model in ["icon_seamless", "icon_global"]:
         forecast_days = 8
-    elif model == 'icon_eu':
+    elif model == "icon_eu":
         forecast_days = 6
-    elif model == 'icon_d2':
+    elif model == "icon_d2":
         forecast_days = 3
-    elif model in ['gfs_seamless', 'gfs05']:
+    elif model in ["gfs_seamless", "gfs05"]:
         forecast_days = 16
-    elif model == 'gfs025':
+    elif model == "gfs025":
         forecast_days = 11
-    elif model in ['ecmwf_ifs04', 'ecmwf_ifs025']:
+    elif model in ["ecmwf_ifs04", "ecmwf_ifs025"]:
         forecast_days = 11
-    elif model == 'gem_global':
+    elif model == "gem_global":
         forecast_days = 17
-    elif model == 'bom_access_global_ensemble':
+    elif model == "bom_access_global_ensemble":
         forecast_days = 11
     else:
         forecast_days = 8
+    # For the accumulated variables
+    if "accumulated_precip" in variables:
+        variables = variables.replace("accumulated_precip", "precipitation")
+    if "accumulated_liquid" in variables:
+        variables = variables.replace("accumulated_liquid", "rain")
+    if "accumulated_snow" in variables:
+        variables = variables.replace("accumulated_snow", "snowfall")
 
     payload = {
         "latitude": latitude,
@@ -267,31 +280,39 @@ def get_ensemble_data(latitude=53.55,
         "hourly": variables,
         "timezone": timezone,
         "models": model,
-        "forecast_days": forecast_days
+        "forecast_days": forecast_days,
     }
 
-    resp = make_request(
-        "https://ensemble-api.open-meteo.com/v1/ensemble",
-        payload)
+    resp = make_request("https://ensemble-api.open-meteo.com/v1/ensemble", payload)
 
-    data = pd.DataFrame.from_dict(resp.json()['hourly'])
-    data['time'] = pd.to_datetime(
-        data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
+    data = pd.DataFrame.from_dict(resp.json()["hourly"])
+    data["time"] = pd.to_datetime(data["time"]).dt.tz_localize(
+        resp.json()["timezone"], ambiguous="NaT", nonexistent="NaT"
+    )
 
-    data = data.dropna(subset=data.columns[data.columns != 'time'],
-                       how='all')
+    data = data.dropna(subset=data.columns[data.columns != "time"], how="all")
 
     # Optionally subset data to start only from previous hour
     if from_now:
-        data = data[data.time >= pd.to_datetime(
-            'now', utc=True).tz_convert(resp.json()['timezone']).floor('h')]
+        data = data[
+            data.time
+            >= (pd.to_datetime("now", utc=True) - pd.to_timedelta('1hour'))
+            .tz_convert(resp.json()["timezone"])
+            .floor("h")
+        ]
 
     # Optionally decimate data to a 3 hourly resolution
     # This is useful when visualising a long timeseries
     if decimate:
-        if model in ['gfs_seamless', 'gfs05', 'gfs025',
-                     'ecmwf_ifs04', 'ecmwf_ifs025', 'gem_global',
-                     'bom_access_global_ensemble']:
+        if model in [
+            "gfs_seamless",
+            "gfs05",
+            "gfs025",
+            "ecmwf_ifs04",
+            "ecmwf_ifs025",
+            "gem_global",
+            "bom_access_global_ensemble",
+        ]:
             # The original data for all these models is 3 hourly, so there is no added
             # value in showing hourly data. Here we decimate every 3 hours considering
             # as starting point the first time value
@@ -300,20 +321,22 @@ def get_ensemble_data(latitude=53.55,
             # at 0, 3, 6, 9, 12, 18, as the data always starts at 00 UTC.
             #
             acc_vars = None
-            if any(
-                data.columns.str.contains(
-                    "rain|snowfall|precipitation|sunshine_duration"
-                )
-            ):
+            acc_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Accumulated"
+                    for item in group["items"]
+                ]
+            )
+            if any(data.columns.str.contains(acc_vars_regex)):
                 # Consider only the variables that are defined as accumulation over the last hour
                 # First we do a rolling sum over the same period (3 hours) and then take only the
                 # first value
                 acc_vars = (
                     data.loc[
                         :,
-                        data.columns.str.contains(
-                            "time|rain|snowfall|precipitation|sunshine_duration"
-                        ),
+                        data.columns.str.contains("time|" + acc_vars_regex),
                     ]
                     .rolling(window="3h", on="time")
                     .sum()
@@ -321,30 +344,40 @@ def get_ensemble_data(latitude=53.55,
                     .first()
                 )
             inst_vars = None
-            # TODO, listing all the vars is fucking ugly...any way to avoid this?
-            # Maybe in settings.py make a list with istantaneous vars, accumulated vars...
-            if any(
-                data.columns.str.contains(
-                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
-                )
-            ):
+            inst_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Instantaneous"
+                    for item in group["items"]
+                ]
+            )
+            if any(data.columns.str.contains(inst_vars_regex)):
                 # Now the variables that are instantaneous
                 # In this case we can just take the first value directly every 3 hours
                 inst_vars = (
                     data.loc[
                         :,
                         data.columns.str.contains(
-                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
+                            "time|" + inst_vars_regex
                         ),
                     ]
                     .resample("3h", on="time", origin=data.iloc[0]["time"])
                     .first()
                 )
             max_vars = None
-            if any(data.columns.str.contains("windgusts_10m")):
+            max_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Preceding hour maximum"
+                    for item in group["items"]
+                ]
+            )
+            if any(data.columns.str.contains(max_vars_regex)):
                 # Now variables with different aggregations (like preceding hour maximum)
                 max_vars = (
-                    data.loc[:, data.columns.str.contains("time|windgusts_10m")]
+                    data.loc[:, data.columns.str.contains("time|" + max_vars_regex)]
                     .rolling(window="3h", on="time")
                     .max()
                     .resample("3h", on="time", origin=data.iloc[0]["time"])
@@ -362,7 +395,7 @@ def get_ensemble_data(latitude=53.55,
                 dfs,
             )
             data = data.reset_index()
-        elif model in ['icon_seamless', 'icon_global', 'icon_eu']:
+        elif model in ["icon_seamless", "icon_global", "icon_eu"]:
             # For these models we want to preserve the original hourly resolution
             # because it is the original one! Actually, for ICON-EPS the data
             # is every 6 hours, but I don't want to implement a different logic
@@ -371,21 +404,30 @@ def get_ensemble_data(latitude=53.55,
             # NOTE that we count 48 hrs from the first time value. In case from_now = True
             # is activated, it could mean
             # NOTE icon_d2 is not here because we don't need to do anything in that case
-            t48_start_date = data.iloc[0]['time'] + pd.to_timedelta('48h')
-            after_48_hrs = data.loc[data.time >=
-                                    t48_start_date + pd.to_timedelta('3h'), :]
+            t48_start_date = data.iloc[0]["time"] + pd.to_timedelta("48h")
+            after_48_hrs = data.loc[
+                data.time >= t48_start_date + pd.to_timedelta("3h"), :
+            ]
             # For this section does the same trick as before
             acc_vars = None
+            acc_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Accumulated"
+                    for item in group["items"]
+                ]
+            )
             if any(
                 after_48_hrs.columns.str.contains(
-                    "rain|snowfall|precipitation|sunshine_duration"
+                    acc_vars_regex
                 )
             ):
                 acc_vars = (
                     after_48_hrs.loc[
                         :,
                         after_48_hrs.columns.str.contains(
-                            "time|rain|snowfall|precipitation|sunshine_duration"
+                            "time|" + acc_vars_regex
                         ),
                     ]
                     .rolling(window="3h", on="time")
@@ -394,26 +436,42 @@ def get_ensemble_data(latitude=53.55,
                     .first()
                 )
             inst_vars = None
+            inst_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Instantaneous"
+                    for item in group["items"]
+                ]
+            )
             if any(
                 after_48_hrs.columns.str.contains(
-                    "temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
+                    inst_vars_regex
                 )
             ):
                 inst_vars = (
                     after_48_hrs.loc[
                         :,
                         after_48_hrs.columns.str.contains(
-                            "time|temperature_2m|cloudcover|freezinglevel_height|snow_depth|wind_direction_10m|temperature_850hPa|dew_point_2m|apparent_temperature|relative_humidity_2m|pressure_msl|wind_speed_10m"
+                            "time|" + inst_vars_regex
                         ),
                     ]
                     .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
                     .first()
                 )
             max_vars = None
-            if any(after_48_hrs.columns.str.contains("windgusts_10m")):
+            max_vars_regex = "|".join(
+                [
+                    item["value"]
+                    for group in ENSEMBLE_VARS
+                    if group["group"] == "Preceding hour maximum"
+                    for item in group["items"]
+                ]
+            )
+            if any(after_48_hrs.columns.str.contains(max_vars_regex)):
                 max_vars = (
                     after_48_hrs.loc[
-                        :, after_48_hrs.columns.str.contains("time|windgusts_10m")
+                        :, after_48_hrs.columns.str.contains("time|" + max_vars_regex)
                     ]
                     .rolling(window="3h", on="time")
                     .max()
@@ -437,31 +495,36 @@ def get_ensemble_data(latitude=53.55,
             ).reset_index(drop=True)
 
     # Units conversion
-    for col in data.columns[data.columns.str.contains('snow_depth')]:
-        data[col] = data[col] * 100.  # m to cm
-    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
-        data[col] = data[col] / 3600.  # s to hrs
+    for col in data.columns[data.columns.str.contains("snow_depth")]:
+        data[col] = data[col] * 100.0  # m to cm
+    for col in data.columns[data.columns.str.contains("sunshine_duration")]:
+        data[col] = data[col] / 3600.0  # s to hrs
 
     # Compute accumulated variables
     # Comment if not needed
     # Note that we have to change the name of the resulting accumulated variables
     # so as not to conflict with the functions that always request data using columns.str.contains()
-    if data.columns.str.contains('precipitation').any():
-        prec_acc = data.loc[:,data.columns.str.contains('precipitation')].cumsum()
-        prec_acc.columns = prec_acc.columns.str.replace("precipitation","accumulated_precip")
+    if data.columns.str.contains("precipitation").any():
+        prec_acc = data.loc[:, data.columns.str.contains("precipitation")].cumsum()
+        prec_acc.columns = prec_acc.columns.str.replace(
+            "precipitation", "accumulated_precip"
+        )
         data = data.merge(prec_acc, left_index=True, right_index=True)
-    if data.columns.str.contains('rain').any():
-        rain_acc = data.loc[:,data.columns.str.contains('rain')].cumsum()
-        rain_acc.columns = rain_acc.columns.str.replace("rain","accumulated_liquid")
+    if data.columns.str.contains("rain").any():
+        rain_acc = data.loc[:, data.columns.str.contains("rain")].cumsum()
+        rain_acc.columns = rain_acc.columns.str.replace("rain", "accumulated_liquid")
         data = data.merge(rain_acc, left_index=True, right_index=True)
-    if data.columns.str.contains('snowfall').any():
-        snowfall_acc = data.loc[:,data.columns.str.contains('snowfall')].cumsum()
-        snowfall_acc.columns = snowfall_acc.columns.str.replace("snowfall","accumulated_snow")
+    if data.columns.str.contains("snowfall").any():
+        snowfall_acc = data.loc[:, data.columns.str.contains("snowfall")].cumsum()
+        snowfall_acc.columns = snowfall_acc.columns.str.replace(
+            "snowfall", "accumulated_snow"
+        )
         data = data.merge(snowfall_acc, left_index=True, right_index=True)
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
-        "hourly", "daily"]}
+    data.attrs = {
+        x: resp.json()[x] for x in resp.json() if x not in ["hourly", "daily"]
+    }
 
     return data
 

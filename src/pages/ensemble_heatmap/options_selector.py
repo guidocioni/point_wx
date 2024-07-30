@@ -20,7 +20,7 @@ opts_selector = dbc.Card(
             value="temperature_2m",
             persistence="true",
             className="mb-2",
-            clearable=True,
+            clearable=False,
             ),
         dbc.Button(
             "Submit",

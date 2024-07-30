@@ -137,7 +137,7 @@ ENSEMBLE_MODELS = [
 # The variables that we decide to expose as dropdown for ensemble models
 ENSEMBLE_VARS = [
     {
-        "group": "Istantaneous",
+        "group": "Instantaneous",
         "items": [
             {"label": "2m Temperature", "value": "temperature_2m"},
             {"label": "850hPa Temperature", "value": "temperature_850hPa"},
