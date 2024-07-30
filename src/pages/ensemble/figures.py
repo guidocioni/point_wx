@@ -412,7 +412,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.update_yaxes(
         row=3,
         col=1,
-        range=[0, (data["rain_mean"].max()) * 1.5],
+        range=[0, max((data["rain_mean"].max()) * 1.5, 1)],
     )
     fig.update_yaxes(range=[0, 100], row=4, col=1)
     # we need to re-set it here otherwise it only applies to the first plot

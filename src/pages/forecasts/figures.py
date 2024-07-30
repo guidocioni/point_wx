@@ -159,7 +159,7 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
 
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
-        data, "temperature_2m", showlegend=True, models=models
+        data, "temperature_2m", showlegend=False, models=models
     )
     # traces_sunshine = make_lineplot_timeseries(
     #     data, 'sunshine_duration', models=models,
@@ -192,7 +192,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
             "<b>Clouds [%]",
         ],
         specs=[
-            [{"secondary_y": True, "r": -0.05}],
+            [{"secondary_y": False, "r": -0.05}],
             [{"secondary_y": True, "r": -0.05}],
             [{"secondary_y": False, "r": -0.05}],
             [{"secondary_y": False, "r": -0.05}],
@@ -246,12 +246,12 @@ def make_subplot_figure(data, models, title=None, sun=None):
         height=800,
         margin={"r": 1, "t": 50, "l": 1, "b": 0.1},
         barmode="overlay",
-        legend=dict(orientation="h", y=-0.04),
+        # legend=dict(orientation="h", y=-0.04),
         updatemenus=[
             dict(
                 type="buttons",
                 x=0.5,
-                y=-0.1,
+                y=-0.05,
                 xanchor="center",
                 direction="right",
                 buttons=[
@@ -318,16 +318,8 @@ def make_subplot_figure(data, models, title=None, sun=None):
         zerolinecolor="rgba(0,0,0,0.2)",
     )
     fig.update_yaxes(
-        ticksuffix="h",
-        row=1,
-        col=1,
-        secondary_y=True,
-        range=[1.0, 0.2],
-        showgrid=False,
-        minor=dict(showgrid=False),
-    )
-    fig.update_yaxes(
-        tickangle=-90, color="rgb(26, 118, 255)", row=2, col=1, secondary_y=False
+        tickangle=-90, color="rgb(26, 118, 255)", row=2, col=1, secondary_y=False,
+        range=[0, max(data.loc[:,data.columns.str.contains('precipitation')].max().max() * 1.5, 1)]
     )
     fig.update_yaxes(tickangle=-90, row=3, col=1)
     fig.update_yaxes(row=4, col=1, tickangle=-90)
