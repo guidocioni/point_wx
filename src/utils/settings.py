@@ -150,6 +150,9 @@ ENSEMBLE_VARS = [
             {"label": "10m Wind Speed", "value": "wind_speed_10m"},
             {"label": "10m Wind Direction", "value": "wind_direction_10m"},
             {"label": "MSL Pressure", "value": "pressure_msl"},
+            {"label": "Convective Available Potential Energy", "value": "cape"},
+            {"label": "Visibility", "value": "visibility"},
+            {"label": "Surface Temperature", "value": "surface_temperature"},
         ],
     },
     {
