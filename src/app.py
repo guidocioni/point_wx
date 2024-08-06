@@ -62,11 +62,15 @@ def create_weather_report():
     ):
         return {}
     logging.info(
-            f"Making request to report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
+            f"Making request to /report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
         )
     report = create_ai_report(address_search, date_forecast, additional_prompt)
 
-    return {"report": report}
+    return {
+        "search": address_search,
+        "date": date_forecast,
+        "report": report
+    }
 
 
 # Initialize cache

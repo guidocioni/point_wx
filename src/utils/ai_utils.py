@@ -1,12 +1,12 @@
 from .openmeteo_api import get_locations, make_request, compute_climatology
 from datetime import datetime, timedelta
 from openai import OpenAI
-from .settings import OPENAI_KEY
+from .settings import OPENAI_KEY, cache
 
 system_prompt = """
 You are a weather analyst. You're expected to process hourly weather forecast data that can comprises different weather variables like 2 meters temperature, 2 meters relative humidity, precipitation (both probability and total amount, with the fraction of rain and snow), cloud cover (could be only total or also the fraction of low, mid and high clouds), snowfall, 10 meters wind speed and direction, convective available potential energy, mean sea level pressure. Based on this input data you need to compile a summary of the daily weather evolution which extract the most meaningful features of the day. Generally the informations that shouldn't miss are the daily maximum and minimum temperatures, together with a comparison to the climatological values, and the probability of rain (if it is substantial) together with the period where rain (or any other precipitation form) is expected. Optional informations may include especially high wind gusts, substantial thunderstorm risk based on convective available potential energy, potential for high precipitation events, heatwaves, high risk situation due to high temperatures and humidity values, strong snowfall or cold snaps.
 
-The input data is given in JSON format and contains the location metadata (including latitude, longitude, elevation), the units of the data, a time array indicating the validity time of every weather variable, which will have the same dimension as the other arrays still contained in the "hourly" path which indicate all weather variables. If the response contains data only from a single model, the weather variables will have a distinctive unique name (e.g. temperature_2m). Instead, the response could be made up of data from different models: in this case all variable names will have a suffix that indicates which model they're coming from, e.g. temperature_2m_ecmwf_ifs025 (model is ecmwf_ifs025) and temperature_2m_icon_seamless (model is icon_seamless). If the response contains more models consider using this information to estimate uncertainty in the prediction of all weather variables by computing the spread and average between the values. Never mention the model names explicitly in the output, we only want to use multi-model data to improve the forecast by estimating uncertainty: for example you could say "the maximum temperatures for tomorrow is predicted to be between 26°C and 30°C" instead of saying "the maximum tmeperature for tomorrow is going to be 28°C". If the spread for a variable is too large across models to make a meaningful estimate, consider giving more weight to the icon_seamless model over any other model.
+The input data is given in JSON format and contains the location metadata (including latitude, longitude, elevation), the units of the data (in the 'hourly_units' array), a time array indicating the validity time of every weather variable (the timezone is in the 'timezone' attribute), which will have the same dimension as the other arrays still contained in the "hourly" path which indicate all weather variables. If the response contains data only from a single model, the weather variables will have a distinctive unique name (e.g. temperature_2m). Instead, the response could be made up of data from different models: in this case all variable names will have a suffix that indicates which model they're coming from, e.g. temperature_2m_ecmwf_ifs025 (model is ecmwf_ifs025) and temperature_2m_icon_seamless (model is icon_seamless). If the response contains more models consider using this information to estimate uncertainty in the prediction of all weather variables by computing the spread and average between the values. Never mention the model names explicitly in the output, we only want to use multi-model data to improve the forecast by estimating uncertainty: for example you could say "the maximum temperatures for tomorrow is predicted to be between 26°C and 30°C" instead of saying "the maximum tmeperature for tomorrow is going to be 28°C". If the spread for a variable is too large across models to make a meaningful estimate, consider giving more weight to the icon_seamless model over any other model.
 
 In order to understand the current datetime you can use the "time" attribute of the "current" element. The forecast day may or may not equal the current datetime: use the validity time cited before and this "current" element to understand whether the forecast is referred to today, tomorrow or any specific day in the future. Always specify the date of the forecast in the output.
 
@@ -38,6 +38,7 @@ Consider weighting more the hours with daylight than the nightly hours for the f
 """
 
 
+@cache.memoize(900)
 def create_ai_report(location, date, additional_prompt):
     locations = get_locations(location, count=1)
     location = locations.iloc[0]
@@ -67,6 +68,7 @@ def create_ai_report(location, date, additional_prompt):
         datetime.strptime(date, "%Y-%m-%d") - timedelta(days=1)
     ).strftime("%Y-%m-%d")
     payload["models"] = "icon_seamless"
+    payload.pop("current")
     resp = make_request(url="https://api.open-meteo.com/v1/forecast", payload=payload)
     weather_data["day_before"] = resp.json()
 
@@ -79,9 +81,10 @@ def create_ai_report(location, date, additional_prompt):
         longitude=location["longitude"].item(),
         daily=True,
         model="era5_seamless",
-        variables="temperature_2m_max,temperature_2m_min",
+        variables="temperature_2m_max,temperature_2m_min,sunshine_duration,precipitation_sum,rain_sum,snowfall_sum",
     )
     clima = clima.loc[clima["doy"] == weather_data["doy"]]
+    clima['sunshine_duration'] = clima['sunshine_duration'] * 3600.
 
     weather_data["climatology"] = {
         "temperature_2m_max": clima["temperature_2m_max"].item(),
