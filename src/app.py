@@ -18,14 +18,18 @@ from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
 from components import navbar, footer
 from flask import request, redirect
 from utils.custom_logger import logging
+from utils.ai_utils import create_ai_report
+from datetime import datetime
 
 app = dash.Dash(
     __name__,
     url_base_pathname=URL_BASE_PATHNAME,
     use_pages=True,
-    external_stylesheets=[dbc.themes.FLATLY,
-                          dbc.icons.FONT_AWESOME,
-                          "https://unpkg.com/@mantine/dates@7/styles.css"],
+    external_stylesheets=[
+        dbc.themes.FLATLY,
+        dbc.icons.FONT_AWESOME,
+        "https://unpkg.com/@mantine/dates@7/styles.css",
+    ],
     meta_tags=[
         {  # check if device is a mobile device.
             "name": "viewport",
@@ -43,6 +47,26 @@ server = app.server
 @server.route("/")
 def redirect_to_basepath():
     return redirect(request.url_root.rstrip("/") + URL_BASE_PATHNAME)
+
+
+@server.route(f"/{URL_BASE_PATHNAME}/report", methods=["GET", "POST"])
+def create_weather_report():
+    address_search = request.args.get("address")
+    date_forecast = request.args.get("date", datetime.now().strftime("%Y-%m-%d"))
+    additional_prompt = request.args.get("prompt")
+    if (
+        address_search is None
+        or len(address_search) < 1
+        or date_forecast is None
+        or len(date_forecast) != 10
+    ):
+        return {}
+    logging.info(
+            f"Making request to report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
+        )
+    report = create_ai_report(address_search, date_forecast, additional_prompt)
+
+    return {"report": report}
 
 
 # Initialize cache
@@ -98,16 +122,20 @@ def ip(id):
 
 @callback(
     Input({"type": "submit-button", "index": ALL}, "n_clicks"),
-    [State("location-selected", "data"),
-     State("client-details", "data"),
-     State("url", "pathname")],
+    [
+        State("location-selected", "data"),
+        State("client-details", "data"),
+        State("url", "pathname"),
+    ],
     prevent_initial_call=True,
 )
 def log_user_location(n, location, client, pathname):
     if not n:
         raise PreventUpdate
-    if location and len(location) >0:
-        logging.info(f"SUBMIT => Session {client['session_id']}, Page {pathname}, selected location {location[0]['label']}")
+    if location and len(location) > 0:
+        logging.info(
+            f"SUBMIT => Session {client['session_id']}, Page {pathname}, selected location {location[0]['label']}"
+        )
 
 
 @callback(
