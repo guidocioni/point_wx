@@ -14,13 +14,17 @@ In the element "day_before" you will find the weather evolution of the day previ
 
 You will find the climatological values in the "climatology" section of the JSON input. All the values in this section are daily values, so for example temperature_2m_max in the "climatology" section is the climatological value (averaged over 30 years) of the daily maximum temperature. Refrain from citing these climatological values explicitly in the text: it is enough to say that the day is e.g. warmer or colder than average.
 
+You can use the temperature_850hPa to identify trends in large-scale temperature gradients (like a cold air mass incoming) but you don't have to. Just cite this if it is relevant.
+
+The response could contain data every 15 minutes (instead than only every hour) in the "minutely_15" object. The format is the same as the "hourly" object. You can use some of the variables in this object (like precipitation) to give more details about the start and end of precipitation events. However be advised that the data are valid only if the location is in Central Europe or North-America, otherwise the values will only be interpolated from the hourly data and shouldn't be considered.
+
 Refrain yourself from generic comments like "stay hydrated" or "keep warm". We want to keep the answer as objective as possible. 
 
 Do not include snow estimates if the conditions are clearly not favourable for snow, i.e. temperatures way above 0. If there is some snow predicted include some information about how many centimeters of snow are predicted (use the snow_depth variable).
 
 Only include information about the winds if there is any significant feature like wind gusts exceptionally high or a strong diurnal cycle with variation in wind direction. Avoid to include them otherwise.
 
-Mention Convective Available Potential Energy (CAPE) only if there are any significantly high values. Refrain yourself from mentioning directly the CAPE absolute value.
+Mention Convective Available Potential Energy (CAPE) only if there are any significantly high values. Refrain yourself from mentioning directly the CAPE absolute value. Also, do not use the word CAPE, directly. Instead use "thunderstorm potential" or "thunderstorm energy".
 
 For temperature and wind speed always round by excess to the nearest digit, so avoid saying that the maximum temperature forecast is 35.5°C, but instead say that the maximum temperature is around 36°C.
 
@@ -34,7 +38,9 @@ Avoid just a plain description of every weather variable evolution during the da
 
 Do not include an "overall" summary of the forecast at the end of the response.
 
-Consider weighting more the hours with daylight than the nightly hours for the final evaluation: you can use the is_day variable to determine whether a certain hour has daylight or not. In general, everything that happens between 23 and 05 (local time) is not as important as what happens during the day. 
+Consider weighting more the hours with daylight than the nightly hours for the final evaluation: you can use the is_day variable to determine whether a certain hour has daylight or not. In general, everything that happens between 23 and 05 (local time) is not as important as what happens during the day.
+
+Limit the response to about 200 words
 """
 
 
@@ -47,7 +53,8 @@ def create_ai_report(location, date, additional_prompt):
         "latitude": location["latitude"].item(),
         "longitude": location["longitude"].item(),
         "current": "temperature_2m",
-        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,cape,sunshine_duration,snow_depth,is_day",
+        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,is_day,uv_index,temperature_850hPa",
+        "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,is_day",
         "timezone": "auto",
         "models": "icon_seamless,ecmwf_ifs025",
         "start_date": date,
@@ -69,6 +76,7 @@ def create_ai_report(location, date, additional_prompt):
     ).strftime("%Y-%m-%d")
     payload["models"] = "icon_seamless"
     payload.pop("current")
+    payload.pop("minutely_15")
     resp = make_request(url="https://api.open-meteo.com/v1/forecast", payload=payload)
     weather_data["day_before"] = resp.json()
 
@@ -89,6 +97,10 @@ def create_ai_report(location, date, additional_prompt):
     weather_data["climatology"] = {
         "temperature_2m_max": clima["temperature_2m_max"].item(),
         "temperature_2m_min": clima["temperature_2m_min"].item(),
+        "sunshine_duration_day": clima["sunshine_duration"].item(),
+        "precipitation_sum_day": clima["precipitation_sum"].item(),
+        "rain_sum_day": clima["rain_sum"].item(),
+        "snowfall_sum_day": clima["snowfall_sum"].item(),
     }
 
     client = OpenAI(api_key=OPENAI_KEY)
@@ -119,13 +131,13 @@ def create_ai_report(location, date, additional_prompt):
         )
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=messages,
-        temperature=0.8,
-        max_tokens=1000,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
+        # temperature=0.8,
+        # max_tokens=1000,
+        # top_p=1,
+        # frequency_penalty=0,
+        # presence_penalty=0,
     )
 
     return response.choices[0].message.content
