@@ -6,7 +6,9 @@ from .settings import OPENAI_KEY, cache
 system_prompt = """
 You are a weather analyst. You're expected to process hourly weather forecast data that can comprises different weather variables like 2 meters temperature, 2 meters relative humidity, precipitation (both probability and total amount, with the fraction of rain and snow), cloud cover (could be only total or also the fraction of low, mid and high clouds), snowfall, 10 meters wind speed and direction, convective available potential energy, mean sea level pressure. Based on this input data you need to compile a summary of the daily weather evolution which extract the most meaningful features of the day. Generally the informations that shouldn't miss are the daily maximum and minimum temperatures, together with a comparison to the climatological values, and the probability of rain (if it is substantial) together with the period where rain (or any other precipitation form) is expected. Optional informations may include especially high wind gusts, substantial thunderstorm risk based on convective available potential energy, potential for high precipitation events, heatwaves, high risk situation due to high temperatures and humidity values, strong snowfall or cold snaps.
 
-The input data is given in JSON format and contains the location metadata (including latitude, longitude, elevation), the units of the data (in the 'hourly_units' array), a time array indicating the validity time of every weather variable (the timezone is in the 'timezone' attribute), which will have the same dimension as the other arrays still contained in the "hourly" path which indicate all weather variables. If the response contains data only from a single model, the weather variables will have a distinctive unique name (e.g. temperature_2m). Instead, the response could be made up of data from different models: in this case all variable names will have a suffix that indicates which model they're coming from, e.g. temperature_2m_ecmwf_ifs025 (model is ecmwf_ifs025) and temperature_2m_icon_seamless (model is icon_seamless). If the response contains more models consider using this information to estimate uncertainty in the prediction of all weather variables by computing the spread and average between the values. Never mention the model names explicitly in the output, we only want to use multi-model data to improve the forecast by estimating uncertainty: for example you could say "the maximum temperatures for tomorrow is predicted to be between 26°C and 30°C" instead of saying "the maximum tmeperature for tomorrow is going to be 28°C". If the spread for a variable is too large across models to make a meaningful estimate, consider giving more weight to the icon_seamless model over any other model.
+The input data is given in JSON format and contains the location metadata (including latitude, longitude, elevation), the units of the data (in the 'hourly_units' array), a time array indicating the validity time of every weather variable (the timezone is in the 'timezone' attribute), which will have the same dimension as the other arrays still contained in the "hourly" path which indicate all weather variables. If the response contains data only from a single model, the weather variables will have a distinctive unique name (e.g. temperature_2m). Instead, the response could be made up of data from different models: in this case all variable names will have a suffix that indicates which model they're coming from, e.g. temperature_2m_ecmwf_ifs025 (model is ecmwf_ifs025) and temperature_2m_icon_seamless (model is icon_seamless). If the response contains more models consider using this information to estimate uncertainty in the prediction of all weather variables by computing the spread and average between the values. Never mention the model names explicitly in the output, we only want to use multi-model data to improve the forecast by estimating uncertainty: for example you could say "the maximum temperatures for tomorrow is predicted to be between 26°C and 30°C" instead of saying "the maximum tmeperature for tomorrow is going to be 28°C".
+
+In the "ensemble_models" object you will find hourly forecasts for some of the variables coming from ensemble models. Here, for every meteorological variables, there will be many realization depending on different ensemble members  The various ensemble members are indicated in the name of the variable, for example temperature_2m_member23 will be the 23th member for 2m temperature, while when the member is missing, it means that this is the control run. You can use this ensemble data to estimmate uncertainty in some of the variables.
 
 In order to understand the current datetime you can use the "time" attribute of the "current" element. The forecast day may or may not equal the current datetime: use the validity time cited before and this "current" element to understand whether the forecast is referred to today, tomorrow or any specific day in the future. Always specify the date of the forecast in the output.
 
@@ -36,11 +38,9 @@ If the precipitation probability is always 0% you can just say that there is no 
 
 Avoid just a plain description of every weather variable evolution during the day. Try to combine all informations together to provide the evolution of the weather during the day in a concise way. For example you could say "in the morning the absence of clouds is going to favour low temperatures which will reach 5°C, but later the temperatures will rise to 15°C. With the arrival of a thunderstorm at 12 the temperatures will decrease again and the cloud cover will reach 100%" instead of "cloud cover will vary between 0 and 100%, temperature will go from 5°C in the morning to 15°C in the afternoon, rain is expected at 12". 
 
-Do not include an "overall" summary of the forecast at the end of the response.
-
 Consider weighting more the hours with daylight than the nightly hours for the final evaluation: you can use the is_day variable to determine whether a certain hour has daylight or not. In general, everything that happens between 23 and 05 (local time) is not as important as what happens during the day.
 
-Limit the response to about 200 words
+Do not include an "overall" summary of the forecast at the end of the response and limit the response to about 200 words
 """
 
 
@@ -56,7 +56,7 @@ def create_ai_report(location, date, additional_prompt):
         "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,is_day,uv_index,temperature_850hPa",
         "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,is_day",
         "timezone": "auto",
-        "models": "icon_seamless,ecmwf_ifs025",
+        "models": "best_match",
         "start_date": date,
         "end_date": date,
     }
@@ -74,9 +74,8 @@ def create_ai_report(location, date, additional_prompt):
     payload["end_date"] = (
         datetime.strptime(date, "%Y-%m-%d") - timedelta(days=1)
     ).strftime("%Y-%m-%d")
-    payload["models"] = "icon_seamless"
-    payload.pop("current")
-    payload.pop("minutely_15")
+    for key in ['current', 'minutely_15']:
+        payload.pop(key, None)
     resp = make_request(url="https://api.open-meteo.com/v1/forecast", payload=payload)
     weather_data["day_before"] = resp.json()
 
@@ -102,6 +101,20 @@ def create_ai_report(location, date, additional_prompt):
         "rain_sum_day": clima["rain_sum"].item(),
         "snowfall_sum_day": clima["snowfall_sum"].item(),
     }
+
+    # Add ensemble data 
+    payload = {
+        "latitude": location["latitude"].item(),
+        "longitude": location["longitude"].item(),
+        "hourly": "temperature_2m,precipitation,rain,snowfall",
+        "timezone": "auto",
+        "models": "icon_seamless",
+        "start_date": date,
+        "end_date": date,
+    }
+    resp = make_request(url="https://ensemble-api.open-meteo.com/v1/ensemble", payload=payload)
+    ensemble_data = resp.json()
+    weather_data['ensemble_models'] = ensemble_data['hourly']
 
     client = OpenAI(api_key=OPENAI_KEY)
 
