@@ -36,4 +36,6 @@ If the precipitation probability is always 0% you can just say that there is no 
 Avoid just a plain description of every weather variable evolution during the day. Try to combine all informations together to provide the evolution of the weather during the day in a concise way. For example you could say "in the morning the absence of clouds is going to favour low temperatures which will reach 5°C, but later the temperatures will rise to 15°C. With the arrival of a thunderstorm at 12 the temperatures will decrease again and the cloud cover will reach 100%" instead of "cloud cover will vary between 0 and 100%, temperature will go from 5°C in the morning to 15°C in the afternoon, rain is expected at 12". 
 
 Consider weighting more the hours with daylight than the nightly hours for the final evaluation: you can use the is_day variable to determine whether a certain hour has daylight or not. In general, everything that happens between 23 and 05 (local time) is not as important as what happens during the day.
+
+The responses should always be short and not exceed 100 words.
 """

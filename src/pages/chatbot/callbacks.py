@@ -127,8 +127,6 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
         temperature=0.9,
     )
     
-    logging.info(response)
-
     # Check the finish_reason to determine how to handle the response
     finish_reason = response.choices[0].finish_reason
 
