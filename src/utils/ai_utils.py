@@ -44,8 +44,7 @@ Do not include an "overall" summary of the forecast at the end of the response a
 """
 
 
-@cache.memoize(900)
-def create_ai_report(location, date, additional_prompt):
+def create_weather_data(location, date):
     locations = get_locations(location, count=1)
     location = locations.iloc[0]
 
@@ -115,6 +114,13 @@ def create_ai_report(location, date, additional_prompt):
     resp = make_request(url="https://ensemble-api.open-meteo.com/v1/ensemble", payload=payload)
     ensemble_data = resp.json()
     weather_data['ensemble_models'] = ensemble_data['hourly']
+
+    return weather_data
+
+
+@cache.memoize(900)
+def create_ai_report(location, date, additional_prompt):
+    weather_data = create_weather_data(location, date)
 
     client = OpenAI(api_key=OPENAI_KEY)
 
