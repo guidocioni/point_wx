@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, html
+from dash import callback, Output, Input, State, html, dcc
 from utils.settings import OPENAI_KEY, logging
 from utils.ai_utils import create_weather_data
 from .system import system_prompt
@@ -6,6 +6,8 @@ from openai import OpenAI
 import dash_mantine_components as dmc
 import dash_bootstrap_components as dbc
 import json
+from datetime import datetime
+import pytz
 
 client = OpenAI(api_key=OPENAI_KEY)
 
@@ -49,7 +51,7 @@ def textbox(text, box="AI"):
     if box == "user":
         style["margin-left"] = "auto"
         style["margin-right"] = 0
-        return dbc.Card(text, style=style, body=True, color="primary", inverse=True)
+        return dbc.Card(dcc.Markdown(text), style=style, body=True, color="primary", inverse=True)
     elif box == "AI":
         style["margin-left"] = 0
         style["margin-right"] = "auto"
@@ -65,7 +67,7 @@ def textbox(text, box="AI"):
                 },
             )
 
-        textbox = dbc.Card(text, style=style, body=True, color="light", inverse=False)
+        textbox = dbc.Card(dcc.Markdown(text), style=style, body=True, color="light", inverse=False)
 
         return html.Div([thumbnail, textbox])
 
@@ -103,8 +105,15 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
     if user_input is None or user_input == "":
         return chat_history, None
 
+    # Add date to the system prompt to give knowledge about today
+    today = datetime.now()
+    now_of_year = today.strftime("%Y")
+    now_of_month = today.strftime("%m")
+    now_of_day = today.strftime("%d")
+
     messages = [
         {"role": "system", "content": system_prompt},
+        {"role": "system", "content": f"Keep in mind that today is the year {now_of_year}, month is {now_of_month}, and the day is {now_of_day}."},
     ]
 
     # Add previous chat history
