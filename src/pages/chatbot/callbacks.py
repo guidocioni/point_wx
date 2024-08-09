@@ -1,42 +1,13 @@
 from dash import callback, Output, Input, State, html, dcc
 from utils.settings import OPENAI_KEY, logging
-from utils.ai_utils import create_weather_data
 from .system import system_prompt
+from .functions import *
 from openai import OpenAI
 import dash_mantine_components as dmc
 import dash_bootstrap_components as dbc
 import json
-from datetime import datetime
-import pytz
 
 client = OpenAI(api_key=OPENAI_KEY)
-
-
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "create_weather_data",
-            "description": "Get the weather data for a specific location and date as JSON. Use it to get the input data for your analysis.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": {
-                        "type": "string",
-                        "description": "The location used to get the weather data",
-                    },
-                    "date": {
-                        "type": "string",
-                        "description": "The date for which the weather data is requested",
-                    },
-                },
-                "required": ["location", "date"],
-                "additionalProperties": False,
-            },
-        },
-        "strict": True,
-    }
-]
 
 def textbox(text, box="AI"):
     style = {
@@ -105,15 +76,8 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
     if user_input is None or user_input == "":
         return chat_history, None
 
-    # Add date to the system prompt to give knowledge about today
-    today = datetime.now()
-    now_of_year = today.strftime("%Y")
-    now_of_month = today.strftime("%m")
-    now_of_day = today.strftime("%d")
-
     messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "system", "content": f"Keep in mind that today is the year {now_of_year}, month is {now_of_month}, and the day is {now_of_day}."},
+        {"role": "system", "content": system_prompt}
     ]
 
     # Add previous chat history
@@ -141,7 +105,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
 
     if finish_reason == "tool_calls":
         # Handle the tool call
-        handle_tool_call(response, messages, chat_history)
+        handle_tool_calls(response, messages, chat_history)
     elif finish_reason == "stop":
         # Handle normal response (model responded directly to the user)
         handle_normal_response(response, chat_history)
@@ -158,23 +122,35 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
     return chat_history, None
 
 
-def handle_tool_call(response, messages, chat_history):
-    tool_call = response.choices[0].message.tool_calls[0]
-    
-    if tool_call.function.name == "create_weather_data":
-        # Extract the arguments
-        arguments = json.loads(tool_call.function.arguments)
-        location = arguments["location"]
-        date = arguments["date"]
+def handle_tool_calls(response, messages, chat_history):
+    tool_calls = response.choices[0].message.tool_calls  # This is a list of function calls
 
-        # Call the actual Python function
-        weather_data = create_weather_data(location, date)
+    for tool_call in tool_calls:
+        function_name = tool_call.function.name
+        arguments = json.loads(tool_call.function.arguments)
+
+        # Look up the correct function in the tools object
+        function_to_call = None
+        for tool in tools:
+            if tool['function']['name'] == function_name:
+                function_to_call = globals().get(function_name)
+                break
+
+        if not function_to_call:
+            raise ValueError(f"Function {function_name} is not defined or not found in tools.")
+
+        # Call the function with the extracted arguments
+        try:
+            logging.info(f"Model is calling function {function_name} with parameters {arguments}")
+            function_result = function_to_call(**arguments)
+        except TypeError as e:
+            raise ValueError(f"Error calling function {function_name}: {str(e)}")
 
         # Add the function result back into the conversation
         messages.append({
             "role": "function",
-            "name": "create_weather_data",
-            "content": json.dumps(weather_data)  # Format as needed
+            "name": function_name,
+            "content": json.dumps(function_result)
         })
 
         # Make another call to the model with the function's output
@@ -183,10 +159,21 @@ def handle_tool_call(response, messages, chat_history):
             messages=messages,
             max_tokens=250,
             temperature=0.9,
+            tools=tools,
         )
 
-        # Handle the normal response after the tool call
-        handle_normal_response(response, chat_history)
+        # Handle the response again, which might include another tool call
+        finish_reason = response.choices[0].finish_reason
+        if finish_reason == "tool_calls":
+            handle_tool_calls(response, messages, chat_history)
+        elif finish_reason == "stop":
+            handle_normal_response(response, chat_history)
+        else:
+            handle_unexpected_case(response)
+
+        # Break out if the model indicates it's done
+        if finish_reason == "stop":
+            break
 
 def handle_normal_response(response, chat_history):
     model_output = response.choices[0].message.content.strip()
