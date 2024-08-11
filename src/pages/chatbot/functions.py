@@ -1,10 +1,11 @@
-'''
+"""
 This file contains a wrapper for all functions that are exposed to the models automatically
 throuh tools.
 We can't use the functions directly because we may need to change something before passing the results
 or settings some parameters.
-'''
-from utils.openmeteo_api import make_request
+"""
+
+from utils.openmeteo_api import make_request, compute_climatology, r
 from datetime import datetime
 import pytz
 
@@ -23,22 +24,22 @@ tools = [
                         "properties": {
                             "name": {
                                 "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location."
+                                "description": "The name of the location. This can be a city a town or a specific location.",
                             },
                             "country": {
                                 "type": "string",
-                                "description": "The name of the country where the location is."
+                                "description": "The name of the country where the location is.",
                             },
                             "latitude": {
                                 "type": "number",
-                                "description": "The latitude of the location in decimal degrees."
+                                "description": "The latitude of the location in decimal degrees.",
                             },
                             "longitude": {
                                 "type": "number",
-                                "description": "The longitude of the location in decimal degrees."
-                            }
+                                "description": "The longitude of the location in decimal degrees.",
+                            },
                         },
-                        "required": ["name", "latitude", "longitude"]
+                        "required": ["name", "latitude", "longitude"],
                     },
                     "start_date": {
                         "type": "string",
@@ -69,22 +70,22 @@ tools = [
                         "properties": {
                             "name": {
                                 "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location."
+                                "description": "The name of the location. This can be a city a town or a specific location.",
                             },
                             "country": {
                                 "type": "string",
-                                "description": "The name of the country where the location is."
+                                "description": "The name of the country where the location is.",
                             },
                             "latitude": {
                                 "type": "number",
-                                "description": "The latitude of the location in decimal degrees."
+                                "description": "The latitude of the location in decimal degrees.",
                             },
                             "longitude": {
                                 "type": "number",
-                                "description": "The longitude of the location in decimal degrees."
-                            }
+                                "description": "The longitude of the location in decimal degrees.",
+                            },
                         },
-                        "required": ["name", "latitude", "longitude"]
+                        "required": ["name", "latitude", "longitude"],
                     },
                     "start_date": {
                         "type": "string",
@@ -120,7 +121,111 @@ tools = [
         },
         "strict": True,
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_climatology",
+            "description": "Get the daily climatological data (data averaged over a 30 years period) to assess whether a certain day (or days) are above or below the normal average",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "object",
+                        "description": "The location used to get the climatological data, including name, latitude, and longitude.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the location. This can be a city a town or a specific location.",
+                            },
+                            "country": {
+                                "type": "string",
+                                "description": "The name of the country where the location is.",
+                            },
+                            "latitude": {
+                                "type": "number",
+                                "description": "The latitude of the location in decimal degrees.",
+                            },
+                            "longitude": {
+                                "type": "number",
+                                "description": "The longitude of the location in decimal degrees.",
+                            },
+                        },
+                        "required": ["name", "latitude", "longitude"],
+                    },
+                },
+                "required": ["location"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_historical_daily_data",
+            "description": "Get the daily historical data for a location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "object",
+                        "description": "The location used to get the climatological data, including name, latitude, and longitude.",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the location. This can be a city a town or a specific location.",
+                            },
+                            "country": {
+                                "type": "string",
+                                "description": "The name of the country where the location is.",
+                            },
+                            "latitude": {
+                                "type": "number",
+                                "description": "The latitude of the location in decimal degrees.",
+                            },
+                            "longitude": {
+                                "type": "number",
+                                "description": "The longitude of the location in decimal degrees.",
+                            },
+                        },
+                        "required": ["name", "latitude", "longitude"],
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                    },
+                },
+                "required": ["location", "start_date", "end_date"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_radar_data",
+            "description": "Get radar-based estimation of precipitation for locations that are in Germany.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "type": "string",
+                        "description": "An address (could be a street, road, location or city) located in Germany",
+                    },
+                },
+                "required": ["address"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
 ]
+
 
 def get_current_datetime(timezone=None):
     if timezone:
@@ -142,9 +247,9 @@ def get_deterministic_forecast(location, start_date, end_date):
     resp = make_request(url="https://api.open-meteo.com/v1/forecast", payload=payload)
     weather_data = resp.json()
     weather_data["location"] = location["name"]
-    if 'country' in location:
-        weather_data['country'] = location['country']
-    
+    if "country" in location:
+        weather_data["country"] = location["country"]
+
     return weather_data
 
 
@@ -158,10 +263,54 @@ def get_ensemble_forecast(location, start_date, end_date):
         "start_date": start_date,
         "end_date": end_date,
     }
-    resp = make_request(url="https://ensemble-api.open-meteo.com/v1/ensemble", payload=payload)
+    resp = make_request(
+        url="https://ensemble-api.open-meteo.com/v1/ensemble", payload=payload
+    )
     ensemble_data = resp.json()
     ensemble_data["location"] = location["name"]
-    if 'country' in location:
-        ensemble_data['country'] = location['country']
-    
+    if "country" in location:
+        ensemble_data["country"] = location["country"]
+
     return ensemble_data
+
+
+def get_climatology(location):
+    clima = compute_climatology(
+        latitude=location["latitude"],
+        longitude=location["longitude"],
+        daily=True,
+        model="era5_seamless",
+        variables="temperature_2m_max,temperature_2m_min,sunshine_duration,precipitation_sum,rain_sum,snowfall_sum",
+    )
+    clima["sunshine_duration"] = clima["sunshine_duration"] * 3600.0
+    weather_data = clima.to_dict(orient="records")
+
+    return weather_data
+
+
+def get_historical_daily_data(location, start_date, end_date):
+    payload = {
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "daily": "temperature_2m_max,temperature_2m_min,sunshine_duration,precipitation_sum,rain_sum,snowfall_sum",
+        "timezone": "auto",
+        "models": "era5_seamless",
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+
+    resp = make_request("https://archive-api.open-meteo.com/v1/archive", payload)
+    weather_data = resp.json()
+    weather_data["location"] = location["name"]
+    if "country" in location:
+        weather_data["country"] = location["country"]
+
+    return weather_data
+
+
+def get_radar_data(address):
+    payload = {"address": address}
+    resp = r.get(url="https://hh.guidocioni.it/nmwr/pointquery", params=payload)
+    resp.raise_for_status()
+    
+    return resp.json()

@@ -70,6 +70,12 @@ def clear_input(n_clicks, n_submit):
     [State("user-input", "value"), State("store-conversation", "data")],
 )
 def run_chatbot(n_clicks, n_submit, user_input, chat_history):
+    # Initialize the chat history if it is empty
+    if chat_history is None or len(chat_history) == 0:
+        chat_history = [
+            {"role": "assistant", "content": "Hiya! I'm here to help you with all questions related to weather or climate.\n You can ask me anything about the forecast for tomorrow or the next days, or about how this month (or year) has been so far. I'll try to give you some interesting informations."}
+        ]
+
     if n_clicks == 0 and n_submit is None:
         return chat_history, None
 
