@@ -1,5 +1,7 @@
 from dash import html, register_page, dcc
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 from .callbacks import *
 
 register_page(__name__, path="/chatbot", title="Chat")
@@ -14,12 +16,26 @@ conversation = html.Div(
     },
 )
 
-controls = dbc.InputGroup(
+controls = html.Div(
     children=[
-        dbc.Input(id="user-input", placeholder="Write to the chatbot...", type="text"),
-        dbc.Button("Submit", id="submit"),
+        dmc.Textarea(
+            id="user-input",
+            placeholder="Write to the chatbot...",
+            autosize=True,
+            minRows=2,
+            maxRows=4,
+            radius="md",
+            rightSection=dmc.Button(
+                DashIconify(icon="formkit:submit", height=30),
+                id="submit",
+                variant="subtle",
+                color="gray",
+            ),
+            rightSectionWidth=60,
+            spellCheck=True
+        ),
     ],
-    style={"margin-bottom": "1rem"}
+    style={"margin-bottom": "1rem"},
 )
 
 layout = html.Div(
@@ -31,7 +47,11 @@ layout = html.Div(
             controls,
             dbc.Spinner(html.Div(id="loading-component"), fullscreen=False),
         ],
-        style={"padding": "0.5rem"}  # Add padding and limit max width
+        style={"padding": "0.5rem"},  # Add padding and limit max width
     ),
-    style={"display": "flex", "justify-content": "center", "align-items": "center"}  # Center the container
+    style={
+        "display": "flex",
+        "justify-content": "center",
+        "align-items": "center",
+    },  # Center the container
 )

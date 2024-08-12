@@ -13,16 +13,16 @@ def textbox(text, box="AI"):
     style = {
         "max-width": "80%",
         "width": "max-content",
-        "padding": "5px 10px",
-        "border-radius": 25,
-        "margin-bottom": 20,
+        "padding": "10px 10px 0px 15px",
+        "border-radius": 15,
+        "margin-bottom": 15,
         "display": "flex",
     }
 
     if box == "user":
         style["margin-left"] = "auto"
         style["margin-right"] = 0
-        return dbc.Card(dcc.Markdown(text), style=style, body=True, color="primary", inverse=True)
+        return dbc.Card(dcc.Markdown(text), style=style, body=False, color="primary", inverse=True)
     elif box == "AI":
         style["margin-left"] = 0
         style["margin-right"] = "auto"
@@ -38,7 +38,7 @@ def textbox(text, box="AI"):
                 },
             )
 
-        textbox = dbc.Card(dcc.Markdown(text), style=style, body=True, color="light", inverse=False)
+        textbox = dbc.Card(dcc.Markdown(text), style=style, body=False, color="light", inverse=False)
 
         return html.Div([thumbnail, textbox])
 
