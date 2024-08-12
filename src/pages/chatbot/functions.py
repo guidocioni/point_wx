@@ -6,48 +6,51 @@ or settings some parameters.
 """
 
 from utils.openmeteo_api import make_request, compute_climatology, r
+from utils.settings import cache
 from datetime import datetime
 import pytz
+
+location_object = {
+    "type": "object",
+    "description": "The location used to get the weather data, including name, country, latitude, and longitude.",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "The name of the location. This can be a city a town or a specific location.",
+        },
+        "country": {
+            "type": "string",
+            "description": "The name of the country where the location is.",
+        },
+        "latitude": {
+            "type": "number",
+            "description": "The latitude of the location in decimal degrees.",
+        },
+        "longitude": {
+            "type": "number",
+            "description": "The longitude of the location in decimal degrees.",
+        },
+    },
+    "required": ["name", "latitude", "longitude"],
+}
 
 tools = [
     {
         "type": "function",
         "function": {
             "name": "get_deterministic_forecast",
-            "description": "Get the weather data for a specific location and date range as JSON. Use it to get the input data for your analysis.",
+            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "object",
-                        "description": "The location used to get the weather data, including name, latitude, and longitude.",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location.",
-                            },
-                            "country": {
-                                "type": "string",
-                                "description": "The name of the country where the location is.",
-                            },
-                            "latitude": {
-                                "type": "number",
-                                "description": "The latitude of the location in decimal degrees.",
-                            },
-                            "longitude": {
-                                "type": "number",
-                                "description": "The longitude of the location in decimal degrees.",
-                            },
-                        },
-                        "required": ["name", "latitude", "longitude"],
-                    },
+                    "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 10 days from today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 10 days from today.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -60,40 +63,20 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_ensemble_forecast",
-            "description": "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast.",
+            "description": (
+                "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast. The member number is affixed to the variable name, e.g. temperature_2m_member_23."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "object",
-                        "description": "The location used to get the weather data, including name, latitude, and longitude.",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location.",
-                            },
-                            "country": {
-                                "type": "string",
-                                "description": "The name of the country where the location is.",
-                            },
-                            "latitude": {
-                                "type": "number",
-                                "description": "The latitude of the location in decimal degrees.",
-                            },
-                            "longitude": {
-                                "type": "number",
-                                "description": "The longitude of the location in decimal degrees.",
-                            },
-                        },
-                        "required": ["name", "latitude", "longitude"],
-                    },
+                    "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -125,33 +108,14 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_climatology",
-            "description": "Get the daily climatological data (data averaged over a 30 years period) to assess whether a certain day (or days) are above or below the normal average",
+            "description": (
+                "Get the daily climatological data (data averaged over a 30 years period) to compare observed values to the climatological average. "
+                "The output of this function will be a JSON exported from a pandas dataframe using the orient='records' option. In order to identify the day of the year use the 'doy' attribute, which was obtained from the date by formatting as '%m%d'. Note that there is no year in this date, as these data are multi-year average."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "object",
-                        "description": "The location used to get the climatological data, including name, latitude, and longitude.",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location.",
-                            },
-                            "country": {
-                                "type": "string",
-                                "description": "The name of the country where the location is.",
-                            },
-                            "latitude": {
-                                "type": "number",
-                                "description": "The latitude of the location in decimal degrees.",
-                            },
-                            "longitude": {
-                                "type": "number",
-                                "description": "The longitude of the location in decimal degrees.",
-                            },
-                        },
-                        "required": ["name", "latitude", "longitude"],
-                    },
+                    "location": location_object,
                 },
                 "required": ["location"],
                 "additionalProperties": False,
@@ -163,40 +127,21 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_historical_daily_data",
-            "description": "Get the daily historical data for a location",
+            "description": (
+                "Get the daily historical data for a location. "
+                "This is the best estimate that we have according to reanalysis of the weather evolution everywhere on Earth. Still, it is based on models so it's not the same as a direct observation."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {
-                        "type": "object",
-                        "description": "The location used to get the climatological data, including name, latitude, and longitude.",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the location. This can be a city a town or a specific location.",
-                            },
-                            "country": {
-                                "type": "string",
-                                "description": "The name of the country where the location is.",
-                            },
-                            "latitude": {
-                                "type": "number",
-                                "description": "The latitude of the location in decimal degrees.",
-                            },
-                            "longitude": {
-                                "type": "number",
-                                "description": "The longitude of the location in decimal degrees.",
-                            },
-                        },
-                        "required": ["name", "latitude", "longitude"],
-                    },
+                    "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The start date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd.",
+                        "description": "The end date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -209,7 +154,10 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_radar_data",
-            "description": "Get radar-based estimation of precipitation for locations that are in Germany.",
+            "description": (
+                "Get radar-based estimation of precipitation for locations that are in Germany. "
+                "The Response is a JSON containing array of objects with time and estimated precipitation for the next two hours"
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -232,7 +180,7 @@ def get_current_datetime(timezone=None):
         timezone = pytz.timezone(timezone)
     return datetime.now(timezone).strftime("Today is %d %b %Y and the time is %H:%M:%S")
 
-
+@cache.memoize(3600)
 def get_deterministic_forecast(location, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
@@ -252,7 +200,7 @@ def get_deterministic_forecast(location, start_date, end_date):
 
     return weather_data
 
-
+@cache.memoize(3600)
 def get_ensemble_forecast(location, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
@@ -273,7 +221,7 @@ def get_ensemble_forecast(location, start_date, end_date):
 
     return ensemble_data
 
-
+@cache.memoize(86400)
 def get_climatology(location):
     clima = compute_climatology(
         latitude=location["latitude"],
@@ -287,7 +235,7 @@ def get_climatology(location):
 
     return weather_data
 
-
+@cache.memoize(86400)
 def get_historical_daily_data(location, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
@@ -312,5 +260,5 @@ def get_radar_data(address):
     payload = {"address": address}
     resp = r.get(url="https://hh.guidocioni.it/nmwr/pointquery", params=payload)
     resp.raise_for_status()
-    
+
     return resp.json()
