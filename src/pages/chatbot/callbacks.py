@@ -84,7 +84,9 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
         return chat_history, False
 
     messages = [
-        {"role": "system", "content": system_prompt}
+        {"role": "system", "content": system_prompt},
+        # Inject time information only at the beginning of the system prompt
+        {"role": "system", "content": get_current_datetime()}
     ]
 
     # Add previous chat history

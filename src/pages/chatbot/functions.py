@@ -85,25 +85,25 @@ tools = [
         },
         "strict": True,
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_current_datetime",
-            "description": "Get the current date and time by providing the local timezone",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "timezone": {
-                        "type": "string",
-                        "description": "The local timezone to get the date for. It needs to be in the pytz format, so e.g. Europe/Berlin",
-                    },
-                },
-                "required": ["timezone"],
-                "additionalProperties": False,
-            },
-        },
-        "strict": True,
-    },
+    # {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "get_current_datetime",
+    #         "description": "Get the current date and time by providing the local timezone",
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "timezone": {
+    #                     "type": "string",
+    #                     "description": "The local timezone to get the date for. It needs to be in the pytz format, so e.g. Europe/Berlin",
+    #                 },
+    #             },
+    #             "required": ["timezone"],
+    #             "additionalProperties": False,
+    #         },
+    #     },
+    #     "strict": True,
+    # },
     {
         "type": "function",
         "function": {
