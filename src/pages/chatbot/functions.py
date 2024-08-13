@@ -39,7 +39,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_deterministic_forecast",
-            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis.",
+            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') and every 15 minutes ('minutely_15'). The latter can be used over Central Europe and the United States to improve forecast accuracy.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -64,7 +64,7 @@ tools = [
         "function": {
             "name": "get_ensemble_forecast",
             "description": (
-                "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast. The member number is affixed to the variable name, e.g. temperature_2m_member_23."
+                "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast. The member number is affixed to the variable name, e.g. temperature_2m_member_23. This data contains less variables with respect to the deterministic forecast. Also, ensemble models are usually characterized by lower resolution."
             ),
             "parameters": {
                 "type": "object",
@@ -110,7 +110,7 @@ tools = [
             "name": "get_climatology",
             "description": (
                 "Get the daily climatological data (data averaged over a 30 years period) to compare observed values to the climatological average. "
-                "The output of this function will be a JSON exported from a pandas dataframe using the orient='records' option. In order to identify the day of the year use the 'doy' attribute, which was obtained from the date by formatting as '%m%d'. Note that there is no year in this date, as these data are multi-year average."
+                "The output of this function will be a JSON exported from a pandas dataframe using the orient='records' option. In order to identify the day of the year use the 'doy' attribute, which was obtained from the date by formatting as '%m%d'. Note that there is no year in this date, as these data are multi-year average. Here is an example of a response: [{'doy': '0101','temperature_2m_max': 3.6,'temperature_2m_min':-0.6,'sunshine_duration': 3.0,'precipitation_sum': 1.5,'rain_sum': 1.4,'snowfall_sum':0.1}] means that on the first of January ('0101') the expected daily maximum temperature is 3.6°C and the daily sum of precipitation is 1.5 mm."
             ),
             "parameters": {
                 "type": "object",
@@ -156,7 +156,7 @@ tools = [
             "name": "get_radar_data",
             "description": (
                 "Get radar-based estimation of precipitation for locations that are in Germany. "
-                "The Response is a JSON containing array of objects with time and estimated precipitation for the next two hours"
+                "The Response is a JSON containing array of objects with time and estimated precipitation (mm/h) for the next two hours"
             ),
             "parameters": {
                 "type": "object",

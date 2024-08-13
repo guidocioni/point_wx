@@ -11,7 +11,7 @@ conversation = html.Div(
     style={
         "overflow-y": "auto",
         "display": "flex",
-        "height": "calc(70vh - 132px)",
+        "height": "calc(80vh - 132px)",
         "flex-direction": "column-reverse",
     },
 )
@@ -22,7 +22,7 @@ controls = html.Div(
             id="user-input",
             placeholder="Write to the chatbot...",
             autosize=True,
-            minRows=2,
+            minRows=1,
             maxRows=4,
             radius="md",
             rightSection=dmc.Button(
@@ -30,12 +30,13 @@ controls = html.Div(
                 id="submit",
                 variant="subtle",
                 color="gray",
+                loading=False,
+                loaderProps={"type": "dots"}
             ),
             rightSectionWidth=60,
             spellCheck=True
         ),
     ],
-    style={"margin-bottom": "1rem"},
 )
 
 layout = html.Div(
@@ -44,8 +45,7 @@ layout = html.Div(
         children=[
             dcc.Store(id="store-conversation", data=[]),
             conversation,
-            controls,
-            dbc.Spinner(html.Div(id="loading-component"), fullscreen=False),
+            controls
         ],
         style={"padding": "0.5rem"},  # Add padding and limit max width
     ),

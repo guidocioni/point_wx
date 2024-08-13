@@ -57,15 +57,16 @@ def update_display(chat_history):
 
 
 @callback(
-    Output("user-input", "value"),
+    [Output("user-input", "value"), Output("submit", "loading", allow_duplicate=True)],
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
+    prevent_initial_call=True
 )
 def clear_input(n_clicks, n_submit):
-    return ""
+    return "", True
 
 
 @callback(
-    [Output("store-conversation", "data"), Output("loading-component", "children")],
+    [Output("store-conversation", "data"), Output("submit", "loading")],
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
     [State("user-input", "value"), State("store-conversation", "data")],
 )
@@ -77,10 +78,10 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
         ]
 
     if n_clicks == 0 and n_submit is None:
-        return chat_history, None
+        return chat_history, False
 
     if user_input is None or user_input == "":
-        return chat_history, None
+        return chat_history, False
 
     messages = [
         {"role": "system", "content": system_prompt}
@@ -125,7 +126,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
         # Handle unexpected cases
         handle_unexpected_case(response)
 
-    return chat_history, None
+    return chat_history, False
 
 
 def handle_tool_calls(response, messages, chat_history):
