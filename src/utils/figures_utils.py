@@ -1,12 +1,12 @@
 import json
 import dash_leaflet as dl
-import os
-from utils.settings import MAPBOX_API_KEY
+from utils.settings import MAPBOX_API_KEY, ASSETS_DIR
+import numpy as np
 
 def get_weather_icons(
     df,
-    icons_path="../src/assets/yrno_png/",
-    mapping_path="../src/assets/weather_codes.json",
+    icons_path=f"{ASSETS_DIR}/yrno_png/",
+    mapping_path=f"{ASSETS_DIR}/weather_codes.json",
     var="weather_code",
 ):
     """
@@ -26,7 +26,7 @@ def get_weather_icons(
                 time_day = "day"
             else:
                 time_day = "night"
-        if str(int(row[var])) in j.keys():
+        if not np.isnan(row[var]) and str(int(row[var])) in j.keys():
             icons.append(icons_path + j[str(int(row[var]))][time_day]["image"])
             descriptions.append(j[str(int(row[var]))][time_day]["description"])
         else:

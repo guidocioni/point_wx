@@ -235,6 +235,69 @@ DETERMINISTIC_MODELS = [
     },
 ]
 
+# The variables that we decide to expose as dropdown for deterministic models
+
+DETERMINISTIC_VARS = [
+    {
+        "group": "Instantaneous",
+        "items": [
+            {"label": "2m Temperature", "value": "temperature_2m"},
+            {"label": "850hPa Temperature", "value": "temperature_850hPa"},
+            {"label": "850hPa Relative Humidity", "value": "relative_humidity_850hPa"},
+            {"label": "850hPa geopotential", "value": "geopotential_850hPa"},
+            {"label": "500hPa Temperature", "value": "temperature_500hPa"},
+            {"label": "500hPa Relative Humidity", "value": "relative_humidity_500hPa"},
+            {"label": "500hPa geopotential", "value": "geopotential_500hPa"},
+            {"label": "2m Dew Point", "value": "dew_point_2m"},
+            {"label": "Apparent Temperature", "value": "apparent_temperature"},
+            {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},
+            {"label": "Total Cloud Cover", "value": "cloudcover"},
+            {"label": "Low Cloud Cover", "value": "cloud_cover_low"},
+            {"label": "Mid Cloud Cover", "value": "cloud_cover_mid"},
+            {"label": "High Cloud Cover", "value": "cloud_cover_high"},
+            {"label": "Freezing level", "value": "freezing_level_height"},
+            {"label": "Snow depth", "value": "snow_depth"},
+            {"label": "10m Wind Speed", "value": "wind_speed_10m"},
+            {"label": "10m Wind Direction", "value": "wind_direction_10m"},
+            {"label": "120m Wind Speed", "value": "wind_speed_120m"},
+            {"label": "120m Wind Direction", "value": "wind_direction_120m"},
+            {"label": "MSL Pressure", "value": "pressure_msl"},
+            {"label": "Convective Available Potential Energy", "value": "cape"},
+            {"label": "Visibility", "value": "visibility"},
+            {"label": "Surface Temperature", "value": "surface_temperature"},
+            {"label": "Weather", "value": "weather_code"},
+            {"label": "Soil Temperature (0 cm)", "value": "soil_temperature_0cm"},
+            {"label": "Soil Temperature (6 cm)", "value": "soil_temperature_6cm"},
+            {"label": "Soil Temperature (18 cm)", "value": "soil_temperature_18cm"},
+            {"label": "Soil Temperature (54 cm)", "value": "soil_temperature_54cm"},
+            {"label": "Soil Moisture (0-1 cm)", "value": "soil_moisture_0_to_1cm"},
+            {"label": "Soil Moisture (1-3 cm)", "value": "soil_moisture_1_to_3cm"},
+            {"label": "Soil Moisture (3-9 cm)", "value": "soil_moisture_3_to_9cm"},
+            {"label": "Soil Moisture (9-27 cm)", "value": "soil_moisture_9_to_27cm"},
+            {"label": "Soil Moisture (27-81 cm)", "value": "soil_moisture_27_to_81cm"},
+        ],
+    },
+    {
+        "group": "Accumulated",
+        "items": [
+            {"label": "Rain", "value": "rain"},
+            {"label": "Showers", "value": "showers"},
+            {"label": "Snowfall", "value": "snowfall"},
+            {"label": "Precipitation", "value": "precipitation"},
+            {"label": "Sunshine duration", "value": "sunshine_duration"},
+            {"label": "Accumulated precipitation (total)", "value": "accumulated_precip"},
+            {"label": "Accumulated precipitation (liquid)", "value": "accumulated_liquid"},
+            {"label": "Accumulated precipitation (solid)", "value": "accumulated_snow"},
+        ],
+    },
+    {
+        "group": "Preceding hour maximum",
+        "items": [
+            {"label": "10m Wind Gusts", "value": "windgusts_10m"},
+        ],
+    },
+]
+
 # All the models available in the APIs for Historical
 # No need for groups here
 REANALYSIS_MODELS = [
