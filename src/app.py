@@ -118,7 +118,7 @@ def ip(id):
         "HTTP_X_REAL_IP", request.remote_addr
     )
     logging.info(
-        f"New session id {client_details['session_id']} for IP {client_details['real_address']}"
+        f"New Session {client_details['session_id']} for IP {client_details['real_address']}"
     )
 
     return client_details
