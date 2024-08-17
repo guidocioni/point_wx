@@ -68,9 +68,9 @@ def clear_input(n_clicks, n_submit):
 @callback(
     [Output("store-conversation", "data"), Output("submit", "loading")],
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
-    [State("user-input", "value"), State("store-conversation", "data")],
+    [State("user-input", "value"), State("store-conversation", "data"), State("client-details", "data")],
 )
-def run_chatbot(n_clicks, n_submit, user_input, chat_history):
+def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
     # Initialize the chat history if it is empty
     if chat_history is None or len(chat_history) == 0:
         chat_history = [
@@ -96,6 +96,9 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
     # Add user input to messages
     user_message = {"role": "user", "content": user_input}
     messages.append(user_message)
+    logging.info(
+            f"Chat SUBMIT => Session {client_data['session_id']}, Message: '{user_input}'"
+        )
 
     # Add the user message to chat history immediately
     chat_history.append(user_message)
@@ -114,24 +117,24 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history):
 
     if finish_reason == "tool_calls":
         # Handle the tool call
-        handle_tool_calls(response, messages, chat_history)
+        handle_tool_calls(response, messages, chat_history, client_data['session_id'])
     elif finish_reason == "stop":
         # Handle normal response (model responded directly to the user)
         handle_normal_response(response, chat_history)
     elif finish_reason == "length":
         # Handle the case where the conversation was too long
-        handle_length_error(response)
+        handle_length_error(response, client_data['session_id'])
     elif finish_reason == "content_filter":
         # Handle the case where the content was filtered
-        handle_content_filter_error(response)
+        handle_content_filter_error(response, client_data['session_id'])
     else:
         # Handle unexpected cases
-        handle_unexpected_case(response)
+        handle_unexpected_case(response, client_data['session_id'])
 
     return chat_history, False
 
 
-def handle_tool_calls(response, messages, chat_history):
+def handle_tool_calls(response, messages, chat_history, session_id):
     tool_calls = response.choices[0].message.tool_calls  # This is a list of function calls
 
     for tool_call in tool_calls:
@@ -146,14 +149,14 @@ def handle_tool_calls(response, messages, chat_history):
                 break
 
         if not function_to_call:
-            raise ValueError(f"Function {function_name} is not defined or not found in tools.")
+            logging.error(f"Chat SUBMIT => Session {session_id}: Function {function_name} is not defined or not found in tools.")
 
         # Call the function with the extracted arguments
         try:
-            logging.info(f"Model is calling function {function_name} with parameters {arguments}")
+            logging.info(f"Chat SUBMIT => Session {session_id}. Model is calling function {function_name} with parameters {arguments}")
             function_result = function_to_call(**arguments)
         except TypeError as e:
-            raise ValueError(f"Error calling function {function_name}: {str(e)}")
+            logging.error(f"Chat SUBMIT => Session {session_id}: Error calling function {function_name}: {str(e)}")
 
         # Add the function result back into the conversation
         messages.append({
@@ -190,17 +193,17 @@ def handle_normal_response(response, chat_history):
     # Update chat history
     chat_history.append({"role": "assistant", "content": model_output})
 
-def handle_length_error(response):
+def handle_length_error(response, session_id):
     # Handle the case where the conversation was too long for the context window
-    logging.error("The conversation was too long for the context window.")
+    logging.error(f"Chat SUBMIT => Session {session_id}: The conversation was too long for the context window.")
     # Implement your logic to handle this, such as truncating the conversation
 
-def handle_content_filter_error(response):
+def handle_content_filter_error(response, session_id):
     # Handle the case where content was filtered
-    logging.error("The content was filtered due to policy violations.")
+    logging.error(f"Chat SUBMIT => Session {session_id}: The content was filtered due to policy violations.")
     # Implement your logic to handle this, such as modifying the request or notifying the user
 
-def handle_unexpected_case(response):
+def handle_unexpected_case(response, session_id):
     # Handle any unexpected cases
-    logging.error("Unexpected finish_reason:", response.choices[0].finish_reason)
+    logging.error(f"Chat SUBMIT => Session {session_id}: Unexpected finish_reason:", response.choices[0].finish_reason)
     # Implement your logic to handle this
