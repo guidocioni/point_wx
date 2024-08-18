@@ -177,11 +177,11 @@ def handle_tool_calls(response, messages, chat_history, session_id):
         # Handle the response again, which might include another tool call
         finish_reason = response.choices[0].finish_reason
         if finish_reason == "tool_calls":
-            handle_tool_calls(response, messages, chat_history)
+            handle_tool_calls(response, messages, chat_history, session_id)
         elif finish_reason == "stop":
             handle_normal_response(response, chat_history)
         else:
-            handle_unexpected_case(response)
+            handle_unexpected_case(response, session_id)
 
         # Break out if the model indicates it's done
         if finish_reason == "stop":
