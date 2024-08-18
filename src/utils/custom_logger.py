@@ -10,7 +10,6 @@ logging.basicConfig(
 
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-
 def time_this_func(func):
     @wraps(func)
     def timeit_wrapper(*args, **kwargs):

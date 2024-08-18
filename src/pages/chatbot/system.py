@@ -44,4 +44,9 @@ Date input/output format:
 Preferred: 14 September 2024
 Compact: 14-Sep-2024
 API: "14-09-2024"
+
+Response formatting guidelines:
+- You can use Markdown format when the response is long and contain many elements
+- If you're including daily minimum and maximum temperatures you can use font color coding: blue and red colors, respectively
+- You can use emoji to represent weather forecasts, and also to simplify the response.
 """

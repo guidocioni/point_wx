@@ -8,6 +8,14 @@ import dash_bootstrap_components as dbc
 import json
 
 client = OpenAI(api_key=OPENAI_KEY)
+logging.getLogger("openai").setLevel(logging.ERROR)
+logging.getLogger("httpx").setLevel(logging.ERROR)
+
+'''
+There are 2 variables used to store the conversation with the Completion api
+- messages contains ALL messages including system prompts, functions result, user inputs...
+- chat_history only contains the messages that should be shown to the user in the frontend!
+'''
 
 def textbox(text, box="AI"):
     style = {
@@ -74,7 +82,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
     # Initialize the chat history if it is empty
     if chat_history is None or len(chat_history) == 0:
         chat_history = [
-            {"role": "assistant", "content": "Hiya! I'm here to help you with all questions related to weather or climate.\n You can ask me anything about the forecast for tomorrow or the next days, or about how this month (or year) has been so far. I'll try to give you some interesting informations."}
+            {"role": "assistant", "content": "Hiya! I'm here to help you with all questions related to weather or climate.\n You can ask me anything about the forecast for tomorrow or the next days, or about how this month (or year) has been so far."}
         ]
 
     if n_clicks == 0 and n_submit is None:
@@ -150,42 +158,33 @@ def handle_tool_calls(response, messages, chat_history, session_id):
 
         if not function_to_call:
             logging.error(f"Chat SUBMIT => Session {session_id}: Function {function_name} is not defined or not found in tools.")
-
         # Call the function with the extracted arguments
         try:
             logging.info(f"Chat SUBMIT => Session {session_id}. Model is calling function {function_name} with parameters {arguments}")
             function_result = function_to_call(**arguments)
-        except TypeError as e:
+        except Exception as e:
             logging.error(f"Chat SUBMIT => Session {session_id}: Error calling function {function_name}: {str(e)}")
+            function_result = {"error": str(e)}
 
-        # Add the function result back into the conversation
+        # Add the function result back into the conversation in response to the tool call
         messages.append({
             "role": "function",
             "name": function_name,
             "content": json.dumps(function_result)
         })
 
-        # Make another call to the model with the function's output
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_tokens=250,
-            temperature=0.9,
-            tools=tools,
-        )
+    # Make another call to the model with the tool's output
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=250,
+        temperature=0.9,
+        tools=tools,
+    )
 
-        # Handle the response again, which might include another tool call
-        finish_reason = response.choices[0].finish_reason
-        if finish_reason == "tool_calls":
-            handle_tool_calls(response, messages, chat_history, session_id)
-        elif finish_reason == "stop":
-            handle_normal_response(response, chat_history)
-        else:
-            handle_unexpected_case(response, session_id)
+    # Handle the model's response after tool usage
+    handle_normal_response(response, chat_history)
 
-        # Break out if the model indicates it's done
-        if finish_reason == "stop":
-            break
 
 def handle_normal_response(response, chat_history):
     model_output = response.choices[0].message.content.strip()
