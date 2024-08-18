@@ -11,11 +11,6 @@ client = OpenAI(api_key=OPENAI_KEY)
 logging.getLogger("openai").setLevel(logging.ERROR)
 logging.getLogger("httpx").setLevel(logging.ERROR)
 
-'''
-There are 2 variables used to store the conversation with the Completion api
-- messages contains ALL messages including system prompts, functions result, user inputs...
-- chat_history only contains the messages that should be shown to the user in the frontend!
-'''
 
 def textbox(text, box="AI"):
     style = {
@@ -57,7 +52,8 @@ def textbox(text, box="AI"):
     Output("display-conversation", "children"), 
     [Input("store-conversation", "data")]
 )
-def update_display(chat_history):
+def update_display(store_data):
+    chat_history = store_data.get("chat_history", [])
     return [
         textbox(message["content"], box="user" if message["role"] == "user" else "AI")
         for message in chat_history
@@ -78,28 +74,32 @@ def clear_input(n_clicks, n_submit):
     [Input("submit", "n_clicks"), Input("user-input", "n_submit")],
     [State("user-input", "value"), State("store-conversation", "data"), State("client-details", "data")],
 )
-def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
-    # Initialize the chat history if it is empty
-    if chat_history is None or len(chat_history) == 0:
-        chat_history = [
+def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
+    '''
+    There are 2 variables used to store the conversation with the Completion api
+    - messages contains ALL messages including system prompts, functions result, user inputs...
+    - chat_history only contains the messages that should be shown to the user in the frontend!
+    '''
+    chat_history = store_data["chat_history"]
+    messages = store_data["messages"]
+    # Initialize the conversation
+    if messages is None or len(messages) == 0:
+        intro_messages = [
+            {"role": "system", "content": system_prompt},
+            # Inject time information only at the beginning of the system prompt
+            {"role": "system", "content": get_current_datetime()},
             {"role": "assistant", "content": "Hiya! I'm here to help you with all questions related to weather or climate.\n You can ask me anything about the forecast for tomorrow or the next days, or about how this month (or year) has been so far."}
         ]
+        messages.extend(intro_messages)
+        chat_history.append(intro_messages[-1])
+
+        store_data = {"chat_history": chat_history, "messages": messages}
 
     if n_clicks == 0 and n_submit is None:
-        return chat_history, False
+        return store_data, False
 
     if user_input is None or user_input == "":
-        return chat_history, False
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        # Inject time information only at the beginning of the system prompt
-        {"role": "system", "content": get_current_datetime()}
-    ]
-
-    # Add previous chat history
-    if chat_history:
-        messages.extend(chat_history)  # Add previous messages to the conversation
+        return store_data, False
 
     # Add user input to messages
     user_message = {"role": "user", "content": user_input}
@@ -107,7 +107,6 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
     logging.info(
             f"Chat SUBMIT => Session {client_data['session_id']}, Message: '{user_input}'"
         )
-
     # Add the user message to chat history immediately
     chat_history.append(user_message)
 
@@ -128,7 +127,7 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
         handle_tool_calls(response, messages, chat_history, client_data['session_id'])
     elif finish_reason == "stop":
         # Handle normal response (model responded directly to the user)
-        handle_normal_response(response, chat_history)
+        handle_normal_response(response, messages, chat_history)
     elif finish_reason == "length":
         # Handle the case where the conversation was too long
         handle_length_error(response, client_data['session_id'])
@@ -139,11 +138,15 @@ def run_chatbot(n_clicks, n_submit, user_input, chat_history, client_data):
         # Handle unexpected cases
         handle_unexpected_case(response, client_data['session_id'])
 
-    return chat_history, False
+    store_data = {"chat_history": chat_history, "messages": messages}
+
+    return store_data, False
 
 
 def handle_tool_calls(response, messages, chat_history, session_id):
     tool_calls = response.choices[0].message.tool_calls  # This is a list of function calls
+    logging.info(response.choices)
+    # messages.append(response.choices[0].message)
 
     for tool_call in tool_calls:
         function_name = tool_call.function.name
@@ -172,6 +175,11 @@ def handle_tool_calls(response, messages, chat_history, session_id):
             "name": function_name,
             "content": json.dumps(function_result)
         })
+        # messages.append({
+        #     "role": "tool",
+        #     "tool_call_id": tool_call.id,
+        #     "content": json.dumps(function_result)
+        # })
 
     # Make another call to the model with the tool's output
     response = client.chat.completions.create(
@@ -179,30 +187,26 @@ def handle_tool_calls(response, messages, chat_history, session_id):
         messages=messages,
         max_tokens=250,
         temperature=0.9,
-        tools=tools,
+        # tools=tools,
     )
 
     # Handle the model's response after tool usage
-    handle_normal_response(response, chat_history)
+    handle_normal_response(response, messages, chat_history)
 
-
-def handle_normal_response(response, chat_history):
+def handle_normal_response(response, messages, chat_history):
     model_output = response.choices[0].message.content.strip()
-
-    # Update chat history
+    # A normal response should go both in the hidden and frontend history
+    messages.append({"role": "assistant", "content": model_output})
     chat_history.append({"role": "assistant", "content": model_output})
 
 def handle_length_error(response, session_id):
     # Handle the case where the conversation was too long for the context window
     logging.error(f"Chat SUBMIT => Session {session_id}: The conversation was too long for the context window.")
-    # Implement your logic to handle this, such as truncating the conversation
 
 def handle_content_filter_error(response, session_id):
     # Handle the case where content was filtered
     logging.error(f"Chat SUBMIT => Session {session_id}: The content was filtered due to policy violations.")
-    # Implement your logic to handle this, such as modifying the request or notifying the user
 
 def handle_unexpected_case(response, session_id):
     # Handle any unexpected cases
     logging.error(f"Chat SUBMIT => Session {session_id}: Unexpected finish_reason:", response.choices[0].finish_reason)
-    # Implement your logic to handle this

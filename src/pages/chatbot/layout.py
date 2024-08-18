@@ -43,7 +43,7 @@ layout = html.Div(
     dbc.Container(
         fluid=False,
         children=[
-            dcc.Store(id="store-conversation", data=[]),
+            dcc.Store(id="store-conversation", data={"chat_history": [], "messages": []}),
             conversation,
             controls
         ],
