@@ -154,6 +154,7 @@ ENSEMBLE_VARS = [
             {"label": "Convective Available Potential Energy", "value": "cape"},
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
+            {"label": "Weather", "value": "weather_code"},
         ],
     },
     {
