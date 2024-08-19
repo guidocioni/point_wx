@@ -17,10 +17,12 @@ from io import StringIO
         State("locations-list", "data"),
         State("location-selected", "data"),
         State("models-selection-vertical", "value"),
+        State("from-now-switch", "checked"),
+        State("forecast-days", "value"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model):
+def generate_figure(n_clicks, locations, location, model, from_now_, days_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -33,6 +35,8 @@ def generate_figure(n_clicks, locations, location, model):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
+            from_now=from_now_,
+            forecast_days=days_
         )
 
         loc_label = location[0]["label"].split("|")[0] + (

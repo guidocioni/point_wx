@@ -6,28 +6,40 @@ from utils.settings import ENSEMBLE_MODELS
 opts_selector = dbc.Card(
     [
         dmc.Select(
-            label='Model',
+            label="Model",
             id="models-selection",
             data=ENSEMBLE_MODELS,
             value="icon_seamless",
             persistence="true",
             className="mb-2",
-            allowDeselect=False
+            allowDeselect=False,
         ),
-        dmc.Switch(
-            id="clima-switch",
-            checked=False,
-            onLabel="ON",
-            offLabel="OFF",
-            label='Climatology',
-            className="mb-2",
-            size="md",
-            labelPosition='left'
-            ),
+        dmc.Group(
+            children=[
+                dmc.Switch(
+                    id="clima-switch",
+                    checked=False,
+                    onLabel="ON",
+                    offLabel="OFF",
+                    label="Climatology",
+                    size="sm",
+                    labelPosition="left",
+                ),
+                dmc.Switch(
+                    id="from-now-switch",
+                    checked=True,
+                    onLabel="ON",
+                    offLabel="OFF",
+                    label="From now on",
+                    size="sm",
+                    labelPosition="left",
+                ),
+            ]
+        ),
         dbc.Button(
             "Submit",
             id={"type": "submit-button", "index": "ensemble"},
-            className="col-12",
+            className="mt-2 col-12",
             size="md",
             disabled=True,
         ),

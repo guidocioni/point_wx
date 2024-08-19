@@ -21,10 +21,11 @@ from io import StringIO
         State("location-selected", "data"),
         State("models-selection", "value"),
         State("clima-switch", "checked"),
+        State("from-now-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, clima_):
+def generate_figure(n_clicks, locations, location, model, clima_, from_now_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -38,18 +39,17 @@ def generate_figure(n_clicks, locations, location, model, clima_):
             longitude=loc["longitude"].item(),
             model=model,
             decimate=True,
-            from_now=True,
+            from_now=from_now_,
             variables='temperature_2m,temperature_850hPa,rain,snowfall,cloudcover'
         )
 
+        clima = None
         if clima_:
             clima = compute_climatology(
                 latitude=loc["latitude"].item(),
                 longitude=loc["longitude"].item(),
                 variables="temperature_2m",
             )
-        else:
-            clima = None
 
         sun = find_suntimes(
             df=data,

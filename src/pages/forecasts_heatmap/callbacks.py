@@ -17,10 +17,12 @@ from io import StringIO
         State("location-selected", "data"),
         State("models-selection-deterministic-heatmap", "value"),
         State("variable-selection-deterministic-heatmap", "value"),
+        State("from-now-switch", "checked"),
+        State("forecast-days", "value"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -34,7 +36,8 @@ def generate_figure(n_clicks, locations, location, model, variable):
             longitude=loc["longitude"].item(),
             model=model,
             variables=variable,
-            from_now=True,
+            from_now=from_now_,
+            forecast_days=days_
         )
 
         loc_label = location[0]["label"].split("|")[0] + (

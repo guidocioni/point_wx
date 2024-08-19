@@ -22,10 +22,32 @@ opts_selector = dbc.Card(
             className="mb-2",
             clearable=False,
             ),
+        dmc.Group(
+            children=[
+                dmc.Switch(
+                    id="decimate-switch",
+                    checked=True,
+                    onLabel="ON",
+                    offLabel="OFF",
+                    label="Decimate",
+                    size="sm",
+                    labelPosition="left",
+                ),
+                dmc.Switch(
+                    id="from-now-switch",
+                    checked=True,
+                    onLabel="ON",
+                    offLabel="OFF",
+                    label="From now on",
+                    size="sm",
+                    labelPosition="left",
+                ),
+            ]
+        ),
         dbc.Button(
             "Submit",
             id={"type": "submit-button", "index": "heatmap"},
-            className="mb-2 col-12",
+            className="mt-2 col-12",
             size="md",
             disabled=True,
         ),

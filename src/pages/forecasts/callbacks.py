@@ -19,10 +19,12 @@ import plotly.io as pio
         State("locations-list", "data"),
         State("location-selected", "data"),
         State("models-selection-deterministic", "value"),
+        State("from-now-switch", "checked"),
+        State("forecast-days", "value"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, models):
+def generate_figure(n_clicks, locations, location, models, from_now_, days_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -35,7 +37,8 @@ def generate_figure(n_clicks, locations, location, models):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=",".join(models),
-            forecast_days=8,
+            forecast_days=days_,
+            from_now=from_now_,
             variables='temperature_2m,precipitation,snowfall,windgusts_10m,cloudcover,winddirection_10m'
         )
 

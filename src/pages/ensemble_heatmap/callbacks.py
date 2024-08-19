@@ -18,10 +18,12 @@ from io import StringIO
         State("location-selected", "data"),
         State("models-selection-heatmap", "value"),
         State("variable-selection-heatmap", "value"),
+        State("from-now-switch", "checked"),
+        State("decimate-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, decimate_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -39,8 +41,8 @@ def generate_figure(n_clicks, locations, location, model, variable):
             longitude=loc["longitude"].item(),
             model=model,
             variables=variable,
-            decimate=True,
-            from_now=True,
+            decimate=decimate_,
+            from_now=from_now_,
         )
 
         loc_label = location[0]["label"].split("|")[0] + (
