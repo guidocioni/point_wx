@@ -134,8 +134,8 @@ tools = [
         "function": {
             "name": "get_radar_data",
             "description": (
-                "Get radar-based estimation of precipitation for locations that are in Germany. "
-                "The Response is a JSON containing array of objects with time and estimated precipitation (mm/h) for the next two hours"
+                "Radar-based nowcasting of precipitation up to 2 hours from now for locations that are in Germany. "
+                "The Response is a JSON containing array of objects with time and estimated precipitation (mm/h) every 15 minutes."
             ),
             "parameters": {
                 "type": "object",
@@ -164,7 +164,7 @@ def get_deterministic_forecast(location, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
         "longitude": location["longitude"],
-        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,is_day,uv_index,temperature_850hPa",
+        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,is_day,uv_index,temperature_850hPa",
         "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,is_day",
         "timezone": "auto",
         "models": "best_match",
