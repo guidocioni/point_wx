@@ -21,8 +21,9 @@ def make_heatmap(df, var, title=None):
     else:
         cmap = 'RdBu_r'
 
+    columns_regex = rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$'
     fig = px.imshow(
-        df.loc[:, df.columns.str.contains(var)].T,
+        df.loc[:, df.columns.str.match(columns_regex)].T,
         x=df['time'],
         text_auto=True,
         aspect='auto',

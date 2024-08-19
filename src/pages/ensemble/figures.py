@@ -8,7 +8,8 @@ from utils.custom_logger import logging, time_this_func
 
 
 def make_boxplot_timeseries(df, var, clima=None):
-    tmp = df.loc[:, df.columns.str.contains(f"{var}|time")].set_index("time")
+    columns_regex = rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$|time'
+    tmp = df.loc[:, df.columns.str.match(columns_regex)].set_index("time")
     traces = []
     for index, row in tmp.iterrows():
         traces.append(
@@ -47,7 +48,8 @@ def make_boxplot_timeseries(df, var, clima=None):
 
 def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
     traces = []
-    for col in df.columns[df.columns.str.contains(var)]:
+    columns_regex = rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$'
+    for col in df.columns[df.columns.str.match(columns_regex)]:
         traces.append(
             go.Scattergl(
                 x=df.loc[
@@ -66,7 +68,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
                 showlegend=False,
             ),
         )
-    for col in df.columns[df.columns.str.contains(var)]:
+    for col in df.columns[df.columns.str.match(columns_regex)]:
         traces.append(
             go.Scattergl(
                 x=df.loc[
@@ -88,7 +90,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
     traces.append(
         go.Scattergl(
             x=df.loc[:, "time"],
-            y=df.loc[:, df.columns.str.contains(var)].min(axis=1),
+            y=df.loc[:, df.columns.str.match(columns_regex)].min(axis=1),
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             hoverinfo="skip",
@@ -98,7 +100,7 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
     traces.append(
         go.Scattergl(
             x=df.loc[:, "time"],
-            y=df.loc[:, df.columns.str.contains(var)].max(axis=1),
+            y=df.loc[:, df.columns.str.match(columns_regex)].max(axis=1),
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             fillcolor="rgba(0, 0, 0, 0.1)",
@@ -134,7 +136,8 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
 
 
 def make_scatterplot_timeseries(df, var):
-    df[f"{var}_mean"] = df.iloc[:, df.columns.str.contains(var)].mean(axis=1)
+    columns_regex = rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$'
+    df[f"{var}_mean"] = df.loc[:, df.columns.str.match(columns_regex)].mean(axis=1)
     traces = []
     # for col in df.columns[df.columns.str.contains(var)]:
     #     traces.append(
@@ -161,7 +164,7 @@ def make_scatterplot_timeseries(df, var):
         return bin_percentages
 
     # Apply the function to each row
-    bin_percentages_df = df.iloc[:, df.columns.str.contains(var)].apply(
+    bin_percentages_df = df.loc[:, df.columns.str.match(columns_regex)].apply(
         lambda row: compute_bin_percentages(row, bins), axis=1, result_type="expand"
     )
     traces.append(
@@ -191,15 +194,16 @@ def make_scatterplot_timeseries(df, var):
 
 
 def make_barplot_timeseries(df, var, color="cadetblue"):
-    # Do some pre-processing on the precipitation input
-    members = len(df.iloc[:, df.columns.str.contains(var)].columns)
+    columns_regex = rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$'
+    # Do some pre-processing on the input
+    members = len(df.loc[:, df.columns.str.match(columns_regex)].columns)
 
     df[f"{var}_prob"] = (
-        ((df.iloc[:, df.columns.str.contains(var)] >= 0.1).sum(axis=1) / members)
+        ((df.iloc[:, df.columns.str.match(columns_regex)] >= 0.1).sum(axis=1) / members)
         * 100.0
     ).astype(int)
 
-    df[f"{var}_mean"] = df.iloc[:, df.columns.str.contains(var) & ~df.columns.str.contains('_prob')].mean(axis=1)
+    df[f"{var}_mean"] = df.iloc[:, df.columns.str.match(columns_regex)].mean(axis=1)
 
     df.loc[df[f"{var}_prob"] < 5, [f"{var}_prob", f"{var}_mean"]] = np.nan
 
@@ -221,10 +225,11 @@ def make_barplot_timeseries(df, var, color="cadetblue"):
 
 
 def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
+    columns_regex = r'wind_direction$|wind_direction_member(0[1-9]|[1-9][0-9])$'
     timeSpan = df.time.iloc[-1] - df.time.iloc[0]
     rule = int((timeSpan.total_seconds() / 3600.0) / n_partitions)
     subset = df.resample(str(rule) + "H", on="time").first()
-    subset = subset.loc[:, subset.columns.str.contains("wind_direction")]
+    subset = subset.loc[:, subset.columns.str.match(columns_regex)]
 
     out = []
     for i, row in subset.iterrows():
@@ -266,14 +271,14 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     # traces_temp = make_boxplot_timeseries(data, 'temperature_2m', clima)
     height_graph = 0.0
     subplot_title = ""
-    if len(data.loc[:, data.columns.str.contains("temperature_850hPa")].dropna() > 0):
+    if len(data.loc[:, data.columns.str.match(r'temperature_850hPa$|temperature_850hPa_member(0[1-9]|[1-9][0-9])$')].dropna() > 0):
         traces_temp_850 = make_lineplot_timeseries(
             data, "temperature_850hPa", break_hours="0h"
         )
         height_graph = 0.4
         subplot_title = "<b>850hPa Temp"
     trace_rain = make_barplot_timeseries(data, "rain", color="cadetblue")
-    if data.loc[:, data.columns.str.contains("snowfall")].max().max() >= 0.1:
+    if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
         trace_snow = make_barplot_timeseries(data, "snowfall", color="rebeccapurple")
     traces_clouds = make_scatterplot_timeseries(data, "cloudcover")
 
@@ -316,11 +321,11 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
 
     for trace_temp in traces_temp:
         fig.add_trace(trace_temp, row=1, col=1)
-    if len(data.loc[:, data.columns.str.contains("temperature_850hPa")].dropna() > 0):
+    if len(data.loc[:, data.columns.str.match(r'temperature_850hPa$|temperature_850hPa_member(0[1-9]|[1-9][0-9])$')].dropna() > 0):
         for trace_temp_850 in traces_temp_850:
             fig.add_trace(trace_temp_850, row=2, col=1)
     fig.add_trace(trace_rain, row=3, col=1)
-    if data.loc[:, data.columns.str.contains("snowfall")].max().max() >= 0.1:
+    if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
         fig.add_trace(trace_snow, row=3, col=1)
     for trace_clouds in traces_clouds:
         fig.add_trace(trace_clouds, row=4, col=1)
