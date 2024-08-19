@@ -19,10 +19,11 @@ from io import StringIO
         State("variable-selection-deterministic-heatmap", "value"),
         State("from-now-switch", "checked"),
         State("forecast-days", "value"),
+        State("minutely-15-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, minutes_15_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -37,7 +38,8 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             model=model,
             variables=variable,
             from_now=from_now_,
-            forecast_days=days_
+            forecast_days=days_,
+            minutes_15=minutes_15_
         )
 
         loc_label = location[0]["label"].split("|")[0] + (

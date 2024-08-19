@@ -42,10 +42,10 @@ def get_locations(name, count=10, language='en'):
 
     resp = make_request(
         "https://geocoding-api.open-meteo.com/v1/search",
-        payload)
+        payload).json()
 
-    if 'results' in resp.json():
-        data = pd.DataFrame.from_dict(resp.json()['results'])
+    if 'results' in resp:
+        data = pd.DataFrame.from_dict(resp['results'])
         data.loc[data['elevation'] == 9999, 'elevation'] = np.nan
     else:
         data = pd.DataFrame()
@@ -67,10 +67,10 @@ def get_elevation(latitude=53.55, longitude=9.99):
 
     resp = make_request(
         "https://api.open-meteo.com/v1/elevation",
-        payload)
+        payload).json()
 
-    if 'elevation' in resp.json():
-        return resp.json()['elevation'][0]
+    if 'elevation' in resp:
+        return resp['elevation'][0]
     else:
         return None
 
@@ -85,11 +85,12 @@ def get_forecast_data(latitude=53.55,
                       from_now=True,
                       past_days=None,
                       start_date=None,
-                      end_date=None):
+                      end_date=None,
+                      minutes_15=False):
     payload = {
         "latitude": latitude,
         "longitude": longitude,
-        "hourly": variables,
+        "hourly" if not minutes_15 else "minutely_15": variables,
         "timezone": timezone,
         "models": model,
     }
@@ -105,11 +106,11 @@ def get_forecast_data(latitude=53.55,
 
     resp = make_request(
         "https://api.open-meteo.com/v1/forecast",
-        payload)
+        payload).json()
 
-    data = pd.DataFrame.from_dict(resp.json()['hourly'])
+    data = pd.DataFrame.from_dict(resp["hourly" if not minutes_15 else "minutely_15"])
     data['time'] = pd.to_datetime(
-        data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
+        data['time']).dt.tz_localize(resp['timezone'], ambiguous='NaT', nonexistent='NaT')
 
     data = data.dropna(subset=data.columns[data.columns != 'time'],
                        how='all')
@@ -118,7 +119,7 @@ def get_forecast_data(latitude=53.55,
         data = data[
             data.time
             >= (pd.to_datetime("now", utc=True) - pd.to_timedelta("1hour"))
-            .tz_convert(resp.json()["timezone"])
+            .tz_convert(resp["timezone"])
             .floor("h")
         ]
 
@@ -152,7 +153,7 @@ def get_forecast_data(latitude=53.55,
 
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+    data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
 
     return data
@@ -238,11 +239,11 @@ def get_forecast_daily_data(latitude=53.55,
 
     resp = make_request(
         "https://api.open-meteo.com/v1/forecast",
-        payload)
+        payload).json()
 
-    data = pd.DataFrame.from_dict(resp.json()['daily'])
+    data = pd.DataFrame.from_dict(resp['daily'])
     data['time'] = pd.to_datetime(
-        data['time']).dt.tz_localize(resp.json()['timezone'], ambiguous='NaT', nonexistent='NaT')
+        data['time']).dt.tz_localize(resp['timezone'], ambiguous='NaT', nonexistent='NaT')
     
     # Units conversion
     for col in data.columns[data.columns.str.contains('snowfall_sum')]:
@@ -251,7 +252,7 @@ def get_forecast_daily_data(latitude=53.55,
         data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+    data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
 
     return data
@@ -306,11 +307,11 @@ def get_ensemble_data(
         "forecast_days": forecast_days,
     }
 
-    resp = make_request("https://ensemble-api.open-meteo.com/v1/ensemble", payload)
+    resp = make_request("https://ensemble-api.open-meteo.com/v1/ensemble", payload).json()
 
-    data = pd.DataFrame.from_dict(resp.json()["hourly"])
+    data = pd.DataFrame.from_dict(resp["hourly"])
     data["time"] = pd.to_datetime(data["time"]).dt.tz_localize(
-        resp.json()["timezone"], ambiguous="NaT", nonexistent="NaT"
+        resp["timezone"], ambiguous="NaT", nonexistent="NaT"
     )
 
     data = data.dropna(subset=data.columns[data.columns != "time"], how="all")
@@ -320,7 +321,7 @@ def get_ensemble_data(
         data = data[
             data.time
             >= (pd.to_datetime("now", utc=True) - pd.to_timedelta('1hour'))
-            .tz_convert(resp.json()["timezone"])
+            .tz_convert(resp["timezone"])
             .floor("h")
         ]
 
@@ -546,7 +547,7 @@ def get_ensemble_data(
 
     # Add metadata (experimental)
     data.attrs = {
-        x: resp.json()[x] for x in resp.json() if x not in ["hourly", "daily"]
+        x: resp[x] for x in resp if x not in ["hourly", "daily"]
     }
 
     return data
@@ -578,9 +579,9 @@ def get_historical_data(latitude=53.55,
 
     resp = make_request(
         "https://archive-api.open-meteo.com/v1/archive",
-        payload)
+        payload).json()
 
-    data = pd.DataFrame.from_dict(resp.json()['hourly'])
+    data = pd.DataFrame.from_dict(resp['hourly'])
     data['time'] = pd.to_datetime(
         data['time'], format='%Y-%m-%dT%H:%M')
 
@@ -592,7 +593,7 @@ def get_historical_data(latitude=53.55,
         data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+    data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
 
     return data
@@ -621,9 +622,9 @@ def get_historical_daily_data(latitude=53.55,
 
     resp = make_request(
         "https://archive-api.open-meteo.com/v1/archive",
-        payload)
+        payload).json()
 
-    data = pd.DataFrame.from_dict(resp.json()['daily'])
+    data = pd.DataFrame.from_dict(resp['daily'])
     data['time'] = pd.to_datetime(data['time'])
 
     data = data.dropna()
@@ -632,7 +633,7 @@ def get_historical_daily_data(latitude=53.55,
         data[col] = data[col] / 3600.  # s to hrs
 
     # Add metadata (experimental)
-    data.attrs = {x: resp.json()[x] for x in resp.json() if x not in [
+    data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
 
     return data

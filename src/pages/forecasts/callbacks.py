@@ -21,10 +21,11 @@ import plotly.io as pio
         State("models-selection-deterministic", "value"),
         State("from-now-switch", "checked"),
         State("forecast-days", "value"),
+        State("minutely-15-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, models, from_now_, days_):
+def generate_figure(n_clicks, locations, location, models, from_now_, days_, minutes_15_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -39,7 +40,8 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_):
             model=",".join(models),
             forecast_days=days_,
             from_now=from_now_,
-            variables='temperature_2m,precipitation,snowfall,windgusts_10m,cloudcover,winddirection_10m'
+            variables='temperature_2m,precipitation,snowfall,windgusts_10m,cloudcover,winddirection_10m',
+            minutes_15=minutes_15_
         )
 
         sun = find_suntimes(
@@ -77,3 +79,18 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_):
             "An error occurred when processing the data",
             True,  # Error message
         )
+
+
+@callback(
+    [
+        Output("forecast-days", "value"),
+        Output("forecast-days", "max"),
+    ],
+        Input("minutely-15-switch", "checked"),
+    prevent_initial_call=True,
+)
+def constrain_days_minutely_15(checked):
+    if checked:
+        return 3, 3
+    else:
+        return no_update, 15
