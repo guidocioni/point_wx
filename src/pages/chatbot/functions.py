@@ -1,8 +1,6 @@
 """
 This file contains a wrapper for all functions that are exposed to the models automatically
 throuh tools.
-We can't use the functions directly because we may need to change something before passing the results
-or settings some parameters.
 """
 
 from utils.openmeteo_api import make_request, compute_climatology, r
@@ -85,31 +83,12 @@ tools = [
         },
         "strict": True,
     },
-    # {
-    #     "type": "function",
-    #     "function": {
-    #         "name": "get_current_datetime",
-    #         "description": "Get the current date and time by providing the local timezone",
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {
-    #                 "timezone": {
-    #                     "type": "string",
-    #                     "description": "The local timezone to get the date for. It needs to be in the pytz format, so e.g. Europe/Berlin",
-    #                 },
-    #             },
-    #             "required": ["timezone"],
-    #             "additionalProperties": False,
-    #         },
-    #     },
-    #     "strict": True,
-    # },
     {
         "type": "function",
         "function": {
             "name": "get_climatology",
             "description": (
-                "Get the daily climatological data (data averaged over a 30 years period) to compare observed values to the climatological average. "
+                "Get the daily climatological data (data averaged over a 30 years period). "
                 "The output of this function will be a JSON exported from a pandas dataframe using the orient='records' option. In order to identify the day of the year use the 'doy' attribute, which was obtained from the date by formatting as '%m%d'. Note that there is no year in this date, as these data are multi-year average. Here is an example of a response: [{'doy': '0101','temperature_2m_max': 3.6,'temperature_2m_min':-0.6,'sunshine_duration': 3.0,'precipitation_sum': 1.5,'rain_sum': 1.4,'snowfall_sum':0.1}] means that on the first of January ('0101') the expected daily maximum temperature is 3.6°C and the daily sum of precipitation is 1.5 mm."
             ),
             "parameters": {

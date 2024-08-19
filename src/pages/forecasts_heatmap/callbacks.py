@@ -41,7 +41,7 @@ def generate_figure(n_clicks, locations, location, model, variable):
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
             f"<sup>Variable = <b>{variable}</b> | "
-            f"Models = <b>{", ".join(model)}</b></sup>"
+            f"Models = <b>{', '.join(model)}</b></sup>"
         )
         return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
 

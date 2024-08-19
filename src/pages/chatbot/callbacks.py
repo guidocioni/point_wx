@@ -138,16 +138,16 @@ def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
         handle_tool_calls(response, messages, chat_history, client_data["session_id"])
     elif finish_reason == "stop":
         # Handle normal response (model responded directly to the user)
-        handle_normal_response(response, messages, chat_history)
+        handle_normal_response(response, messages, chat_history, client_data["session_id"])
     elif finish_reason == "length":
         # Handle the case where the conversation was too long
-        handle_length_error(response, client_data["session_id"])
+        handle_length_error(response, messages, chat_history, client_data["session_id"])
     elif finish_reason == "content_filter":
         # Handle the case where the content was filtered
-        handle_content_filter_error(response, client_data["session_id"])
+        handle_content_filter_error(response, messages, chat_history, client_data["session_id"])
     else:
         # Handle unexpected cases
-        handle_unexpected_case(response, client_data["session_id"])
+        handle_unexpected_case(response, messages, chat_history, client_data["session_id"])
 
     store_data = {"chat_history": chat_history, "messages": messages}
 
@@ -155,10 +155,9 @@ def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
 
 
 def handle_tool_calls(response, messages, chat_history, session_id):
-    tool_calls = response.choices[
-        0
-    ].message.tool_calls  # This is a list of function calls
-    logging.info(response.choices)
+    tool_calls = response.choices[0].message.tool_calls
+    # With the new API we need to include a message including which tools have been called,
+    # before including the results of the tool calls. I haven't found a better way of doing this
     messages.append(
         {
             "role": "assistant",
@@ -191,6 +190,9 @@ def handle_tool_calls(response, messages, chat_history, session_id):
             logging.error(
                 f"Chat SUBMIT => Session {session_id}: Function {function_name} is not defined or not found in tools."
             )
+            messages.append({"role": "assistant", "content": "There was an error calling the function (function not found in tools), please report this to the author"})
+            chat_history.append({"role": "assistant", "content": "There was an error calling the function (function not found in tools), please report this to the author"})
+            return
         # Call the function with the extracted arguments
         try:
             logging.info(
@@ -201,14 +203,11 @@ def handle_tool_calls(response, messages, chat_history, session_id):
             logging.error(
                 f"Chat SUBMIT => Session {session_id}: Error calling function {function_name}: {str(e)}"
             )
-            function_result = {"error": str(e)}
+            messages.append({"role": "assistant", "content": "There was an error calling the function, please report this to the author"})
+            chat_history.append({"role": "assistant", "content": "There was an error calling the function, please report this to the author"})
+            return
 
         # Add the function result back into the conversation in response to the tool call
-        # messages.append({
-        #     "role": "function",
-        #     "name": function_name,
-        #     "content": json.dumps(function_result)
-        # })
         messages.append(
             {
                 "role": "tool",
@@ -223,37 +222,42 @@ def handle_tool_calls(response, messages, chat_history, session_id):
         messages=messages,
         max_tokens=250,
         temperature=0.9,
-        # tools=tools,
     )
 
     # Handle the model's response after tool usage
-    handle_normal_response(response, messages, chat_history)
+    handle_normal_response(response, messages, chat_history, session_id)
 
 
-def handle_normal_response(response, messages, chat_history):
+def handle_normal_response(response, messages, chat_history, session_id):
     model_output = response.choices[0].message.content.strip()
     # A normal response should go both in the hidden and frontend history
     messages.append({"role": "assistant", "content": model_output})
     chat_history.append({"role": "assistant", "content": model_output})
 
 
-def handle_length_error(response, session_id):
+def handle_length_error(response, messages, chat_history, session_id):
     # Handle the case where the conversation was too long for the context window
     logging.error(
         f"Chat SUBMIT => Session {session_id}: The conversation was too long for the context window."
     )
+    messages.append({"role": "assistant", "content": "Error: The conversation was too long for the context window, please retry"})
+    chat_history.append({"role": "assistant", "content": "Error: The conversation was too long for the context window, please retry"})
 
 
-def handle_content_filter_error(response, session_id):
+def handle_content_filter_error(response, messages, chat_history, session_id):
     # Handle the case where content was filtered
     logging.error(
         f"Chat SUBMIT => Session {session_id}: The content was filtered due to policy violations."
     )
+    messages.append({"role": "assistant", "content": "Error: The content was filtered due to policy violations, please retry"})
+    chat_history.append({"role": "assistant", "content": "Error: The content was filtered due to policy violations, please retry"})
 
 
-def handle_unexpected_case(response, session_id):
+def handle_unexpected_case(response, messages, chat_history, session_id):
     # Handle any unexpected cases
     logging.error(
         f"Chat SUBMIT => Session {session_id}: Unexpected finish_reason:",
         response.choices[0].finish_reason,
     )
+    messages.append({"role": "assistant", "content": "Error: Unexpected finish_reason, please try again"})
+    chat_history.append({"role": "assistant", "content": "Error: Unexpected finish_reason, please try again"})
