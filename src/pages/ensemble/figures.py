@@ -199,7 +199,7 @@ def make_barplot_timeseries(df, var, color="cadetblue"):
         * 100.0
     ).astype(int)
 
-    df[f"{var}_mean"] = df.iloc[:, df.columns.str.contains(var)].mean(axis=1)
+    df[f"{var}_mean"] = df.iloc[:, df.columns.str.contains(var) & ~df.columns.str.contains('_prob')].mean(axis=1)
 
     df.loc[df[f"{var}_prob"] < 5, [f"{var}_prob", f"{var}_mean"]] = np.nan
 
