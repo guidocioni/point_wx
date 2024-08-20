@@ -17,35 +17,57 @@ opts_selector = dbc.Card(
         ),
         dmc.Group(
             children=[
-                dmc.Switch(
-                    id="from-now-switch",
-                    checked=True,
-                    onLabel="ON",
-                    offLabel="OFF",
-                    label="From now on",
-                    size="sm",
-                    labelPosition="left",
+                dmc.Tooltip(
+                    label="When selected the data will be subset "
+                    " in time to start from the closest hour to now."
+                    " Otherwise they will start from midnight.",
+                    multiline=True,
+                    w=200,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="from-now-switch",
+                        checked=True,
+                        onLabel="ON",
+                        offLabel="OFF",
+                        label="From now on",
+                        size="sm",
+                        labelPosition="left",
+                    ),
                 ),
-                dmc.Switch(
-                    id="minutely-15-switch",
-                    checked=False,
-                    onLabel="ON",
-                    offLabel="OFF",
-                    label="15 mins",
-                    size="sm",
-                    labelPosition="left",
+                dmc.Tooltip(
+                    label="When selected, data every 15 minutes (instead than every hour) will be fetched."
+                    " Note that not all models support this, so the resulting "
+                    " data may be just interpolated in time. Refer to the openmeteo documentation for details.",
+                    multiline=True,
+                    w=200,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="minutely-15-switch",
+                        checked=False,
+                        onLabel="ON",
+                        offLabel="OFF",
+                        label="15 mins",
+                        size="sm",
+                        labelPosition="left",
+                    ),
                 ),
-                dmc.NumberInput(
-                    id="forecast-days",
-                    leftSection='Days',
-                    leftSectionWidth=60,
-                    label="",
-                    min=1,
-                    max=15,
-                    step=1,
-                    value=8,
-                    size='xs',
-                    w=90,
+                dmc.Tooltip(
+                    label="How many forecast days to fetch and plot. For 15 minutes data the maximum is 3.",
+                    multiline=True,
+                    w=200,
+                    withArrow=True,
+                    children=dmc.NumberInput(
+                        id="forecast-days",
+                        leftSection="Days",
+                        leftSectionWidth=60,
+                        label="",
+                        min=1,
+                        max=15,
+                        step=1,
+                        value=8,
+                        size="xs",
+                        w=90,
+                    ),
                 ),
             ]
         ),

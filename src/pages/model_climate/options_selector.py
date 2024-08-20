@@ -23,6 +23,14 @@ opts_selector = dbc.Card(
             className="mb-2",
             type='range'
         ),
+        dbc.Tooltip(
+            "Data in this date range will be used for the plots."
+            " If you want to show typical conditions choose a 30 years period"
+            " otherwise you can select any period you want."
+            " Note that at least one month of data is needed.",
+            placement='top',
+            target="date-range-climate",
+        ),
         dbc.Button(
             "Submit",
             id={"type": "submit-button", "index": "monthly"},

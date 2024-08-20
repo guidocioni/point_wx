@@ -16,26 +16,40 @@ opts_selector = dbc.Card(
         ),
         dmc.Group(
             children=[
-                dmc.Switch(
-                    id="from-now-switch",
-                    checked=True,
-                    onLabel="ON",
-                    offLabel="OFF",
-                    label="From now on",
-                    size="sm",
-                    labelPosition="left",
+                dmc.Tooltip(
+                    label="When selected the data will be subset "
+                    " in time to start from the closest hour to now."
+                    " Otherwise they will start from midnight.",
+                    multiline=True,
+                    w=200,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="from-now-switch",
+                        checked=True,
+                        onLabel="ON",
+                        offLabel="OFF",
+                        label="From now on",
+                        size="sm",
+                        labelPosition="left",
+                    ),
                 ),
-                dmc.NumberInput(
-                    id="forecast-days",
-                    leftSection='Forecast Days',
-                    leftSectionWidth=120,
-                    label="",
-                    min=1,
-                    max=15,
-                    step=1,
-                    value=8,
-                    size='xs',
-                    w=170,
+                dmc.Tooltip(
+                    label="How many forecast days to fetch and plot.",
+                    multiline=True,
+                    w=200,
+                    withArrow=True,
+                    children=dmc.NumberInput(
+                        id="forecast-days",
+                        leftSection="Days",
+                        leftSectionWidth=60,
+                        label="",
+                        min=1,
+                        max=15,
+                        step=1,
+                        value=8,
+                        size="xs",
+                        w=90,
+                    ),
                 ),
             ]
         ),

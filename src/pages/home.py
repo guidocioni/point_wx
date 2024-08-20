@@ -9,7 +9,7 @@ layout = html.Div(
         html.H3("Introduction"),
         html.P(
             [
-                "This application lets you explore the weather (WX) for every city in the World!",
+                "This application lets you explore the weather (wx) for every city (point) in the World!",
                 "You can decide whether to explore forecasts for the next days or "
                 "dive into the history",
             ],
@@ -19,20 +19,13 @@ layout = html.Div(
         html.H3("How to Use"),
         html.Div(
             [
-                html.P("There are many different pages to explore different aspects. "),
+                html.P("There are many different pages to explore different aspects. "
+                       "Every page has tooltips and an info box at the top that should guide you in the right direction."),
                 html.P(
-                    [
-                        "First of all type in the location you want to explore, then press on Search. ",
-                        "You will get a list of results: choose the one that you want. ",
-                    ]
+                        "To select a location either use the search box, geolocation or just click on the map. "
+                        "Then, after selecting the other parameters, press on submit. "
+                        "Remember to press again on submit to update the results if you change something!"
                 ),
-                html.P(
-                    [
-                        "Afterwards you just have to choose the different parameters on the other box and press on Submit. ",
-                        "Computation can take a while, although many results are cached. ",
-                    ]
-                ),
-                html.P("Remember to always press on submit if you change something!"),
             ],
             className="mb-2",
         ),
@@ -42,8 +35,8 @@ layout = html.Div(
             [
                 dbc.Alert(
                     (
-                        "This app will also work on mobile devices, "
-                        "however plots may not be optimized for small displays"
+                        "This app will work also on mobile devices, "
+                        "however plots may not be optimized for small displays."
                     ),
                     color="info",
                 ),

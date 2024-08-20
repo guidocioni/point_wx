@@ -27,12 +27,12 @@ layout = html.Div(
                             dmc.AccordionPanel(
                                 dmc.Text(
                                     [
-                                        "A simple meteogram showing daily maximum/minimum temperatures, and weather.",
+                                        "A simple meteogram showing daily maximum/minimum temperatures, and weather (icons).",
                                         html.Br(),
-                                        "The first plot shows the temepratures extreme, the spread (gray shading)",
-                                        "The bottom plot shows the sunshine hours, precipitation amount, probability and range.",
+                                        "The first plot shows the average minimum and maximum temperatures (lines), and the extrema (shading). ",
+                                        "The bottom plot shows the sunshine hours (yellow bar), precipitation amount (blue bar), probability (text inside blue bar) and range (vertical line).",
                                         html.Br(),
-                                        "The diamond symbols represent the 1991-2020 climatology"
+                                        "The diamond symbols represent the 1991-2020 climatology for the same location."
                                     ]
                                 ),
                             ),

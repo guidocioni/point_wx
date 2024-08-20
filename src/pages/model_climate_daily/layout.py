@@ -24,7 +24,11 @@ layout = html.Div(
                         dmc.AccordionPanel(
                             dmc.Text(
                                 [
-                                    "Here you can compare the daily typical climate to a certain year evolution. ",
+                                    "Here you can compare the temperature and precipitation behaviour of a certain year ",
+                                    "with respect to the 1991-2020 climatology. Shown are the average temperature and the yearly accumulated precipitation ",
+                                    "starting on the first of January.",
+                                    html.Br(),
+                                    "In the temperature plot the current year is shown by the 'invisibile' line that makes up the 'hotter' and 'colder' shadings.",
                                     html.Br(),
                                     "The historical data starts from 1981.",
                                 ]

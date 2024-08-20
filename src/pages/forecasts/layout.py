@@ -25,8 +25,8 @@ layout = html.Div(
                             dmc.AccordionPanel(
                                 dmc.Text(
                                     [
-                                        "In this page deterministic forecasts are shown. These are models that do not have different "
-                                        "scenarios but only a single one. On the flip side you get higher spatial resolution and thus more"
+                                        "In this page deterministic forecasts are shown. These are models that do not have many "
+                                        "scenarios (members) but only a single one. On the flip side you get higher spatial resolution and thus more "
                                         "details in both space and time.",
                                         html.Br(),
                                         "Note that you can compare different models at the same time to see the spread in the forecast.",

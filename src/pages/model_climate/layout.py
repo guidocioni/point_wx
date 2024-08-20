@@ -23,20 +23,20 @@ layout = html.Div(
             dmc.Accordion(
                 children=[
                     dmc.AccordionItem(
-                        value='help',
+                        value="help",
                         children=[
-                            dmc.AccordionControl("click to show",
-                                                 icon=DashIconify(icon="ion:information",width=30),),
+                            dmc.AccordionControl(
+                                "click to show",
+                                icon=DashIconify(icon="ion:information", width=30),
+                            ),
                             dmc.AccordionPanel(
                                 dmc.Text(
-                            [
-                                "In this page you can reconstruct the climate of a certain area with high detail. ",
-                                html.Br(),
-                                "Data is based on reanalysis for the period 1991-2020",
-                                html.Br(),
-                                "Notice that if results are cached but, if the cliamte for a certain place has not been "
-                                "computed before, it will take a while (15 seconds) before results appear",
-                            ]
+                                    [
+                                        "In this page you can reconstruct the monthly climate of a certain location with high detail. ",
+                                        "Included are some statistics regarding temperature, precipitation, snow, cloud cover and winds. ",
+                                        "You can select a 30 years period (e.g. 1991-2020) to have something similar to a climatology, "
+                                        "otherwise any period longer than a month will work."
+                                    ]
                                 ),
                             ),
                         ],

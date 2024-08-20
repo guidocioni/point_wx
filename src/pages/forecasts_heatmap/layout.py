@@ -25,6 +25,9 @@ layout = html.Div(
                             dmc.AccordionPanel(
                                 dmc.Text(
                                     [
+                                        "In this page you can compare the same variable across different deterministic models.",
+                                        html.Br(),
+                                        "The data used is the same as in the deterministic page but here you can focus on a single variable."
                                     ]
                                 ),
                             ),
