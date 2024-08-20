@@ -64,7 +64,7 @@ opts_selector = dbc.Card(
                         min=1,
                         max=15,
                         step=1,
-                        value=8,
+                        value=7,
                         size="xs",
                         w=90,
                     ),

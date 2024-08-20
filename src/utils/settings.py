@@ -191,6 +191,7 @@ DETERMINISTIC_MODELS = [
             {"label": "KNMI Seamless 🇪🇺", "value": "knmi_seamless"},
             {"label": "DMI Seamless 🇪🇺", "value": "dmi_seamless"},
             {"label": "COSMO Seamless 🇪🇺", "value": "arpae_cosmo_seamless"},
+            {"label": "UKMO Seamless 🌐", "value": "ukmo_seamless"},
         ],
     },
     {
@@ -202,6 +203,7 @@ DETERMINISTIC_MODELS = [
             {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
             {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
             {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
+            {"label": "UKMO (🌐, 10km)", "value": "ukmo_global_deterministic_10km"},
             {"label": "GSM (🌐, 55km)", "value": "jma_gsm"},
             {"label": "CMA GRAPES (🌐, 15km)", "value": "cma_grapes_global"},
             {"label": "GEM Global (🌐, 15km)", "value": "gem_global"},
@@ -223,6 +225,7 @@ DETERMINISTIC_MODELS = [
             {"label": "Arpege HD (🇫🇷, 1.5km)", "value": "meteofrance_arome_france_hd"},
             {"label": "COSMO-2I (🇮🇹, 2km)", "value": "arpae_cosmo_2i"},
             {"label": "COSMO-2I-RUC (🇮🇹, 2km)", "value": "arpae_cosmo_2i_ruc"},
+            {"label": "UKMO (🇬🇧, 2km)", "value": "ukmo_uk_deterministic_2km"},
         ],
     },
     {
