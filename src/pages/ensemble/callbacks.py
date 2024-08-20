@@ -22,10 +22,11 @@ from io import StringIO
         State("models-selection", "value"),
         State("clima-switch", "checked"),
         State("from-now-switch", "checked"),
+        State("wind-cloud-plot-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, clima_, from_now_):
+def generate_figure(n_clicks, locations, location, model, clima_, from_now_, clouds_plot_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -40,8 +41,12 @@ def generate_figure(n_clicks, locations, location, model, clima_, from_now_):
             model=model,
             decimate=True,
             from_now=from_now_,
-            variables='temperature_2m,temperature_850hPa,rain,snowfall,cloudcover'
+            variables='temperature_2m,temperature_850hPa,rain,snowfall,cloudcover,wind_speed_10m'
         )
+        if clouds_plot_:
+            additional_plot = 'clouds'
+        else:
+            additional_plot = 'winds'
 
         clima = None
         if clima_:
@@ -65,7 +70,7 @@ def generate_figure(n_clicks, locations, location, model, clima_, from_now_):
         )
 
         return (
-            make_subplot_figure(data, clima, loc_label, sun),
+            make_subplot_figure(data, clima, loc_label, sun, additional_plot),
             # make_barpolar_figure(data),
             None,
             False,  # deactivate error popup

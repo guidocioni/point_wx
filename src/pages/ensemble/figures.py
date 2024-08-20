@@ -155,7 +155,10 @@ def make_scatterplot_timeseries(df, var):
     #         ),
     #     )
     # Define the bins
-    bins = [i for i in range(0, 110, 10)]
+    if var == 'cloudcover':
+        bins = list(np.linspace(0, 100, 11))
+    elif var == 'wind_speed_10m':
+        bins = list(np.linspace(0, df.loc[:, df.columns.str.match(columns_regex)].max().max(), 11))
 
     # Create a function to compute the percentage of values in each bin
     def compute_bin_percentages(row, bins):
@@ -264,7 +267,7 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
     return fig
 
 
-def make_subplot_figure(data, clima=None, title=None, sun=None):
+def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot='clouds'):
     traces_temp = make_lineplot_timeseries(
         data, "temperature_2m", clima, break_hours="12h"
     )
@@ -280,7 +283,12 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     trace_rain = make_barplot_timeseries(data, "rain", color="cadetblue")
     if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
         trace_snow = make_barplot_timeseries(data, "snowfall", color="rebeccapurple")
-    traces_clouds = make_scatterplot_timeseries(data, "cloudcover")
+    if additional_plot == 'clouds':
+        traces_clouds = make_scatterplot_timeseries(data, "cloudcover")
+        additional_title = 'Cloud Cover [%]'
+    elif additional_plot == 'winds':
+        traces_winds = make_scatterplot_timeseries(data, "wind_speed_10m")
+        additional_title = 'Winds [km/h]'
 
     fig = make_subplots(
         rows=4,
@@ -291,7 +299,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
             "<b>2m Temp",
             subplot_title,
             "<b>Rain [mm] | Snow [cm] | Prob. [%]",
-            "<b>Clouds [%]",
+            f"<b>{additional_title}",
         ],
         row_heights=[0.35, height_graph, 0.3, 0.25],
     )
@@ -327,8 +335,12 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
     fig.add_trace(trace_rain, row=3, col=1)
     if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
         fig.add_trace(trace_snow, row=3, col=1)
-    for trace_clouds in traces_clouds:
-        fig.add_trace(trace_clouds, row=4, col=1)
+    if additional_plot == 'clouds':
+        for trace_clouds in traces_clouds:
+            fig.add_trace(trace_clouds, row=4, col=1)
+    elif additional_plot == 'winds':
+        for trace_winds in traces_winds:
+            fig.add_trace(trace_winds, row=4, col=1)
 
     fig.update_layout(
         modebar=dict(orientation="v"),
@@ -419,7 +431,8 @@ def make_subplot_figure(data, clima=None, title=None, sun=None):
         col=1,
         range=[0, max((data["rain_mean"].max()) * 1.5, 1)],
     )
-    fig.update_yaxes(range=[0, 100], row=4, col=1)
+    if additional_plot == 'clouds':
+        fig.update_yaxes(range=[0, 100], row=4, col=1)
     # we need to re-set it here otherwise it only applies to the first plot
     fig.update_yaxes(showgrid=True, gridwidth=4)
     fig.update_xaxes(

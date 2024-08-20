@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import ENSEMBLE_MODELS
+from dash_iconify import DashIconify
 
 
 opts_selector = dbc.Card(
@@ -27,7 +28,7 @@ opts_selector = dbc.Card(
                         checked=False,
                         onLabel="ON",
                         offLabel="OFF",
-                        label="Climatology",
+                        label="Clima",
                         size="sm",
                         labelPosition="left",
                     ),
@@ -44,7 +45,23 @@ opts_selector = dbc.Card(
                         checked=True,
                         onLabel="ON",
                         offLabel="OFF",
-                        label="From now on",
+                        label="From now",
+                        size="sm",
+                        labelPosition="left",
+                    ),
+                ),
+                dmc.Tooltip(
+                    label="Decide what is drawn in the last plot: "
+                    "either cloud cover (default, right) or wind speed (left).",
+                    w=200,
+                    multiline=True,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="wind-cloud-plot-switch",
+                        offLabel=DashIconify(icon="wi:strong-wind", width=30),
+                        onLabel=DashIconify(icon="wi:cloudy", width=30),
+                        checked=True,
+                        label="Plots",
                         size="sm",
                         labelPosition="left",
                     ),
