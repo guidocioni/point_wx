@@ -249,7 +249,6 @@ DETERMINISTIC_VARS = [
             {"label": "2m Temperature", "value": "temperature_2m"},
             {"label": "850hPa Temperature", "value": "temperature_850hPa"},
             {"label": "850hPa Relative Humidity", "value": "relative_humidity_850hPa"},
-            {"label": "850hPa geopotential", "value": "geopotential_850hPa"},
             {"label": "500hPa Temperature", "value": "temperature_500hPa"},
             {"label": "500hPa Relative Humidity", "value": "relative_humidity_500hPa"},
             {"label": "500hPa geopotential", "value": "geopotential_500hPa"},

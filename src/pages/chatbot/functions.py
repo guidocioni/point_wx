@@ -175,7 +175,10 @@ tools = [
 def get_current_datetime(timezone=None):
     if timezone:
         timezone = pytz.timezone(timezone)
-    return datetime.now(timezone).strftime("Today is %d %b %Y and the time is %H:%M:%S")
+    else:
+        # default to UTC if nothing is specified
+        timezone = pytz.timezone('UTC')
+    return datetime.now(timezone).strftime("The current date is %Y-%m-%d (format is %%Y-%%m-%%d), time %H:%M:%S%z (format is %%H:%%M:%%S%%z)")
 
 @cache.memoize(3600)
 def get_deterministic_forecast(location, start_date, end_date):
