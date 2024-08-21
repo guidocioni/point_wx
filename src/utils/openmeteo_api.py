@@ -210,7 +210,7 @@ def get_vertical_data(
     return df, variables, time_axis, vertical_levels, arrs
 
 
-@cache.memoize(1800)
+@cache.memoize(21600)
 def get_forecast_daily_data(latitude=53.55,
                             longitude=9.99,
                             variables="precipitation_sum",
@@ -746,8 +746,7 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     return stats
 
 
-@cache.memoize(86400)
-@time_this_func
+@cache.memoize(3600)
 def compute_yearly_accumulation(latitude=53.55,
                                 longitude=9.99,
                                 model='era5',
@@ -758,13 +757,13 @@ def compute_yearly_accumulation(latitude=53.55,
                                 q3=0.95):
     """Compute cumulative sum of some variable over the year"""
     daily = get_historical_daily_data(
-        latitude=latitude,
-        longitude=longitude,
-        model=model,
-        start_date='1981-01-01',
-        end_date=(pd.to_datetime('now', utc=True) -
-                  pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
-        variables=var)
+            latitude=latitude,
+            longitude=longitude,
+            model=model,
+            start_date='1981-01-01',
+            end_date=(pd.to_datetime('now', utc=True) -
+                    pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+            variables=var)
 
     if year == pd.to_datetime('now', utc=True).year:
         # Add missing dates and forecasts
@@ -773,12 +772,13 @@ def compute_yearly_accumulation(latitude=53.55,
             longitude=longitude,
             variables=var,
             model='ecmwf_ifs025',
-            forecast_days=14,
-            past_days=7)
+            forecast_days=None,
+            start_date=(daily['time'].max() + pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+            end_date=(pd.to_datetime('now', utc=True) + pd.to_timedelta('10 days')).strftime("%Y-%m-%d")
+            ).dropna(subset=[var])
         additional['time'] = additional['time'].dt.tz_localize(
             None, ambiguous='NaT', nonexistent='NaT')
-        additional = additional[additional.time > daily.time.max()]
-        daily = pd.concat([daily, additional])
+        daily = pd.concat([daily, additional]).drop_duplicates(subset=['time']).reset_index(drop=True)
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
@@ -786,27 +786,33 @@ def compute_yearly_accumulation(latitude=53.55,
     daily[f'{var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
         var].transform(lambda x: x.cumsum())
 
-    quantiles = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
-        f'{var}_yearly_acc'].quantile(q=q1).to_frame().rename(columns={f'{var}_yearly_acc': 'q1'})
-    quantiles['q2'] = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
-        f'{var}_yearly_acc'].quantile(q=q2)
-    quantiles['q3'] = daily.groupby([daily.time.dt.day, daily.time.dt.month])[
-        f'{var}_yearly_acc'].quantile(q=q3)
+    # Only compute quantiles on a subset of data
+    # TODO, understand how to do it better
+    period = (daily['time'] >= '1981-01-01') & (daily['time'] <= '2020-12-31')
 
-    quantiles.index.set_names(["day", "month"], inplace=True)
-    quantiles.reset_index(inplace=True)
-    quantiles['dummy_date'] = pd.to_datetime(
-        f'{year}-' + quantiles.month.astype(str) + "-" + quantiles.day.astype(str))
-    quantiles.sort_values(by='dummy_date', inplace=True)
+    quantiles = (
+        daily.loc[period]
+        .groupby([daily.loc[period].time.dt.day, daily.loc[period].time.dt.month])[f'{var}_yearly_acc']
+        .quantile([q1, q2, q3])
+        .unstack()
+        .rename(columns={q1: 'q1', q2: 'q2', q3: 'q3'})
+        .rename_axis(index=['day', 'month'])  # Rename index levels
+        .reset_index()  # Reset index to convert 'day' and 'month' into columns
+        .assign(
+            dummy_date=lambda x: pd.to_datetime(
+                f'{year}-' + x['month'].astype(str) + "-" + x['day'].astype(str)
+            )
+        )
+        .sort_values(by='dummy_date')
+    )
 
     daily = daily[daily.time.dt.year == year].merge(
-        quantiles, left_on='time', right_on='dummy_date', how='right')
+        quantiles, left_on='time', right_on='dummy_date', how='left')
 
     return daily
 
 
-@cache.memoize(86400)
-@time_this_func
+@cache.memoize(3600)
 def compute_yearly_comparison(latitude=53.55,
                               longitude=9.99,
                               var='temperature_2m_mean',
@@ -823,22 +829,26 @@ def compute_yearly_comparison(latitude=53.55,
                   pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
         variables=var)
 
-    # Add missing dates and forecasts
     if year == pd.to_datetime('now', utc=True).year:
+        # Add missing dates and forecasts
         additional = get_forecast_daily_data(
             latitude=latitude,
             longitude=longitude,
             variables=var,
             model='ecmwf_ifs025',
-            forecast_days=14,
-            past_days=7)
+            forecast_days=None,
+            start_date=(daily['time'].max() + pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+            end_date=(pd.to_datetime('now', utc=True) + pd.to_timedelta('10 days')).strftime("%Y-%m-%d")
+            ).drop_duplicates(subset=['time']).reset_index(drop=True).dropna(subset=[var])
         additional['time'] = additional['time'].dt.tz_localize(
             None, ambiguous='NaT', nonexistent='NaT')
-        additional = additional[additional.time > daily.time.max()]
-        daily = pd.concat([daily, additional])
+        daily = pd.concat([daily, additional]).drop_duplicates(subset=['time']).reset_index(drop=True)
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
+
+    # Although the data starts from 1981, we compute the quantiles and mean only over the 1991-2020 period
+    # This is different from what we do for precipitation
 
     daily['doy'] = daily.time.dt.strftime("%m%d")
     clima = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
@@ -851,7 +861,7 @@ def compute_yearly_comparison(latitude=53.55,
     clima['dummy_date'] = pd.to_datetime(
         str(year) + clima.index, format='%Y%m%d')
     daily = daily.merge(clima, right_on='dummy_date',
-                        left_on='time', how='right')
+                        left_on='time', how='right').dropna()
 
     return daily
 

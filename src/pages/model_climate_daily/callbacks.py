@@ -85,6 +85,23 @@ def update_max_date(_):
     return date.today().year, date.today().year
 
 
+# Disable some models
+@callback(
+    [
+        Output("models-selection-climate-daily", "data"),
+    ],
+    Input("year-selection-climate", "id"),
+    State("models-selection-climate-daily", "data")
+)
+def disable_models(_, models):
+    for model in models:
+        if model["value"] in ["ecmwf_ifs", "era5_land"]:
+            model["disabled"] = True
+        else:
+            model["disabled"] = False
+    return [models]
+
+
 clientside_callback(
     """
     function(value) {

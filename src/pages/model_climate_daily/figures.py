@@ -59,7 +59,13 @@ def make_prec_figure(df, year, var, title=None):
             x=pd.to_datetime("now", utc=True),
             line_width=2,
             line_dash="dash",
-            line_color="gray",
+            line_color="rgba(1, 1, 1, 0.2)",
+        )
+        fig.add_annotation(
+            x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
+            y=0.01, text='TODAY', showarrow=False, textangle=-90,
+            xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+            font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 
     fig.update_layout(
@@ -68,9 +74,7 @@ def make_prec_figure(df, year, var, title=None):
         margin={"r": 5, "t": 50, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h"),
-        yaxis=dict(showgrid=True, title="Yearly accumulated precipitation [mm]"),
-        xaxis=dict(range=[df.dummy_date.min(),
-                          df.dropna(subset=[f"{var}_yearly_acc"]).dummy_date.max() + pd.Timedelta('5 days')])
+        yaxis=dict(showgrid=True, title="Yearly accumulated precipitation [mm]", zeroline=True, zerolinewidth=4, autorange='min'),
     )
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
@@ -162,7 +166,13 @@ def make_temp_figure(df, year, var, title=None):
             x=pd.to_datetime("now", utc=True),
             line_width=2,
             line_dash="dash",
-            line_color="gray",
+            line_color="rgba(1, 1, 1, 0.2)",
+        )
+        fig.add_annotation(
+            x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
+            y=0.01, text='TODAY', showarrow=False, textangle=-90,
+            xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+            font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 
     fig.update_layout(
@@ -171,9 +181,8 @@ def make_temp_figure(df, year, var, title=None):
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h"),
-        yaxis=dict(showgrid=True, title="Temperature [°C]", autorange="min"),
-        xaxis=dict(range=[df.dummy_date.min(),
-                          df.dropna(subset=[var]).dummy_date.max() + pd.Timedelta('5 days')])
+        yaxis=dict(showgrid=True, title="Temperature [°C]", autorange="min",
+                   zeroline=True, zerolinewidth=4),
     )
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
