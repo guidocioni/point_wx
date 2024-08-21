@@ -66,7 +66,7 @@ def generate_figure(n_clicks, locations, location, model):
 
     except Exception as e:
         logging.error(
-            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}. Parameters used model={model}"
         )
         return (
             no_update,

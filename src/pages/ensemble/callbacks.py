@@ -78,7 +78,7 @@ def generate_figure(n_clicks, locations, location, model, clima_, from_now_, clo
 
     except Exception as e:
         logging.error(
-            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}.  Parameters used model={model}, from_now={from_now_}, clima={clima_}, clouds_plot={clouds_plot_}"
         )
         return (
             no_update,

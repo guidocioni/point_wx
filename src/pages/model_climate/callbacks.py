@@ -94,7 +94,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
 
     except Exception as e:
         logging.error(
-            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}. Parameters used model={model}, dates={dates[0]},{dates[1]}"
         )
         return (
             no_update,
