@@ -87,10 +87,11 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
         Output("forecast-days", "max"),
     ],
         Input("minutely-15-switch", "checked"),
+        State("forecast-days", "value"),
     prevent_initial_call=True,
 )
-def constrain_days_minutely_15(checked):
+def constrain_days_minutely_15(checked, forecast_days):
     if checked:
-        return 3, 3
+        return min(3, forecast_days), 3
     else:
         return no_update, 15
