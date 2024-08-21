@@ -4,7 +4,7 @@ throuh tools.
 """
 
 from utils.openmeteo_api import make_request, compute_climatology, r
-from utils.settings import cache
+from utils.settings import cache, OPENWEATHERMAP_KEY
 from datetime import datetime
 import pytz
 
@@ -151,6 +151,24 @@ tools = [
         },
         "strict": True,
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_current_conditions",
+            "description": (
+                "Get current conditions in a specific location based on weather stations, radar and satellite measurements."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": location_object,
+                },
+                "required": ["location"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
 ]
 
 
@@ -238,6 +256,19 @@ def get_historical_daily_data(location, start_date, end_date):
 def get_radar_data(address):
     payload = {"address": address}
     resp = r.get(url="https://hh.guidocioni.it/nmwr/pointquery", params=payload)
+    resp.raise_for_status()
+
+    return resp.json()
+
+
+def get_current_conditions(location):
+    payload = {
+        "lat": location["latitude"],
+        "lon": location["longitude"],
+        "appid": OPENWEATHERMAP_KEY,
+        "units": "metric"
+    }
+    resp = r.get(url="https://api.openweathermap.org/data/2.5/weather", params=payload)
     resp.raise_for_status()
 
     return resp.json()

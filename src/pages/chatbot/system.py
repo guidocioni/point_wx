@@ -39,6 +39,8 @@ You can combine this data with deterministic models to offer a seamless precipit
 If there's any request regarding data in the past, call the function "get_historical_daily_data". Make sure to use the correct "start_date" and "end_date" parameters to request the exact period you need for the assessment.
 - Climatology (based on reanalysis):
 If there is any need to assess whether a certain period was warmer/colder/drier/wetter than average use the function "get_climatology". Based on the data you're comparing to, select the right days from the function response and aggregate accordingly. Remember that this data is always daily. The climatology data is an aggregated product based on historical models. You can combine the historical models data with this to make comparison between a certain period and the climatology.
+- Current conditions
+Provide the best estimate of current conditions in any location on the globe by combining weather stations data, satellite, radar and other sources. Use function "get_current_conditions" only if the user is interested in knowing the conditions as of now. Consider this data is not perfect.
 
 Data format:
 The data returned by most functions can differ but will share a common schema that includes:

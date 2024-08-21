@@ -15,6 +15,7 @@ URL_BASE_PATHNAME = os.getenv("URL_BASE_PATHNAME", "/pointwx/")
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", None)
 OPENMETEO_KEY = os.getenv("OPENMETEO_KEY", None)
 OPENAI_KEY = os.getenv("OPENAI_KEY", None)
+OPENWEATHERMAP_KEY = os.getenv("OPENWEATHERMAP_KEY", None)
 MAPBOX_API_PLACES_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 CACHE_DIR = os.getenv("CACHE_DIR", "/var/cache/pointwx/")
 
