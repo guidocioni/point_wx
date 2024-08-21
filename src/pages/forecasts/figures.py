@@ -138,8 +138,6 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
             data = get_weather_icons(
                 data,
                 var=var_weather_model,
-                icons_path=f"{ASSETS_DIR}/yrno_png/",
-                mapping_path=f"{ASSETS_DIR}/weather_codes.json",
             )
             for _, row in data.iterrows():
                 fig.add_layout_image(

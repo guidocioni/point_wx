@@ -867,7 +867,6 @@ def compute_yearly_comparison(latitude=53.55,
 
 
 @cache.memoize(3600)
-@time_this_func
 def compute_daily_ensemble_meteogram(latitude=53.55,
                                      longitude=9.99,
                                      model='gfs_seamless'):

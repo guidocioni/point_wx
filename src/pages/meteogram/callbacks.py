@@ -38,8 +38,6 @@ def generate_figure(n_clicks, locations, location, model):
         ).reset_index()
         data = get_weather_icons(
             data,
-            icons_path=f"{ASSETS_DIR}/yrno_png/",
-            mapping_path=f"{ASSETS_DIR}/weather_codes.json",
         )
         # Add daily climatology (quite fast)
         clima = compute_climatology(

@@ -52,7 +52,7 @@ def make_heatmap(df, var, models, title=None):
             # Extract icons for the current model
             df = get_weather_icons(
                 df,
-                var=var_weather_model,
+                var=var_weather_model
             )
             fig.add_trace(
                 go.Scatter(

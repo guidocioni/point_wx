@@ -5,7 +5,7 @@ import numpy as np
 
 def get_weather_icons(
     df,
-    icons_path=f"{ASSETS_DIR}/yrno_png/",
+    icons_path=f"{ASSETS_DIR}/yrno_png_reduced/",
     mapping_path=f"{ASSETS_DIR}/weather_codes.json",
     var="weather_code",
 ):
