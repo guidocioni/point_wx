@@ -27,6 +27,14 @@ def generate_figure(n_clicks, locations, location, model, year):
     if n_clicks is None:
         return [no_update, no_update, no_update, no_update]
 
+    if model == "cerra" and ((year > 2021) or (year < 1985)):
+        return (
+            no_update,
+            no_update,
+            "The reanalysis model CERRA only covers dates up to 2021!",
+            True,
+        )
+
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location[0]["value"]]
@@ -91,7 +99,7 @@ def update_max_date(_):
         Output("models-selection-climate-daily", "data"),
     ],
     Input("year-selection-climate", "id"),
-    State("models-selection-climate-daily", "data")
+    State("models-selection-climate-daily", "data"),
 )
 def disable_models(_, models):
     for model in models:

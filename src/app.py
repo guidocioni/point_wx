@@ -87,7 +87,15 @@ def serve_layout():
                 dcc.Store(id="client-first-visit", storage_type="local"),
                 dbc.Modal(
                     [
-                        dbc.ModalHeader(dbc.ModalTitle("Error")),
+                        dbc.ModalHeader(
+                            children=[
+                                DashIconify(
+                                    icon="solar:danger-triangle-bold-duotone", width=30
+                                ),
+                                dbc.ModalTitle(" Error"),
+                            ],
+                            className="bg-danger text-white"
+                        ),
                         dbc.ModalBody(
                             "", id="error-message"
                         ),  # Placeholder for error message
@@ -103,12 +111,18 @@ def serve_layout():
                             [
                                 "Welcome to my weather application!",
                                 html.Br(),
-                                DashIconify(icon="meteocons:clear-day-fill",width=60),
-                                DashIconify(icon="meteocons:dust-day-fill",width=60),
-                                DashIconify(icon="meteocons:thunderstorms-day-extreme-fill",width=60),
-                                DashIconify(icon="meteocons:wind",width=60),
-                                DashIconify(icon="meteocons:partly-cloudy-night-smoke-fill",width=60),
-                                DashIconify(icon="meteocons:hurricane-fill",width=60),
+                                DashIconify(icon="meteocons:clear-day-fill", width=60),
+                                DashIconify(icon="meteocons:dust-day-fill", width=60),
+                                DashIconify(
+                                    icon="meteocons:thunderstorms-day-extreme-fill",
+                                    width=60,
+                                ),
+                                DashIconify(icon="meteocons:wind", width=60),
+                                DashIconify(
+                                    icon="meteocons:partly-cloudy-night-smoke-fill",
+                                    width=60,
+                                ),
+                                DashIconify(icon="meteocons:hurricane-fill", width=60),
                                 html.Br(),
                                 "It looks like this is your first time here.",
                                 html.Br(),
@@ -121,7 +135,7 @@ def serve_layout():
                                     href="mailto:guidocioni@gmail.com",
                                     target="_blank",
                                 ),
-                                " I need your feedback to make the application even better!"
+                                " I need your feedback to make the application even better!",
                             ],
                         ),
                         dbc.ModalFooter(
@@ -149,8 +163,7 @@ app.layout = serve_layout
 # Callback to check the cookie and display the modal
 @app.callback(
     Output("welcome-modal", "is_open"),
-    [Input("url", "pathname"),
-    Input('close-button-modal', 'n_clicks')],
+    [Input("url", "pathname"), Input("close-button-modal", "n_clicks")],
     State("client-first-visit", "data"),
 )
 def display_modal(pathname, n_clicks, data):
@@ -163,12 +176,12 @@ def display_modal(pathname, n_clicks, data):
 
 # Callback to set session data after closing the modal
 @app.callback(
-    Output('client-first-visit', 'data'),
-    Input('close-button-modal', 'n_clicks'),
+    Output("client-first-visit", "data"),
+    Input("close-button-modal", "n_clicks"),
     prevent_initial_call=True,
 )
 def set_cookie(n_clicks):
-    return {'visited': True}  # Set a simple key to indicate the user has visited
+    return {"visited": True}  # Set a simple key to indicate the user has visited
 
 
 @callback(Output("client-details", "data"), Input("app-div", "id"))
