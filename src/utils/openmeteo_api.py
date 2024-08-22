@@ -648,7 +648,10 @@ def compute_climatology(latitude=53.55,
                         model='best_match',
                         start_date='1991-01-01',
                         end_date='2020-12-31',
-                        daily=False):
+                        daily=False,
+                        hourly_freq='1h' # the expensive operation is not computing but downloading!
+                        # so increasing this parameter is of little help for now...
+                        ):
     """
     Compute climatology.
     This is a very expensive operation (5-6 seconds for the full 30 years)
@@ -668,8 +671,16 @@ def compute_climatology(latitude=53.55,
             numeric_only=True).round(1).rename_axis(['doy']).reset_index()
     else:
         # Compute mean over day of the year AND hour
-        mean = data.groupby([data.doy, data.time.dt.hour]).mean(
-            numeric_only=True).round(1).rename_axis(['doy', 'hour']).reset_index()
+        mean = (
+            data.resample(hourly_freq, on="time")
+            .first()
+            .reset_index()
+            .groupby([data.doy, data.time.dt.hour])
+            .mean(numeric_only=True)
+            .round(1)
+            .rename_axis(["doy", "hour"])
+            .reset_index()
+        )
 
     return mean
 
@@ -906,3 +917,26 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     daily.attrs = data.attrs
 
     return daily
+
+
+@cache.memoize(0)
+def compute_climatology_zarr(latitude=53.55, longitude=9.99):
+    """
+    BETA!!
+    Get the climatology of 850hPa temperature from a zarr array
+    """
+    import xarray as xr
+    ds = xr.open_zarr("/media/WD/download/era5/zarr/")
+    ds = (
+        ds.sel(latitude=latitude, longitude=longitude, method="nearest")
+        .drop_vars(["isobaricInhPa", "latitude", "longitude", "step", "valid_time"])
+        .compute()
+    )
+    df = ds.to_dataframe().rename(columns={"t": "temperature_850hPa"})
+    df["temperature_850hPa"] = df["temperature_850hPa"] - 273.15
+    df.index = df.index.floor('6h') # Get rid of this once we have enough data
+    df['doy'] = df.index.strftime("%m%d")
+    df['hour'] = df.index.hour
+    df = df.reset_index(drop=True)
+
+    return df

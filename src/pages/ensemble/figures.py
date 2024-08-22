@@ -109,16 +109,25 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
             showlegend=False,
         )
     )
-    if clima is not None:
+    if clima is not None and var in clima.columns:
         # Now add climatology
-        df["doy"] = df["time"].dt.strftime("%m%d")
-        df["hour"] = df["time"].dt.hour
-        clima = clima.merge(
-            df[["doy", "hour", "time"]],
-            left_on=["doy", "hour"],
-            right_on=["doy", "hour"],
-        )
-        clima = clima.sort_values(by="time")
+        # Create a hourly array that matchest the start and end of the real data
+        # Doesn't matter if that data is 1, 3 or 6 hourly. As the climatology
+        # will be hourly we do this
+        time_selection = pd.date_range(df["time"].min(), df["time"].max(), freq="1h")
+        # Now find the days of the year that we need to select
+        # note that this should respect the order (hopefully)
+        # otherwise shit will happen when we change year
+        doys_selection = time_selection.strftime("%m%d").unique()
+        clima = clima.loc[clima.doy.isin(doys_selection),:].copy()
+        clima["doy_hour"] = clima["doy"] + clima["hour"].astype(str).str.zfill(2)
+        clima = clima[
+            clima["doy_hour"].isin(
+                time_selection.strftime("%m%d") + time_selection.strftime("%H")
+            )
+        ]
+        clima["time"] = time_selection
+        clima = clima.drop(columns=["doy_hour", "doy", "hour"]).interpolate()
 
         traces.append(
             go.Scattergl(
@@ -276,7 +285,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     subplot_title = ""
     if len(data.loc[:, data.columns.str.match(r'temperature_850hPa$|temperature_850hPa_member(0[1-9]|[1-9][0-9])$')].dropna() > 0):
         traces_temp_850 = make_lineplot_timeseries(
-            data, "temperature_850hPa", break_hours="0h"
+            data, "temperature_850hPa", clima, break_hours="0h"
         )
         height_graph = 0.4
         subplot_title = "<b>850hPa Temp"
