@@ -83,3 +83,6 @@ venv.bak/
 # Cython debug symbols
 cython_debug/
 .DS_Store
+
+# Log files
+*.log
