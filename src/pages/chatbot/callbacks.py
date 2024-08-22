@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, html, dcc
+from dash.exceptions import PreventUpdate
 from utils.settings import OPENAI_KEY, logging
 from .system import system_prompt
 from .functions import *
@@ -52,6 +53,29 @@ def textbox(text, box="AI"):
     else:
         raise ValueError("Incorrect option for `box`.")
 
+
+# Callback to check the cookie and display the modal
+@callback(
+    Output("welcome-modal-chatbot", "is_open"),
+    [Input("url", "pathname"), Input("close-button-modal-chatbot", "n_clicks")],
+    State("client-first-visit-chatbot", "data"),
+)
+def display_modal(pathname, n_clicks, data):
+    if n_clicks:
+        return False  # If the close button is clicked, close the modal
+    if data is None:  # Check if there's no session data
+        return True  # Open the modal if it's the first visit
+    raise PreventUpdate  # Prevent callback from updating if data exists
+
+
+# Callback to set session data after closing the modal
+@callback(
+    Output("client-first-visit-chatbot", "data"),
+    Input("close-button-modal-chatbot", "n_clicks"),
+    prevent_initial_call=True,
+)
+def set_cookie(n_clicks):
+    return {"visited": True}  # Set a simple key to indicate the user has visited
 
 @callback(
     Output("display-conversation", "children"), [Input("store-conversation", "data")]

@@ -106,7 +106,7 @@ def serve_layout():
                 ),
                 dbc.Modal(
                     [
-                        dbc.ModalHeader(dbc.ModalTitle("Hello there")),
+                        dbc.ModalHeader(dbc.ModalTitle("Hello there"), close_button=False),
                         dbc.ModalBody(
                             [
                                 "Welcome to my weather application!",
@@ -161,7 +161,7 @@ app.layout = serve_layout
 
 
 # Callback to check the cookie and display the modal
-@app.callback(
+@callback(
     Output("welcome-modal", "is_open"),
     [Input("url", "pathname"), Input("close-button-modal", "n_clicks")],
     State("client-first-visit", "data"),
@@ -175,7 +175,7 @@ def display_modal(pathname, n_clicks, data):
 
 
 # Callback to set session data after closing the modal
-@app.callback(
+@callback(
     Output("client-first-visit", "data"),
     Input("close-button-modal", "n_clicks"),
     prevent_initial_call=True,
