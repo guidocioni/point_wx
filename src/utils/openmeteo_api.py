@@ -556,7 +556,7 @@ def get_ensemble_data(
 # As historical data is in the past, it never changes
 # so we can safely set these functions to infinite timeout
 # They will only be re-computed if the parameters change
-@cache.memoize(0)
+@cache.memoize(31536000)
 def get_historical_data(latitude=53.55,
                         longitude=9.99,
                         variables='temperature_2m',
@@ -639,7 +639,7 @@ def get_historical_daily_data(latitude=53.55,
     return data
 
 
-@cache.memoize(0)
+@cache.memoize(31536000)
 @time_this_func
 def compute_climatology(latitude=53.55,
                         longitude=9.99,
@@ -685,7 +685,7 @@ def compute_climatology(latitude=53.55,
     return mean
 
 
-@cache.memoize(0)
+@cache.memoize(31536000)
 @time_this_func
 def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
                           start_date='1991-01-01', end_date='2020-12-31'):
@@ -919,14 +919,15 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     return daily
 
 
-@cache.memoize(0)
+@cache.memoize(31536000)
+@time_this_func
 def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     """
     BETA!!
     Get the climatology of 850hPa temperature from a zarr array
     """
     import xarray as xr
-    ds = xr.open_zarr("/media/WD/download/era5/zarr/")
+    ds = xr.open_zarr("/media/WD/download/era5/zarr2/")
     ds = (
         ds.sel(latitude=latitude, longitude=longitude, method="nearest")
         .drop_vars(["isobaricInhPa", "latitude", "longitude", "step", "valid_time"])
@@ -934,9 +935,6 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     )
     df = ds.to_dataframe().rename(columns={"t": "temperature_850hPa"})
     df["temperature_850hPa"] = df["temperature_850hPa"] - 273.15
-    df.index = df.index.floor('6h') # Get rid of this once we have enough data
-    df['doy'] = df.index.strftime("%m%d")
-    df['hour'] = df.index.hour
-    df = df.reset_index(drop=True)
+    df = df.reset_index()
 
     return df

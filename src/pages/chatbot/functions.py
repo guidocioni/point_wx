@@ -221,7 +221,7 @@ def get_ensemble_forecast(location, start_date, end_date):
 
     return ensemble_data
 
-@cache.memoize(86400)
+@cache.memoize(31536000)
 def get_climatology(location):
     clima = compute_climatology(
         latitude=location["latitude"],

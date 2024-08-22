@@ -114,28 +114,25 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         # Create a hourly array that matchest the start and end of the real data
         # Doesn't matter if that data is 1, 3 or 6 hourly. As the climatology
         # will be hourly we do this
-        time_selection = pd.date_range(df["time"].min(), df["time"].max(), freq="1h")
-        # Now find the days of the year that we need to select
-        # note that this should respect the order (hopefully)
-        # otherwise shit will happen when we change year
-        doys_selection = time_selection.strftime("%m%d").unique()
-        clima = clima.loc[clima.doy.isin(doys_selection),:].copy()
+        time_selection = pd.date_range(
+            df["time"].min(), df["time"].max(), freq="1h", tz=df.attrs["timezone"]
+        )
         clima["doy_hour"] = clima["doy"] + clima["hour"].astype(str).str.zfill(2)
-        clima = clima[
+        clima = clima.loc[
             clima["doy_hour"].isin(
                 time_selection.strftime("%m%d") + time_selection.strftime("%H")
-            )
-        ]
+            ),:
+        ].copy()
         clima["time"] = time_selection
-        clima = clima.drop(columns=["doy_hour", "doy", "hour"]).interpolate()
+        clima = clima.drop(columns=["doy_hour", "doy", "hour"]).interpolate().round(1)
 
         traces.append(
             go.Scattergl(
                 x=clima["time"],
                 y=clima[var],
                 mode="lines",
-                name="climatology",
-                line=dict(width=4, color="rgba(0, 0, 0, 0.4)", dash="dot"),
+                name="ERA5 Climatology",
+                line=dict(width=4, color="rgba(0, 0, 0, 0.3)"),
                 hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
                 showlegend=False,
             )

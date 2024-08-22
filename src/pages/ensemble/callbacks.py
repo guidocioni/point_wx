@@ -1,11 +1,16 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_ensemble_data, compute_climatology, compute_climatology_zarr
+from utils.openmeteo_api import (
+    get_ensemble_data,
+    compute_climatology,
+    compute_climatology_zarr,
+)
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
 from io import StringIO
+
 
 @callback(
     [
@@ -25,7 +30,9 @@ from io import StringIO
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, clima_, from_now_, clouds_plot_):
+def generate_figure(
+    n_clicks, locations, location, model, clima_, from_now_, clouds_plot_
+):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -40,12 +47,12 @@ def generate_figure(n_clicks, locations, location, model, clima_, from_now_, clo
             model=model,
             decimate=True,
             from_now=from_now_,
-            variables='temperature_2m,temperature_850hPa,rain,snowfall,cloudcover,wind_speed_10m'
+            variables="temperature_2m,temperature_850hPa,rain,snowfall,cloudcover,wind_speed_10m",
         )
         if clouds_plot_:
-            additional_plot = 'clouds'
+            additional_plot = "clouds"
         else:
-            additional_plot = 'winds'
+            additional_plot = "winds"
 
         clima = None
         if clima_:
@@ -56,16 +63,26 @@ def generate_figure(n_clicks, locations, location, model, clima_, from_now_, clo
             )
             # BETA, load the climatology of 850hPa T from  a zarr
             try:
-                clima_t850 = compute_climatology_zarr(
-                    latitude=loc["latitude"].item(), longitude=loc["longitude"].item()
+                clima_t850 = compute_climatology_zarr(latitude=loc["latitude"].item(),
+                                                      longitude=loc["longitude"].item())
+                # Convert clima time to the timezone used for the other data
+                # In theory both ensemble data and climatology computed from open-meteo
+                clima_t850["time"] = (
+                    clima_t850["time"]
+                    .dt.tz_localize("UTC")
+                    .dt.tz_convert(data.attrs["timezone"])
                 )
+                clima_t850["doy"] = clima_t850["time"].dt.strftime("%m%d")
+                clima_t850["hour"] = clima_t850["time"].dt.hour
+                # should share the same timezone, as the parameter is set to auto
                 clima = clima.merge(
-                    clima_t850, left_on=["doy", "hour"], right_on=["doy", "hour"],
-                    how='left'
+                    clima_t850.drop(columns=["time"]),
+                    left_on=["doy", "hour"],
+                    right_on=["doy", "hour"],
+                    how="left",
                 )
             except Exception as e:
                 logging.error(f"Could not add t850hPa climatology {e}")
-
 
         sun = find_suntimes(
             df=data,
@@ -106,6 +123,6 @@ clientside_callback(
         document.activeElement.blur();
     }
     """,
-    Input('models-selection', 'value'),
-    prevent_initial_call=True
+    Input("models-selection", "value"),
+    prevent_initial_call=True,
 )
