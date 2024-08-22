@@ -20,6 +20,7 @@ from flask import request, redirect
 from utils.custom_logger import logging
 from utils.ai_utils import create_ai_report
 from datetime import datetime
+from dash_iconify import DashIconify
 
 app = dash.Dash(
     __name__,
@@ -62,15 +63,11 @@ def create_weather_report():
     ):
         return {}
     logging.info(
-            f"Making request to /report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
-        )
+        f"Making request to /report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
+    )
     report = create_ai_report(address_search, date_forecast, additional_prompt)
 
-    return {
-        "search": address_search,
-        "date": date_forecast,
-        "report": report
-    }
+    return {"search": address_search, "date": date_forecast, "report": report}
 
 
 # Initialize cache
@@ -87,15 +84,54 @@ def serve_layout():
                 dcc.Store(id="location-selected", data={}, storage_type="local"),
                 dcc.Store(id="locations-favorites", storage_type="local"),
                 dcc.Store(id="client-details", data={}, storage_type="session"),
+                dcc.Store(id="client-first-visit", storage_type="local"),
                 dbc.Modal(
                     [
-                        dbc.ModalHeader("Error"),
+                        dbc.ModalHeader(dbc.ModalTitle("Error")),
                         dbc.ModalBody(
                             "", id="error-message"
                         ),  # Placeholder for error message
                     ],
                     id="error-modal",
-                    size="lg",
+                    size="md",
+                    backdrop="static",
+                ),
+                dbc.Modal(
+                    [
+                        dbc.ModalHeader(dbc.ModalTitle("Hello there")),
+                        dbc.ModalBody(
+                            [
+                                "Welcome to my weather application!",
+                                html.Br(),
+                                DashIconify(icon="meteocons:clear-day-fill",width=60),
+                                DashIconify(icon="meteocons:dust-day-fill",width=60),
+                                DashIconify(icon="meteocons:thunderstorms-day-extreme-fill",width=60),
+                                DashIconify(icon="meteocons:wind",width=60),
+                                DashIconify(icon="meteocons:partly-cloudy-night-smoke-fill",width=60),
+                                DashIconify(icon="meteocons:hurricane-fill",width=60),
+                                html.Br(),
+                                "It looks like this is your first time here.",
+                                html.Br(),
+                                "Don't forget to read the help boxes in every page to understand how to use the app. ",
+                                html.Br(),
+                                "If you would like to see a new feature included (or just want to ask something) don't hesitate to write me at ",
+                                html.A(
+                                    "this email. ",
+                                    title="email_me",
+                                    href="mailto:guidocioni@gmail.com",
+                                    target="_blank",
+                                ),
+                                " I need your feedback to make the application even better!"
+                            ],
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button(
+                                "Close", id="close-button-modal", className="ml-auto"
+                            )
+                        ),
+                    ],
+                    id="welcome-modal",
+                    size="md",
                     backdrop="static",
                 ),
                 dbc.Container(dash.page_container, class_name="my-2", id="content"),
@@ -108,6 +144,31 @@ def serve_layout():
 
 
 app.layout = serve_layout
+
+
+# Callback to check the cookie and display the modal
+@app.callback(
+    Output("welcome-modal", "is_open"),
+    [Input("url", "pathname"),
+    Input('close-button-modal', 'n_clicks')],
+    State("client-first-visit", "data"),
+)
+def display_modal(pathname, n_clicks, data):
+    if n_clicks:
+        return False  # If the close button is clicked, close the modal
+    if data is None:  # Check if there's no session data
+        return True  # Open the modal if it's the first visit
+    raise PreventUpdate  # Prevent callback from updating if data exists
+
+
+# Callback to set session data after closing the modal
+@app.callback(
+    Output('client-first-visit', 'data'),
+    Input('close-button-modal', 'n_clicks'),
+    prevent_initial_call=True,
+)
+def set_cookie(n_clicks):
+    return {'visited': True}  # Set a simple key to indicate the user has visited
 
 
 @callback(Output("client-details", "data"), Input("app-div", "id"))
