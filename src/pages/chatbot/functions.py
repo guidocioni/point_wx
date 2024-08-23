@@ -86,6 +86,32 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "get_marine_forecast",
+            "description": (
+                "Get marine forecasts concerning variables like wave height, period and direction. These date are based on marine models that only simulate ocean circulation based on atmospheric forcing."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": location_object,
+                    "start_date": {
+                        "type": "string",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                    },
+                },
+                "required": ["location", "start_date", "end_date"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_climatology",
             "description": (
                 "Get the daily climatological data (data averaged over a 30 years period). "
@@ -254,6 +280,28 @@ def get_historical_daily_data(location, start_date, end_date):
         weather_data["country"] = location["country"]
 
     return weather_data
+
+
+@cache.memoize(3600)
+def get_marine_forecast(location, start_date, end_date):
+    payload = {
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "hourly": "wave_height,wave_direction,wave_period",
+        "timezone": "auto",
+        "models": "best_match",
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+    resp = make_request(
+        url="https://marine-api.open-meteo.com/v1/marine", payload=payload
+    )
+    marine_data = resp.json()
+    marine_data["location"] = location["name"]
+    if "country" in location:
+        marine_data["country"] = location["country"]
+    
+    return marine_data
 
 
 def get_radar_data(address):

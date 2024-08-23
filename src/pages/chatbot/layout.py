@@ -60,10 +60,10 @@ layout = html.Div(
                                     "Here are some examples of questions that you can ask:",
                                     html.Ul(children=[
                                         html.Li("What are the current conditions in New York? Is it raining?"),
-                                        html.Li("What is the weather going to be like tomorrow in Berlin?"),
                                         html.Li("Is the coming week going to be hot in Rome?"),
                                         html.Li("Tomorrow morning I want to have a walk outside here in Florence. Is there any probability of rain?"),
-                                        html.Li("I was curious to know how many days of rain Dubai gets on average"),
+                                        html.Li("Is the sea going to be rough today in Naples?"),
+                                        html.Li("I was curious to know how many days of rain Dubai gets on average. Is it more or less than Abu Dhabi?"),
                                         html.Li("Was this month hotter or colder than normal until now in Hamburg?"),
                                         html.Li("I know today is going to be cold in Tromso. Could you tell me the range of minimum temperatures I can expect?")
                                         ]),
