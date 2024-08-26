@@ -92,7 +92,9 @@ def make_heatmap(df, var, models, title=None):
         dragmode=False,
         xaxis=dict(showgrid=showgrid, tickformat='%a %-d %b\n%H:%M'),
         yaxis=dict(showgrid=showgrid, fixedrange=True, showticklabels=True,
-                   zeroline=False, ticktext=models, tickmode='array', tickvals=y_positions),
+                   zeroline=False, ticktext=models, tickmode='array',
+                   tickfont=dict(size=8),
+                   tickvals=y_positions, tickangle=-90),
         height=height,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
