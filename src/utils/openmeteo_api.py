@@ -892,10 +892,17 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         latitude=latitude,
         longitude=longitude,
         model=model,
-        variables="weather_code,sunshine_duration",
+        variables="weather_code",
         from_now=False,
         forecast_days=14
     )
+    data_deterministic_daily = get_forecast_daily_data(
+        latitude=latitude,
+        longitude=longitude,
+        model=model,
+        variables="sunshine_duration,wind_speed_10m_max,wind_direction_10m_dominant",
+        forecast_days=14
+    ).dropna(subset=["wind_speed_10m_max","wind_direction_10m_dominant","sunshine_duration"], how='all').set_index('time')
 
     # This computes a daily aggregation for all ensemble members
     daily_tmin = data.loc[:, data.columns.str.contains(
@@ -906,8 +913,6 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         'precipitation|time')].resample('1D', on='time').sum()
     daily_wcode_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
         'weather_code|time')].resample('1D', on='time').median()
-    daily_sunshine_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
-        'sunshine_duration|time')].resample('1D', on='time').sum()
     # On days with at least 2 hrs of thunderstorms/showers we use the thunderstorms/showers weather code
     for code in [95, 96, 99, 61, 66, 51]:
         thunderstorm_days = data_deterministic[data_deterministic['weather_code'] == code]
@@ -926,7 +931,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     .merge(daily_prec.quantile(0.15, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
     .merge(daily_prec.quantile(0.95, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
     .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
-    .merge(daily_sunshine_deterministic.rename(columns={'sunshine_duration': 'sunshine_mean'}), left_index=True, right_index=True)
+    .merge(data_deterministic_daily.rename(columns={'sunshine_duration': 'sunshine_mean'}), left_index=True, right_index=True)
 
     daily.attrs = data.attrs
 

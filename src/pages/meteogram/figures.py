@@ -199,7 +199,7 @@ def make_subplot_figure(data, title=None, clima=None):
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.05,
-        row_heights=[0.15, 0.5, 0.5],
+        row_heights=[0.17, 0.48, 0.5],
         subplot_titles=[
             "",
             "<b>Temperature (°C)",
@@ -249,6 +249,35 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"] - pd.to_timedelta('1 hours'),
+            y=[0.5] * len(data["time"]),
+            mode="markers",
+            name="",
+            marker=dict(
+                size=10,
+                color="DarkSlateGrey",
+                symbol="arrow",
+                angle=data['wind_direction_10m_dominant'] - 180.0,
+            ),
+            hoverinfo="skip",
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"],
+            y=[0.5] * len(data["time"]),
+            mode="text",
+            text=data['wind_speed_10m_max'].astype(int).astype(str),
+            textposition="middle right",  # Position text to the right of the marker
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
     for _, row in data.iterrows():
         if row["icons"] != "":
             fig.add_layout_image(
@@ -294,8 +323,9 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
         minor=dict(showgrid=False),
-        range=[1, 6],
+        range=[-0.5, 6],
         showticklabels=False,
+        zeroline=False
     )
     fig.update_xaxes(showgrid=False, row=1, col=1, minor=dict(showgrid=False))
     fig.update_yaxes(
