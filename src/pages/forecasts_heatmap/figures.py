@@ -8,8 +8,10 @@ import plotly.express as px
 def make_heatmap(df, var, models, title=None):
     if var in ['temperature_2m', 'temperature_850hPa', 'dew_point_2m', 'apparent_temperature', 'surface_temperature', 'temperature_500hPa', 'soil_temperature_0cm', 'soil_temperature_6cm', 'soil_temperature_18cm', 'soil_temperature_54cm']:
         cmap = 'RdBu_r'
-    elif var in ['cloudcover', 'relative_humidity_2m', 'relative_humidity_850hPa', 'cloud_cover_low', 'cloud_cover_mid', 'cloud_cover_high', 'relative_humidity_500hPa']:
+    elif var in ['cloudcover', 'cloud_cover_low', 'cloud_cover_mid', 'cloud_cover_high']:
         cmap = 'YlGnBu_r'
+    elif var in ['relative_humidity_2m', 'relative_humidity_850hPa', 'relative_humidity_500hPa']:
+        cmap = 'YlGnBu'
     elif var in ['rain', 'precipitation',
                  'accumulated_precip', 'accumulated_liquid', 'showers', 'soil_moisture_0_to_1cm', 'soil_moisture_1_to_3cm' ,'soil_moisture_3_to_9cm', 'soil_moisture_9_to_27cm', 'soil_moisture_27_to_81cm']:
         cmap = 'dense'

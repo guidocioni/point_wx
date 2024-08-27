@@ -251,17 +251,18 @@ def make_subplot_figure(data, title=None, clima=None):
     )
     fig.add_trace(
         go.Scatter(
-            x=data["time"] - pd.to_timedelta('1 hours'),
+            x=data["time"],
             y=[0.5] * len(data["time"]),
             mode="markers",
-            name="",
+            name="Dominant direction",
             marker=dict(
-                size=10,
+                size=12,
                 color="DarkSlateGrey",
                 symbol="arrow",
                 angle=data['wind_direction_10m_dominant'] - 180.0,
             ),
-            hoverinfo="skip",
+            customdata=data['wind_direction_10m_dominant'],
+            hovertemplate="<extra></extra>Dominant wind direction = %{customdata}°",
             showlegend=False,
         ),
         row=1,
@@ -270,11 +271,12 @@ def make_subplot_figure(data, title=None, clima=None):
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[0.5] * len(data["time"]),
+            y=[-0.5] * len(data["time"]),
             mode="text",
-            text=data['wind_speed_10m_max'].astype(int).astype(str),
+            text=data['wind_speed_10m_max'].astype(int).astype(str) + "<sup>km/h</sup>",
             textposition="middle right",  # Position text to the right of the marker
-            hoverinfo="skip",
+            customdata=data['wind_speed_10m_max'],
+            hovertemplate="<extra></extra>Max. wind speed = %{customdata}km/h",
             showlegend=False,
         )
     )
@@ -323,7 +325,7 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
         minor=dict(showgrid=False),
-        range=[-0.5, 6],
+        range=[-0.7, 6],
         showticklabels=False,
         zeroline=False
     )

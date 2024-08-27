@@ -37,7 +37,7 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_deterministic_forecast",
-            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') and every 15 minutes ('minutely_15'). The latter can be used over Central Europe and the United States to improve forecast accuracy.",
+            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') and every 15 minutes ('minutely_15').",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -211,8 +211,8 @@ def get_deterministic_forecast(location, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
         "longitude": location["longitude"],
-        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,is_day,uv_index,temperature_850hPa",
-        "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,is_day",
+        "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,showers,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,temperature_850hPa,precipitation_probability",
+        "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,showers,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
         "timezone": "auto",
         "models": "best_match",
         "start_date": start_date,

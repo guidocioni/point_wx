@@ -6,8 +6,10 @@ from utils.settings import images_config
 def make_heatmap(df, var, title=None):
     if var in ['temperature_2m', 'temperature_850hPa', 'dew_point_2m', 'apparent_temperature', 'surface_temperature']:
         cmap = 'RdBu_r'
-    elif var in ['cloudcover', 'relative_humidity_2m', 'visibility']:
+    elif var in ['cloudcover', 'visibility']:
         cmap = 'YlGnBu_r'
+    elif var == 'relative_humidity_2m':
+        cmap = 'YlGnBu'
     elif var in ['rain', 'precipitation',
                  'accumulated_precip', 'accumulated_liquid']:
         cmap = 'dense'
