@@ -246,7 +246,7 @@ def get_forecast_daily_data(latitude=53.55,
         data['time']).dt.tz_localize(resp['timezone'], ambiguous='NaT', nonexistent='NaT')
     
     # Units conversion
-    for col in data.columns[data.columns.str.contains('snowfall_sum')]:
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
         data[col] = data[col] * 100.  # m to cm
     for col in data.columns[data.columns.str.contains('sunshine_duration')]:
         data[col] = data[col] / 3600.  # s to hrs
@@ -851,8 +851,7 @@ def compute_yearly_comparison(latitude=53.55,
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
 
     # Although the data starts from 1981, we compute the quantiles and mean only over the 1991-2020 period
-    # This is different from what we do for precipitation
-
+    # This is different from what we do for the accumulated variable
     daily['doy'] = daily.time.dt.strftime("%m%d")
     clima = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
                       ].groupby('doy').mean(numeric_only=True).add_suffix("_clima")

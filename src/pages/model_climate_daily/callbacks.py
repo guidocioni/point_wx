@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
-from .figures import make_prec_figure, make_temp_figure
+from .figures import make_acc_figure, make_daily_figure
 import pandas as pd
 from io import StringIO
 from datetime import date
@@ -20,10 +20,12 @@ from datetime import date
         State("location-selected", "data"),
         State("models-selection-climate-daily", "value"),
         State("year-selection-climate", "value"),
+        State("acc-variable-selection-daily", "value"),
+        State("inst-variable-selection-daily", "value"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, year):
+def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var):
     if n_clicks is None:
         return [no_update, no_update, no_update, no_update]
 
@@ -49,7 +51,7 @@ def generate_figure(n_clicks, locations, location, model, year):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
-            var="precipitation_sum",
+            var=acc_var,
             year=year,
         )
 
@@ -57,15 +59,15 @@ def generate_figure(n_clicks, locations, location, model, year):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
-            var="temperature_2m_mean",
+            var=inst_var,
             year=year,
         )
 
-        fig_prec = make_prec_figure(
-            data, year=year, var="precipitation_sum", title=loc_label
+        fig_prec = make_acc_figure(
+            data, year=year, var=acc_var, title=loc_label
         )
-        fig_temp = make_temp_figure(
-            data_2, year=year, var="temperature_2m_mean", title=loc_label
+        fig_temp = make_daily_figure(
+            data_2, year=year, var=inst_var, title=loc_label
         )
 
         return [fig_prec, fig_temp, None, False]

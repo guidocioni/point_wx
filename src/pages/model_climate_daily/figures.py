@@ -4,9 +4,10 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
+from .options_selector import acc_vars_options, daily_vars_options
 
 
-def make_prec_figure(df, year, var, title=None):
+def make_acc_figure(df, year, var, title=None):
     fig = make_subplots()
 
     fig.add_trace(
@@ -67,14 +68,14 @@ def make_prec_figure(df, year, var, title=None):
             xref='x', yref='y domain', yanchor='bottom', xanchor='center',
             font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
-
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
         margin={"r": 5, "t": 50, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h"),
-        yaxis=dict(showgrid=True, title="Yearly accumulated precipitation [mm]", zeroline=True, zerolinewidth=4, autorange='min'),
+        yaxis=dict(showgrid=True, title=next(item["label"] for item in acc_vars_options if item["value"] == var),
+                   zeroline=True, zerolinewidth=4, autorange='min'),
     )
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
@@ -82,7 +83,7 @@ def make_prec_figure(df, year, var, title=None):
     return fig
 
 
-def make_temp_figure(df, year, var, title=None):
+def make_daily_figure(df, year, var, title=None):
     fig = make_subplots()
 
     mask = df[var] > df[f"{var}_clima"]
@@ -181,7 +182,7 @@ def make_temp_figure(df, year, var, title=None):
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h"),
-        yaxis=dict(showgrid=True, title="Temperature [°C]", autorange="min",
+        yaxis=dict(showgrid=True, title=next(item["label"] for item in daily_vars_options if item["value"] == var), autorange="min",
                    zeroline=True, zerolinewidth=4),
     )
     if title is not None:
