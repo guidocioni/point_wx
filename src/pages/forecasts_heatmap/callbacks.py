@@ -30,7 +30,6 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
     if len(model) == 0:
         return (
             no_update,
-            no_update,
             "You need to select a least one model!",
             True,
         )
