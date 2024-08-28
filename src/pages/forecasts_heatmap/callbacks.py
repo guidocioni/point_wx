@@ -27,6 +27,14 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
     if n_clicks is None:
         return no_update, no_update, no_update
 
+    if len(model) == 0:
+        return (
+            no_update,
+            no_update,
+            "You need to select a least one model!",
+            True,
+        )
+
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location[0]["value"]]
