@@ -256,9 +256,9 @@ def make_subplot_figure(data, title=None, clima=None):
             mode="markers",
             name="Dominant direction",
             marker=dict(
-                size=12,
+                size=14,
                 color="DarkSlateGrey",
-                symbol="arrow",
+                symbol="arrow-wide",
                 angle=data['wind_direction_10m_dominant'] - 180.0,
             ),
             customdata=data['wind_direction_10m_dominant'],
@@ -274,7 +274,6 @@ def make_subplot_figure(data, title=None, clima=None):
             y=[-0.5] * len(data["time"]),
             mode="text",
             text=data['wind_speed_10m_max'].astype(int).astype(str) + "<sup>km/h</sup>",
-            textposition="middle right",  # Position text to the right of the marker
             customdata=data['wind_speed_10m_max'],
             hovertemplate="<extra></extra>Max. wind speed = %{customdata}km/h",
             showlegend=False,
