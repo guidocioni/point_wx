@@ -17,7 +17,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             textposition="top right",
             textfont=dict(color="rgba(227, 56, 30, 1)", size=14),
             name="Maximum temperature",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. Temp. (average) = %{y:.1f} °C",
             line=dict(width=2, color="rgba(227, 56, 30, 1)"),
             showlegend=showlegend,
         ),
@@ -31,7 +31,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             textposition="top right",
             textfont=dict(color="rgba(58, 91, 139, 1)", size=14),
             name="Minimum temperature",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. Temp. (average) = %{y:.1f} °C",
             line=dict(width=2, color="rgba(58, 91, 139, 1)"),
             showlegend=showlegend,
         ),
@@ -43,7 +43,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. Temp. (Minimum) = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -53,10 +53,34 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             y=df["t_min_max"],
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
+            fillcolor="rgba(58, 91, 139, 0.1)",
+            fill="tonexty",
+            name="",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. Temp. (Maximum) = %{y:.1f} °C",
+            showlegend=showlegend,
+        )
+    )
+    traces.append(
+        go.Scatter(
+            x=df["time"],
+            y=df["t_min_q25"],
+            mode="lines",
+            line=dict(color="rgba(0, 0, 0, 0)"),
+            name="",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. Temp. (25th quantile) = %{y:.1f} °C",
+            showlegend=showlegend,
+        )
+    )
+    traces.append(
+        go.Scatter(
+            x=df["time"],
+            y=df["t_min_q75"],
+            mode="lines",
+            line=dict(color="rgba(0, 0, 0, 0)"),
             fillcolor="rgba(58, 91, 139, 0.2)",
             fill="tonexty",
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Min. Temp. (75th quantile) = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -67,7 +91,7 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. Temp. (Minimum) = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )
@@ -77,10 +101,34 @@ def make_temp_timeseries(df, showlegend=False, clima=None):
             y=df["t_max_max"],
             mode="lines",
             line=dict(color="rgba(0, 0, 0, 0)"),
+            fillcolor="rgba(227, 56, 30, 0.1)",
+            fill="tonexty",
+            name="",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. Temp. (Maximum) = %{y:.1f} °C",
+            showlegend=showlegend,
+        )
+    )
+    traces.append(
+        go.Scatter(
+            x=df["time"],
+            y=df["t_max_q25"],
+            mode="lines",
+            line=dict(color="rgba(0, 0, 0, 0)"),
+            name="",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. Temp. (25th quantile) = %{y:.1f} °C",
+            showlegend=showlegend,
+        )
+    )
+    traces.append(
+        go.Scatter(
+            x=df["time"],
+            y=df["t_max_q75"],
+            mode="lines",
+            line=dict(color="rgba(0, 0, 0, 0)"),
             fillcolor="rgba(227, 56, 30, 0.2)",
             fill="tonexty",
             name="",
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. T = %{y:.1f} °C",
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, Max. Temp. (75th quantile) = %{y:.1f} °C",
             showlegend=showlegend,
         )
     )

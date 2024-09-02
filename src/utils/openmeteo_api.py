@@ -925,6 +925,10 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     .merge(daily_tmin.max(axis=1).to_frame(name='t_min_max'), left_index=True, right_index=True)\
     .merge(daily_tmax.max(axis=1).to_frame(name='t_max_max'), left_index=True, right_index=True)\
     .merge(daily_tmax.min(axis=1).to_frame(name='t_max_min'), left_index=True, right_index=True)\
+    .merge(daily_tmax.quantile(0.25, axis=1).to_frame(name='t_max_q25'), left_index=True, right_index=True)\
+    .merge(daily_tmax.quantile(0.75, axis=1).to_frame(name='t_max_q75'), left_index=True, right_index=True)\
+    .merge(daily_tmin.quantile(0.25, axis=1).to_frame(name='t_min_q25'), left_index=True, right_index=True)\
+    .merge(daily_tmin.quantile(0.75, axis=1).to_frame(name='t_min_q75'), left_index=True, right_index=True)\
     .merge(daily_wcode_deterministic, left_index=True, right_index=True)\
     .merge(daily_prec.mean(axis=1).to_frame(name='daily_prec_mean'), left_index=True, right_index=True)\
     .merge(daily_prec.quantile(0.15, axis=1).to_frame(name='daily_prec_min'), left_index=True, right_index=True)\
