@@ -49,6 +49,7 @@ opts_selector = dbc.Card(
                         value=6,
                         size="xs",
                         w=90,
+                        persistence="true"
                     ),
                 ),
             ]

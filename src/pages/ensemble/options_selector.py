@@ -31,6 +31,7 @@ opts_selector = dbc.Card(
                         label="Clima",
                         size="sm",
                         labelPosition="left",
+                        persistence="true"
                     ),
                 ),
                 dmc.Tooltip(
