@@ -154,8 +154,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
                 time_axis.max() + pd.to_timedelta("0.5h"),
             ],
         ),
-        yaxis=dict(range=[1010, 200], showgrid=True, title_text=""),
-        height=800,
+        yaxis=dict(range=[1010, 200], showgrid=True, title_text="", tickangle=-90),
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
             dict(
@@ -215,4 +214,4 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="vertical"), config=images_config)
+fig_subplots = dcc.Graph(id=dict(type="figure", id="vertical"), config=images_config, style={'height':'90vh'})

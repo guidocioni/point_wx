@@ -352,7 +352,6 @@ def make_subplot_figure(data, title=None, clima=None):
         yaxis=dict(
             showgrid=True,
         ),
-        height=800,
         margin={"r": 0.1, "t": 10, "l": 0.1, "b": 0.1},
         barmode="overlay",
         legend=dict(orientation="h", y=-0.04),
@@ -394,4 +393,4 @@ def make_subplot_figure(data, title=None, clima=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config)
+fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'95vh'})

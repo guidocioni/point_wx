@@ -103,6 +103,7 @@ images_config = {
         "autoScale",
     ],
     "displaylogo": False,
+    "responsive": True
 }
 
 ENSEMBLE_MODELS = [

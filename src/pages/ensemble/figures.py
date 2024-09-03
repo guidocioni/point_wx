@@ -351,7 +351,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
-        height=800,
         margin={"r": 5, "t": 50, "l": 0.1, "b": 0.1},
         barmode="stack",
         updatemenus=[
@@ -460,6 +459,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
 # Figures for layout
 
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"), config=images_config)
+fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"),
+                         config=images_config, style={'height':'95vh'})
 # fig_polar = dcc.Graph(id='polar-plot',
 #                       config={**images_config, 'displayModeBar': False})

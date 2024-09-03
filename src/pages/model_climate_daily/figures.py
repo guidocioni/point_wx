@@ -197,6 +197,7 @@ fig_prec_climate_daily = dcc.Graph(
     id=dict(type="figure", id="prec-climate-daily"),
     config=images_config,
     className="mb-3 mt-2",
+    style={'height':'45vh'}
 )
 
-fig_temp_climate_daily = dcc.Graph(id="temp-climate-daily-figure", config=images_config)
+fig_temp_climate_daily = dcc.Graph(id="temp-climate-daily-figure", config=images_config, style={'height':'45vh'})

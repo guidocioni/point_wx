@@ -241,7 +241,6 @@ def make_subplot_figure(data, models, title=None, sun=None):
         modebar=dict(orientation="v"),
         dragmode=False,
         xaxis=dict(showgrid=True),
-        height=800,
         margin={"r": 1, "t": 50, "l": 1, "b": 0.1},
         barmode="overlay",
         # legend=dict(orientation="h", y=-0.04),
@@ -352,5 +351,5 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
 
 fig_subplots = dcc.Graph(
-    id=dict(type="figure", id="deterministic"), config=images_config
+    id=dict(type="figure", id="deterministic"), config=images_config, style={'height':'95vh'}
 )

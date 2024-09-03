@@ -93,7 +93,6 @@ def make_heatmap(df, var, title=None):
         xaxis=dict(showgrid=True, tickformat='%a %-d %b\n%H:%M'),
         yaxis=dict(showgrid=True, fixedrange=True, showticklabels=False,
                    title_text="Members"),
-        height=700,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
             dict(
@@ -130,4 +129,4 @@ def make_heatmap(df, var, title=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type='figure', id='ensemble-heatmap'), config=images_config)
+fig_subplots = dcc.Graph(id=dict(type='figure', id='ensemble-heatmap'), config=images_config, style={'height':'95vh'})

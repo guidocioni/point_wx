@@ -216,6 +216,12 @@ def log_user_location(n, location, client, pathname):
         )
 
 
+'''
+The following 2 callbacks for the navbar need to be defined here because
+in navbar.py the page_registry.values() is not yet defined globally as app hasn't
+run yet. It is only accessible in the navbar() function, because this is called when
+the app is initialized.
+'''
 @callback(
     [
         Output(
@@ -280,6 +286,8 @@ def toggle_fade(n):
     """
     Open the collapse element containing the plots once
     the submit button has been pressed (on all pages)
+    TODO, avoid running this if the plot is not correctly generated,
+    because if there's an error then an empty plot will be shown anyway.
     """
     if not n:
         # Button has never been clicked
@@ -287,6 +295,10 @@ def toggle_fade(n):
     return True
 
 
+'''
+Only show the back-to-top affix button once the page
+is scrolled up to a certain value (y=200 seems to be a pretty good one)
+'''
 clientside_callback(
     """function (id) {
         var myID = document.getElementById(id)
@@ -306,6 +318,12 @@ clientside_callback(
 )
 
 
+'''
+Every time the figure is ready, scroll to it.
+This involved some trickery because pattern matching callback does not
+really play well with JS, so we needed to extract the right id of the element
+for the scrollIntoView function to work.
+'''
 clientside_callback(
     """
     function(n_clicks, element_id) {

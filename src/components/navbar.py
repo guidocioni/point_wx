@@ -6,7 +6,16 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 """
 
 # package imports
-from dash import callback, Output, Input, State, ALL, clientside_callback, html, page_registry
+from dash import (
+    callback,
+    Output,
+    Input,
+    State,
+    ALL,
+    clientside_callback,
+    html,
+    page_registry,
+)
 import dash_bootstrap_components as dbc
 from dash_iconify import DashIconify
 
@@ -15,12 +24,17 @@ def navbar():
     return dbc.Navbar(
         dbc.Container(
             [
-                dbc.NavbarBrand(['PointWx',
-                                 DashIconify(icon="meteocons:thunderstorms-day-fill",width=60)], class_name='fs-2'),
+                dbc.NavbarBrand(
+                    [
+                        "PointWx",
+                        DashIconify(icon="meteocons:thunderstorms-day-fill", width=60),
+                    ],
+                    class_name="fs-2",
+                ),
                 html.Div(
-                    id='navbar-title-for-mobile',
-                    className='d-lg-none fs-6',  # Show only on mobile devices
-                    style={'color': 'white'}
+                    id="navbar-title-for-mobile",
+                    className="d-xl-none fs-6",  # Show only on mobile devices
+                    style={"color": "white"},
                 ),
                 dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
                 dbc.Collapse(
@@ -43,12 +57,11 @@ def navbar():
                     id="navbar-collapse",
                     navbar=True,
                 ),
-                
             ]
         ),
         color="dark",
         dark=True,
-        expand='lg'
+        expand="xl",
     )
 
 
@@ -59,11 +72,21 @@ def navbar():
     prevent_initial_call=True,
 )
 def toggle_navbar_collapse(n, is_open):
+    """
+    Toggle the collapse of the navbar if the navbar toggler button
+    is pressed. Note that this button will not appear on large screens.
+    """
     if n:
         return not is_open
     return is_open
 
 
+"""
+On small devices, when any element of the navbar (navlink) is pressed,
+then automatically collapse the navbar again. In fact, the navbar takes too 
+much space on small screens so it doesn't make sense to keep that open.
+Closing manually would require an extra click plus eventually scrolling.
+"""
 clientside_callback(
     """
     function toggleCollapse(n_clicks) {
