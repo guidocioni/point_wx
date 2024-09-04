@@ -351,5 +351,5 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
 
 fig_subplots = dcc.Graph(
-    id=dict(type="figure", id="deterministic"), config=images_config, style={'height':'95vh'}
+    id=dict(type="figure", id="deterministic"), config=images_config, style={'height':'90vh'}
 )

@@ -460,6 +460,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
 
 
 fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"),
-                         config=images_config, style={'height':'95vh'})
+                         config=images_config, style={'height':'90vh'})
 # fig_polar = dcc.Graph(id='polar-plot',
 #                       config={**images_config, 'displayModeBar': False})
