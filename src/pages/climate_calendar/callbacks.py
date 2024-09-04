@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_historical_daily_data
+from utils.openmeteo_api import get_historical_daily_data, compute_climatology
 from utils.custom_logger import logging
 from datetime import date, timedelta
 from .figures import make_calendar_figure
@@ -31,8 +31,18 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
     loc = locations[locations["id"] == location[0]["value"]]
 
     try:
-        if graph_type == 'accumulated_precipitation':
+        if graph_type in ['accumulated_precipitation', 'precipitation_days', 'dry_days', 'precipitation_anomaly']:
             var = 'precipitation_sum'
+        elif graph_type == 'snow_days':
+            var = 'snowfall_sum'
+        elif graph_type in ['frost_days', 'tropical_nights']:
+            var = 'temperature_2m_min'
+        elif graph_type in ['hot_days']:
+            var = 'temperature_2m_max'
+        elif graph_type in ['overcast_days', 'partly_cloudy_days', 'sunny_days']:
+            var = 'cloudcover_mean'
+        elif graph_type == 'temperature_anomaly':
+            var = 'temperature_2m_mean'
         else:
             raise ValueError()
 
@@ -41,9 +51,25 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
-            start_date='1991-01-01',
+            start_date='1981-01-01',
             end_date=(date.today() - timedelta(days=6)).strftime("%Y-%m-%d")
         )
+        if graph_type in ['precipitation_anomaly', 'temperature_anomaly']:
+            data['doy'] = data.time.dt.strftime("%m%d")
+            clima = compute_climatology(
+                        latitude=loc["latitude"].item(),
+                        longitude=loc["longitude"].item(),
+                        model='era5_seamless',
+                        variables=var,
+                        daily=True
+            )
+            clima.attrs = data.attrs.copy()
+            data = data.merge(
+                clima.rename(columns={var:var+"_clima"}),
+                left_on='doy',
+                right_on='doy'
+            ).sort_values(by='time')
+            data.attrs = clima.attrs.copy()
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"

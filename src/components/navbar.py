@@ -94,7 +94,7 @@ clientside_callback(
         var viewportWidth = window.innerWidth;
 
         // Set a threshold for the viewport width when collapse should not happen
-        var threshold = 768;  // Adjust this threshold as needed
+        var threshold = 1200;  // Adjust this threshold as needed
 
         // Conditionally toggle the collapse based on viewport size
         if (viewportWidth <= threshold) {

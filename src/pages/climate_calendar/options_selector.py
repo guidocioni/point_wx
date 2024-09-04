@@ -17,10 +17,22 @@ opts_selector = dbc.Card(
             id="graph-selection-climate-calendar",
             data=[
                     {"label": "Accumulated precipitation", "value": "accumulated_precipitation"},
+                    {"label": "Wet days (P >= 1mm)", "value": "precipitation_days"},
+                    {"label": "Precipitation anomaly", "value": "precipitation_anomaly"},
+                    {"label": "Snow days", "value": "snow_days"},
+                    {"label": "Dry days", "value": "dry_days"},
+                    {"label": "Frost days (Tmin <= 0°C)", "value": "frost_days"},
+                    {"label": "Overcast days", "value": "overcast_days"},
+                    {"label": "Partly cloudy days", "value": "partly_cloudy_days"},
+                    {"label": "Sunny days", "value": "sunny_days"},
+                    {"label": "Hot days (Tmax >= 30°C)", "value": "hot_days"},
+                    {"label": "Tropical nights (Tmin >= 20°C)", "value": "tropical_nights"},
+                    {"label": "Temperature anomaly", "value": "temperature_anomaly"},
                 ],
             value="accumulated_precipitation",
             className="mb-2",
-            allowDeselect=False
+            allowDeselect=False,
+            persistence='true'
         ),
         dbc.Button(
             "Submit",
