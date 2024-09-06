@@ -144,7 +144,7 @@ def make_calendar_figure(df, graph_type, title=None):
         dragmode=False,
         xaxis=dict(showgrid=True, title_text="Year"),
         yaxis=dict(
-            showgrid=True, fixedrange=True, showticklabels=True, title_text="Month"
+            showgrid=True, showticklabels=True, title_text="Month"
         ),
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
     )
