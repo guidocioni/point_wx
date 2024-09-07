@@ -150,7 +150,7 @@ def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
         model="gpt-4o-mini",
         messages=messages,
         tools=tools,  # Add tools for function calling
-        max_tokens=250,
+        max_tokens=300,
         temperature=0.9,
     )
 
@@ -244,7 +244,7 @@ def handle_tool_calls(response, messages, chat_history, session_id):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
-        max_tokens=250,
+        max_tokens=300,
         temperature=0.9,
     )
 

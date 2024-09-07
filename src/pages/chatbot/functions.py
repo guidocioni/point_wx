@@ -7,6 +7,8 @@ from utils.openmeteo_api import make_request, compute_climatology, r
 from utils.settings import cache, OPENWEATHERMAP_KEY
 from datetime import datetime
 import pytz
+import json
+import pandas as pd
 
 location_object = {
     "type": "object",
@@ -112,25 +114,6 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_climatology",
-            "description": (
-                "Get the daily climatological data (data averaged over a 30 years period). "
-                "The output of this function will be a JSON exported from a pandas dataframe using the orient='records' option. In order to identify the day of the year use the 'doy' attribute, which was obtained from the date by formatting as '%m%d'. Note that there is no year in this date, as these data are multi-year average. Here is an example of a response: [{'doy': '0101','temperature_2m_max': 3.6,'temperature_2m_min':-0.6,'sunshine_duration': 3.0,'precipitation_sum': 1.5,'rain_sum': 1.4,'snowfall_sum':0.1}] means that on the first of January ('0101') the expected daily maximum temperature is 3.6°C and the daily sum of precipitation is 1.5 mm."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "location": location_object,
-                },
-                "required": ["location"],
-                "additionalProperties": False,
-            },
-        },
-        "strict": True,
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "get_historical_daily_data",
             "description": (
                 "Get the daily historical data for a location. "
@@ -140,6 +123,10 @@ tools = [
                 "type": "object",
                 "properties": {
                     "location": location_object,
+                    "var": {
+                        "type": "string",
+                        "description": "The variable to request the historical data from. Can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum']. You can only request one variable per function call.",
+                    },
                     "start_date": {
                         "type": "string",
                         "description": "The start date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today.",
@@ -149,7 +136,37 @@ tools = [
                         "description": "The end date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today",
                     },
                 },
-                "required": ["location", "start_date", "end_date"],
+                "required": ["location", "var", "start_date", "end_date"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_climatology",
+            "description": (
+                "Get the daily climatological data (data averaged over a 30 years period). The output of this function contains a time array without year information because this is a multi-year average. This time array is in the format %m-%d. Besides this, the formatting is the same as in 'get_historical_daily_data'."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": location_object,
+                    "var": {
+                        "type": "string",
+                        "description": "The variable to request the climatological data from. Can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum']. You can only request one variable per function call.",
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "The start date to retrieve climatological data. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "The end date to retrieve climatological data. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
+                    },
+                },
+                "required": ["location", "var", "start_date", "end_date"],
                 "additionalProperties": False,
             },
         },
@@ -248,25 +265,35 @@ def get_ensemble_forecast(location, start_date, end_date):
     return ensemble_data
 
 @cache.memoize(31536000)
-def get_climatology(location):
+def get_climatology(location, var, start_date, end_date):
     clima = compute_climatology(
         latitude=location["latitude"],
         longitude=location["longitude"],
         daily=True,
         model="era5_seamless",
-        variables="temperature_2m_max,temperature_2m_min,sunshine_duration,precipitation_sum,rain_sum,snowfall_sum",
+        variables=var,
     )
-    clima["sunshine_duration"] = clima["sunshine_duration"] * 3600.0
-    weather_data = clima.to_dict(orient="records")
+    if 'sunshine_duration' in clima.columns:
+        clima["sunshine_duration"] = clima["sunshine_duration"] * 3600.0
+    # Select the right dates
+    time = pd.date_range(start_date, end_date, freq='1D')
+    clima = clima[clima.doy.isin(time.strftime("%m%d"))]
+    clima['time'] = time.strftime("%m-%d")
+    weather_data = clima.attrs
+    weather_data['daily'] = {}
+    weather_data['daily']['time'] = clima['time'].to_list()
+    weather_data['daily'][var] = clima[var].to_list()
+
+    weather_data = json.dumps(weather_data)
 
     return weather_data
 
 @cache.memoize(86400)
-def get_historical_daily_data(location, start_date, end_date):
+def get_historical_daily_data(location, var, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
         "longitude": location["longitude"],
-        "daily": "temperature_2m_max,temperature_2m_min,sunshine_duration,precipitation_sum,rain_sum,snowfall_sum",
+        "daily": var,
         "timezone": "auto",
         "models": "era5_seamless",
         "start_date": start_date,
