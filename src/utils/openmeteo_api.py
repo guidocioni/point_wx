@@ -87,6 +87,14 @@ def get_forecast_data(latitude=53.55,
                       start_date=None,
                       end_date=None,
                       minutes_15=False):
+    # For the accumulated variables
+    if "accumulated_precip" in variables:
+        variables = variables.replace("accumulated_precip", "precipitation")
+    if "accumulated_liquid" in variables:
+        variables = variables.replace("accumulated_liquid", "rain")
+    if "accumulated_snow" in variables:
+        variables = variables.replace("accumulated_snow", "snowfall")
+
     payload = {
         "latitude": latitude,
         "longitude": longitude,
