@@ -16,8 +16,9 @@ def make_acc_figure(df, year, var, title=None):
             y=df["q1"],
             mode="lines",
             name="5th Percentile",
-            line=dict(width=0.1, color="gray"),
+            line=dict(width=0, color="gray"),
             showlegend=False,
+            hoverinfo="skip"
         ),
     )
 
@@ -96,8 +97,9 @@ def make_daily_figure(df, year, var, title=None):
             x=df["time"],
             y=df[f"{var}_clima"],
             mode="lines",
-            line=dict(width=0.01),
+            line=dict(width=0),
             showlegend=False,
+            hoverinfo="skip"
         ),
     )
     fig.add_trace(
@@ -115,8 +117,9 @@ def make_daily_figure(df, year, var, title=None):
             x=df["time"],
             y=df[f"{var}_clima"],
             mode="lines",
-            line=dict(width=0.01),
+            line=dict(width=0),
             showlegend=False,
+            hoverinfo="skip"
         ),
     )
     fig.add_trace(
@@ -134,7 +137,7 @@ def make_daily_figure(df, year, var, title=None):
             x=df.dummy_date,
             y=df[f"{var}_clima"],
             mode="lines",
-            name="Mean",
+            name="Clima",
             line=dict(width=3, color="black"),
             showlegend=True,
         ),
@@ -145,8 +148,9 @@ def make_daily_figure(df, year, var, title=None):
             y=df["q05"],
             mode="lines",
             name="5th Percentile",
-            line=dict(width=0.1, color="gray"),
+            line=dict(width=0, color="gray"),
             showlegend=False,
+            hoverinfo="skip"
         ),
     )
     fig.add_trace(
@@ -155,7 +159,7 @@ def make_daily_figure(df, year, var, title=None):
             y=df["q95"],
             mode="lines",
             name="5-95th percentiles range",
-            line=dict(width=0.1, color="gray"),
+            line=dict(width=0, color="gray"),
             fillcolor="rgba(0, 0, 0, 0.2)",
             showlegend=True,
             fill="tonexty",
