@@ -39,18 +39,24 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_deterministic_forecast",
-            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') and every 15 minutes ('minutely_15').",
+            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') and every 15 minutes ('minutely_15'). The returned data may contain the following variables: "
+            "-precipitation is the total preciptiation (in all forms), which is a sum of rain, snowfall, showers. Precipitation probability is based on ensemble members. "
+            "-cloud cover total is the total amount at the surface, which is consisted by low, mid and high cloud cover"
+            "-wind_speed_10m,wind_direction_10m,wind_gusts_10m are the speed, direction and gusts, respectively at 10m. Gust is the wind speed maximum over the period. "
+            "-snow_depth differs from snowfall being the istantaneous snow height at the surface "
+            "-cape is the convective available potential energy"
+            ,
             "parameters": {
                 "type": "object",
                 "properties": {
                     "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 10 days from today.",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 10 days from today.",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today; end_date needs to be larger or equal than start_date.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -72,11 +78,11 @@ tools = [
                     "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today; end_date needs to be larger or equal than start_date.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -98,11 +104,11 @@ tools = [
                     "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The minimum that this parameter can be is today, the maximum is 15 days from today.",
+                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today; end_date needs to be larger or equal than start_date.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -199,7 +205,7 @@ tools = [
         "function": {
             "name": "get_current_conditions",
             "description": (
-                "Get current conditions in a specific location based on weather stations, radar and satellite measurements."
+                "Get current conditions in a specific location based on observations."
             ),
             "parameters": {
                 "type": "object",
@@ -207,6 +213,28 @@ tools = [
                     "location": location_object,
                 },
                 "required": ["location"],
+                "additionalProperties": False,
+            },
+        },
+        "strict": True,
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_daily_summary",
+            "description": (
+                "Get daily summary data in a specific location based on observations (not models)."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": location_object,
+                    "date": {
+                        "type": "string",
+                        "description": "The date to request the daily summary for, needs to be in the format YYYY-mm-dd.",
+                    },
+                },
+                "required": ["location" ,"date"],
                 "additionalProperties": False,
             },
         },
@@ -229,7 +257,7 @@ def get_deterministic_forecast(location, start_date, end_date):
         "latitude": location["latitude"],
         "longitude": location["longitude"],
         "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,showers,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,temperature_850hPa,precipitation_probability",
-        "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,showers,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+        # "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,showers,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
         "timezone": "auto",
         "models": "best_match",
         "start_date": start_date,
@@ -339,6 +367,7 @@ def get_radar_data(address):
     return resp.json()
 
 
+@cache.memoize(60)
 def get_current_conditions(location):
     payload = {
         "lat": location["latitude"],
@@ -347,6 +376,21 @@ def get_current_conditions(location):
         "units": "metric"
     }
     resp = r.get(url="https://api.openweathermap.org/data/2.5/weather", params=payload)
+    resp.raise_for_status()
+
+    return resp.json()
+
+
+@cache.memoize(60)
+def get_daily_summary(location, date):
+    payload = {
+        "lat": location["latitude"],
+        "lon": location["longitude"],
+        "appid": OPENWEATHERMAP_KEY,
+        "units": "metric",
+        "date": date
+    }
+    resp = r.get(url="https://api.openweathermap.org/data/3.0/onecall/day_summary", params=payload)
     resp.raise_for_status()
 
     return resp.json()
