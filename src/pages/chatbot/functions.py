@@ -1,13 +1,14 @@
 """
 This file contains a wrapper for all functions that are exposed to the models automatically
 throuh tools.
+TODO
+- Remove useless spaces? 
 """
 
 from utils.openmeteo_api import make_request, compute_climatology, r
 from utils.settings import cache, OPENWEATHERMAP_KEY
 from datetime import datetime
 import pytz
-import json
 import pandas as pd
 
 location_object = {
@@ -76,6 +77,10 @@ tools = [
                 "type": "object",
                 "properties": {
                     "location": location_object,
+                    "var": {
+                        "type": "string",
+                        "description": "The variable to request the ensemble data from. Can be one of ['temperature_2m','precipitation','rain','snowfall']. You can only request one variable per function call.",
+                    },
                     "start_date": {
                         "type": "string",
                         "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today.",
@@ -85,7 +90,7 @@ tools = [
                         "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today; end_date needs to be larger or equal than start_date.",
                     },
                 },
-                "required": ["location", "start_date", "end_date"],
+                "required": ["location", "var", "start_date", "end_date"],
                 "additionalProperties": False,
             },
         },
@@ -242,6 +247,10 @@ tools = [
     },
 ]
 
+def round_if_close(value):
+    if isinstance(value, (int, float)) and value.is_integer():
+        return int(value)  # Return as int if it's already an integer (like 1000.0 -> 1000)
+    return value  # Otherwise, leave it unchanged
 
 def get_current_datetime(timezone=None):
     if timezone:
@@ -257,7 +266,6 @@ def get_deterministic_forecast(location, start_date, end_date):
         "latitude": location["latitude"],
         "longitude": location["longitude"],
         "hourly": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,showers,snowfall,pressure_msl,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape,sunshine_duration,snow_depth,temperature_850hPa,precipitation_probability",
-        # "minutely_15": "temperature_2m,relative_humidity_2m,precipitation,rain,showers,snowfall,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
         "timezone": "auto",
         "models": "best_match",
         "start_date": start_date,
@@ -265,18 +273,21 @@ def get_deterministic_forecast(location, start_date, end_date):
     }
     resp = make_request(url="https://api.open-meteo.com/v1/forecast", payload=payload)
     weather_data = resp.json()
-    weather_data["location"] = location["name"]
-    if "country" in location:
-        weather_data["country"] = location["country"]
+    # Remove useless info
+    for el in ['generationtime_ms', 'utc_offset_seconds', 'timezone_abbreviation']:
+        weather_data.pop(el, None)
+    # Correct precision
+    for key in weather_data['hourly']:
+        weather_data['hourly'][key] = [round_if_close(val) for val in weather_data['hourly'][key]]
 
     return weather_data
 
 @cache.memoize(3600)
-def get_ensemble_forecast(location, start_date, end_date):
+def get_ensemble_forecast(location, var, start_date, end_date):
     payload = {
         "latitude": location["latitude"],
         "longitude": location["longitude"],
-        "hourly": "temperature_2m,precipitation,rain,snowfall",
+        "hourly": var,
         "timezone": "auto",
         "models": "icon_seamless",
         "start_date": start_date,
@@ -286,13 +297,16 @@ def get_ensemble_forecast(location, start_date, end_date):
         url="https://ensemble-api.open-meteo.com/v1/ensemble", payload=payload
     )
     ensemble_data = resp.json()
-    ensemble_data["location"] = location["name"]
-    if "country" in location:
-        ensemble_data["country"] = location["country"]
+    # Remove useless info
+    for el in ['generationtime_ms', 'utc_offset_seconds', 'timezone_abbreviation', 'hourly_units']:
+        ensemble_data.pop(el, None)
+    # Correct precision
+    for key in ensemble_data['hourly']:
+        ensemble_data['hourly'][key] = [round_if_close(val) for val in ensemble_data['hourly'][key]]
 
     return ensemble_data
 
-@cache.memoize(31536000)
+# @cache.memoize(31536000)
 def get_climatology(location, var, start_date, end_date):
     clima = compute_climatology(
         latitude=location["latitude"],
@@ -302,7 +316,7 @@ def get_climatology(location, var, start_date, end_date):
         variables=var,
     )
     if 'sunshine_duration' in clima.columns:
-        clima["sunshine_duration"] = clima["sunshine_duration"] * 3600.0
+        clima["sunshine_duration"] = (clima["sunshine_duration"] * 3600.0).astype(int)
     # Select the right dates
     time = pd.date_range(start_date, end_date, freq='1D')
     clima = clima[clima.doy.isin(time.strftime("%m%d"))]
@@ -312,7 +326,12 @@ def get_climatology(location, var, start_date, end_date):
     weather_data['daily']['time'] = clima['time'].to_list()
     weather_data['daily'][var] = clima[var].to_list()
 
-    weather_data = json.dumps(weather_data)
+    # Remove useless info
+    for el in ['generationtime_ms', 'utc_offset_seconds', 'timezone_abbreviation']:
+        weather_data.pop(el, None)
+    # Correct precision
+    for key in weather_data['daily']:
+        weather_data['daily'][key] = [round_if_close(val) for val in weather_data['daily'][key]]
 
     return weather_data
 
@@ -330,9 +349,12 @@ def get_historical_daily_data(location, var, start_date, end_date):
 
     resp = make_request("https://archive-api.open-meteo.com/v1/archive", payload)
     weather_data = resp.json()
-    weather_data["location"] = location["name"]
-    if "country" in location:
-        weather_data["country"] = location["country"]
+    # Remove useless info
+    for el in ['generationtime_ms', 'utc_offset_seconds', 'timezone_abbreviation']:
+        weather_data.pop(el, None)
+    # Correct precision
+    for key in weather_data['daily']:
+        weather_data['daily'][key] = [round_if_close(val) for val in weather_data['daily'][key]]
 
     return weather_data
 
@@ -352,9 +374,12 @@ def get_marine_forecast(location, start_date, end_date):
         url="https://marine-api.open-meteo.com/v1/marine", payload=payload
     )
     marine_data = resp.json()
-    marine_data["location"] = location["name"]
-    if "country" in location:
-        marine_data["country"] = location["country"]
+    # Remove useless info
+    for el in ['generationtime_ms', 'utc_offset_seconds', 'timezone_abbreviation']:
+        marine_data.pop(el, None)
+    # Correct precision
+    for key in marine_data['hourly']:
+        marine_data['hourly'][key] = [round_if_close(val) for val in marine_data['hourly'][key]]
     
     return marine_data
 
