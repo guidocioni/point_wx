@@ -61,7 +61,7 @@ tools = [
                     },
                     "daily": {
                         "type": "boolean",
-                        "description": "If set to True request daily extremes/accumulations",
+                        "description": "If set to True request daily extremes/accumulations, otherwise set to False to retrieve hourly data.",
                     },
                 },
                 "required": ["location", "start_date", "end_date", "daily"],
