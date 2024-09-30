@@ -40,12 +40,8 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_deterministic_forecast",
-            "description": "Get deterministic weather forecasts for a specific location and date range as JSON. Use it to get the input data for your analysis. These function returns an object with variables defined every hour ('hourly') or every day ('daily'). The returned data may contain the following variables: "
-            "-precipitation is the total preciptiation (in all forms), which is a sum of rain, snowfall, showers. Precipitation probability is based on ensemble members. "
-            "-cloud cover total is the total amount at the surface, which is consisted by low, mid and high cloud cover"
-            "-wind_speed_10m,wind_direction_10m,wind_gusts_10m are the speed, direction and gusts, respectively at 10m. Gust is the wind speed maximum over the period. "
-            "-snow_depth differs from snowfall being the istantaneous snow height at the surface "
-            "-cape is the convective available potential energy"
+            "description": "Get deterministic weather forecasts for a specific location and date range. "
+            "If the user asks for the data source used say that we use a best match algorithm which selects the best weather model for every location depending on global and limited area models available on open meteo. "
             ,
             "parameters": {
                 "type": "object",
@@ -53,11 +49,11 @@ tools = [
                     "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today.",
+                        "description": "The start date (format YYYY-mm-dd).",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today; end_date needs to be larger or equal than start_date.",
+                        "description": "The end date (format YYYY-mm-dd); end_date needs to be larger or equal than start_date.",
                     },
                     "daily": {
                         "type": "boolean",
@@ -75,7 +71,7 @@ tools = [
         "function": {
             "name": "get_ensemble_forecast",
             "description": (
-                "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast. The member number is affixed to the variable name, e.g. temperature_2m_member_23. This data contains less variables with respect to the deterministic forecast. Also, ensemble models are usually characterized by lower resolution."
+                "Get the ensemble weather data for a specific location and date range as JSON. This data contains multiple members for the same variable and is thus useful to estimate uncertainty in the forecast. The member number is affixed to the variable name, e.g. temperature_2m_member_23. If the user asks for the data source used say that we use the global, european and german domains from the ICON ensemble model."
             ),
             "parameters": {
                 "type": "object",
@@ -83,15 +79,15 @@ tools = [
                     "location": location_object,
                     "var": {
                         "type": "string",
-                        "description": "The variable to request the ensemble data from. Can be one of ['temperature_2m','precipitation','rain','snowfall']. You can only request one variable per function call.",
+                        "description": "The variable to request: can be one of ['temperature_2m','precipitation','rain','snowfall']. You can only request one variable per function call.",
                     },
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today.",
+                        "description": "The start date (format YYYY-mm-dd).",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 15 days from today; end_date needs to be larger or equal than start_date.",
+                        "description": "The end date (format YYYY-mm-dd); end_date needs to be larger or equal than start_date.",
                     },
                 },
                 "required": ["location", "var", "start_date", "end_date"],
@@ -105,7 +101,7 @@ tools = [
         "function": {
             "name": "get_marine_forecast",
             "description": (
-                "Get marine forecasts concerning variables like wave height, period and direction. These date are based on marine models that only simulate ocean circulation based on atmospheric forcing."
+                "Get marine forecasts concerning variables like wave height, period and direction. These date are based on marine models that only simulate ocean circulation based on atmospheric forcing. If the user asks for the data source used say that we use a best match algorithm to select the best model for every location among the marine models available on openmeteo."
             ),
             "parameters": {
                 "type": "object",
@@ -113,11 +109,11 @@ tools = [
                     "location": location_object,
                     "start_date": {
                         "type": "string",
-                        "description": "The start date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today.",
+                        "description": "The start date of the forecast (format YYYY-mm-dd).",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date of the forecast. Needs to be in the format YYYY-mm-dd. The maximum is 10 days from today; end_date needs to be larger or equal than start_date.",
+                        "description": "The end date of the forecast (format YYYY-mm-dd); end_date needs to be larger or equal than start_date.",
                     },
                 },
                 "required": ["location", "start_date", "end_date"],
@@ -132,7 +128,7 @@ tools = [
             "name": "get_historical_daily_data",
             "description": (
                 "Get the daily historical data for a location. "
-                "This is the best estimate that we have according to reanalysis of the weather evolution everywhere on Earth. Still, it is based on models so it's not the same as a direct observation."
+                "This is the best estimate that we have according to reanalysis of the weather evolution everywhere on Earth. Still, it is based on models so it's not the same as a direct observation. If the user asks for the data source, say that ERA5 and ERA5-Land reanalyses are used."
             ),
             "parameters": {
                 "type": "object",
@@ -140,15 +136,15 @@ tools = [
                     "location": location_object,
                     "var": {
                         "type": "string",
-                        "description": "The variable to request the historical data from. Can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum']. You can only request one variable per function call.",
+                        "description": "The variable to request: can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum'].",
                     },
                     "start_date": {
                         "type": "string",
-                        "description": "The start date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today.",
+                        "description": "The start date (format YYYY-mm-dd). The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date to retrieve historical data. Needs to be in the format YYYY-mm-dd. The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today",
+                        "description": "The end date (format YYYY-mm-dd). The minimum value for this parameter is 1940-01-01, the maximum value is 6 days before today",
                     },
                     "agg_function": {       
                         "type": "string",
@@ -166,7 +162,7 @@ tools = [
         "function": {
             "name": "get_climatology",
             "description": (
-                "Get the daily climatological data, that is data averaged over a 30 years period, which in this case is 1991-2020. The output of this function contains a time array without year information because this is a multi-year average. This time array is in the format %m-%d. Besides this, the formatting is the same as in 'get_historical_daily_data'."
+                "Get the daily climatological data, that is data averaged over a 30 years period (1991-2020). The output of this function contains a time array without year information because this is a multi-year average. This time array is in the format %m-%d. Besides this, the formatting is the same as in 'get_historical_daily_data'. If the user asks for the data source, say that ERA5 and ERA5-Land reanalyses are used."
             ),
             "parameters": {
                 "type": "object",
@@ -174,15 +170,15 @@ tools = [
                     "location": location_object,
                     "var": {
                         "type": "string",
-                        "description": "The variable to request the climatological data from. Can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum']. You can only request one variable per function call.",
+                        "description": "The variable to request: can be one of ['temperature_2m_max','temperature_2m_min','sunshine_duration','precipitation_sum','rain_sum','snowfall_sum'].",
                     },
                     "start_date": {
                         "type": "string",
-                        "description": "The start date to retrieve climatological data. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
+                        "description": "The start date. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
                     },
                     "end_date": {
                         "type": "string",
-                        "description": "The end date to retrieve climatological data. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
+                        "description": "The end date. Needs to be in the format 2020-mm-dd. Note that the year is arbitrarily set to 2020 no matter the period you're comparing to.",
                     },
                     "agg_function": {       
                         "type": "string",
@@ -208,7 +204,7 @@ tools = [
                 "properties": {
                     "address": {
                         "type": "string",
-                        "description": "An address (could be a street, road, location or city) located in Germany",
+                        "description": "An address located in Germany",
                     },
                 },
                 "required": ["address"],
@@ -222,7 +218,7 @@ tools = [
         "function": {
             "name": "get_current_conditions",
             "description": (
-                "Get current conditions in a specific location based on observations."
+                "Get current conditions in a specific location based on observations. The data source is openweathermap."
             ),
             "parameters": {
                 "type": "object",
@@ -240,7 +236,7 @@ tools = [
         "function": {
             "name": "get_daily_summary",
             "description": (
-                "Get daily summary data in a specific location based on observations (not models)."
+                "Get daily data in a specific location based on observations. The data source is openweathermap."
             ),
             "parameters": {
                 "type": "object",
@@ -248,7 +244,7 @@ tools = [
                     "location": location_object,
                     "date": {
                         "type": "string",
-                        "description": "The date to request the daily summary for, needs to be in the format YYYY-mm-dd.",
+                        "description": "The date to request the data (format YYYY-mm-dd).",
                     },
                 },
                 "required": ["location" ,"date"],
@@ -370,14 +366,17 @@ def get_historical_daily_data(location, var, start_date, end_date, agg_function=
     }
 
     resp = make_request("https://archive-api.open-meteo.com/v1/archive", payload).json()
-    daily = pd.DataFrame.from_dict(resp['daily'])
+    daily = pd.DataFrame.from_dict(resp['daily']).set_index('time')
     weather_data = {x: resp[x] for x in resp if x not in ["hourly", "daily"]}
     weather_data['daily'] = {}
     if agg_function is not None:
-        weather_data['daily']['time'] = daily['time'].iloc[0] + " to " + daily['time'].iloc[-1]
+        if agg_function in ['min', 'max']:
+            weather_data['daily']['time'] = daily[var].agg(f'idx{agg_function}')
+        else:
+            weather_data['daily']['time'] = "" # Better leave it empty for consistency
         weather_data['daily'][var] = daily[var].agg(agg_function).round(2)
     else:
-        weather_data['daily']['time'] = daily['time'].to_list()
+        weather_data['daily']['time'] = daily.index.to_list()
         weather_data['daily'][var] = daily[var].to_list()
         # Correct precision
         for key in weather_data['daily']:
