@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_forecast_data
 from utils.custom_logger import logging
-from .figures import make_heatmap
+from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
 
@@ -19,11 +19,12 @@ from io import StringIO
         State("variable-selection-deterministic-heatmap", "value"),
         State("from-now-switch", "checked"),
         State("forecast-days", "value"),
+        State("heatmap-line-plot-switch", "checked"),
         State("minutely-15-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, minutes_15_):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, _is_heatmap, minutes_15_):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -55,7 +56,10 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             f"<sup>Variable = <b>{variable}</b> | "
             f"Models = <b>{', '.join(model)}</b></sup>"
         )
-        return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
+        if _is_heatmap:
+            return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
+        else:
+            return make_lineplot(data, var=variable, models=model, title=loc_label), None, False
 
     except Exception as e:
         logging.error(

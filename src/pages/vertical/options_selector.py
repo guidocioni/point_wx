@@ -48,8 +48,9 @@ opts_selector = dbc.Card(
                         step=1,
                         value=6,
                         size="xs",
-                        w=90,
-                        persistence="true"
+                        w=70,
+                        persistence="true",
+                        className='custom-number-input'
                     ),
                 ),
             ]

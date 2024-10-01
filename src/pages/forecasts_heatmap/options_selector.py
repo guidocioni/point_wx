@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS
+from dash_iconify import DashIconify
 
 opts_selector = dbc.Card(
     [
@@ -26,6 +27,7 @@ opts_selector = dbc.Card(
             searchable=True
             ),
         dmc.Group(
+            gap=8,
             children=[
                 dmc.Tooltip(
                     label="When selected the data will be subset "
@@ -62,6 +64,21 @@ opts_selector = dbc.Card(
                     ),
                 ),
                 dmc.Tooltip(
+                    label="Select between heatmap and line plot",
+                    w=200,
+                    multiline=True,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="heatmap-line-plot-switch",
+                        offLabel=DashIconify(icon="clarity:scatter-plot-line", width=15),
+                        onLabel=DashIconify(icon="clarity:box-plot-line", width=15),
+                        checked=True,
+                        label="Type",
+                        size="sm",
+                        labelPosition="left",
+                    ),
+                ),
+                dmc.Tooltip(
                     label="How many forecast days to fetch and plot. For 15 minutes data the maximum is 3.",
                     multiline=True,
                     w=200,
@@ -76,8 +93,9 @@ opts_selector = dbc.Card(
                         step=1,
                         value=7,
                         size="xs",
-                        w=90,
-                        persistence="true"
+                        w=60,
+                        persistence="true",
+                        className='custom-number-input'
                     ),
                 ),
             ]

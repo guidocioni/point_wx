@@ -118,3 +118,28 @@ a.modebar-btn {
 .Select.is-open {
   z-index: 1003;
 }
+
+/* Override the padding for the mantine-Switch-label class */
+.mantine-Switch-label {
+  padding-inline-end: 5px !important;
+}
+
+.mantine-Switch-labelWrapper {
+  font-size: 12px !important;
+}
+
+/* Target the custom number input component */
+.custom-number-input input {
+  font-size: 11px !important;    /* Adjust font size */
+  padding: 4px !important;       /* Adjust padding */
+}
+
+/* Adjust the left section (label 'Days') */
+.custom-number-input .mantine-NumberInput-section {
+  font-size: 11px !important;    /* Adjust label size */
+  padding: 4px !important; 
+}
+
+.custom-number-input .mantine-NumberInput-wrapper {
+  --input-height: calc(var(--input-height-xs) * 0.8) !important;
+}

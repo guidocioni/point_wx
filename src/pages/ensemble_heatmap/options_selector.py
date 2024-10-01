@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS
+from dash_iconify import DashIconify
 
 opts_selector = dbc.Card(
     [
@@ -23,6 +24,7 @@ opts_selector = dbc.Card(
             clearable=False,
         ),
         dmc.Group(
+            gap=10,
             children=[
                 dmc.Tooltip(
                     label="When selected the data will be decimated "
@@ -54,6 +56,21 @@ opts_selector = dbc.Card(
                         onLabel="ON",
                         offLabel="OFF",
                         label="From now on",
+                        size="sm",
+                        labelPosition="left",
+                    ),
+                ),
+                dmc.Tooltip(
+                    label="Select between heatmap and line plot",
+                    w=200,
+                    multiline=True,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="heatmap-line-plot-switch",
+                        offLabel=DashIconify(icon="clarity:scatter-plot-line", width=15),
+                        onLabel=DashIconify(icon="clarity:box-plot-line", width=15),
+                        checked=True,
+                        label="Type",
                         size="sm",
                         labelPosition="left",
                     ),

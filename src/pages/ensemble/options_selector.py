@@ -16,6 +16,7 @@ opts_selector = dbc.Card(
             allowDeselect=False,
         ),
         dmc.Group(
+            gap=10,
             children=[
                 dmc.Tooltip(
                     label="When selected the 1991-2020 climatology "
@@ -59,8 +60,8 @@ opts_selector = dbc.Card(
                     withArrow=True,
                     children=dmc.Switch(
                         id="wind-cloud-plot-switch",
-                        offLabel=DashIconify(icon="wi:strong-wind", width=30),
-                        onLabel=DashIconify(icon="wi:cloudy", width=30),
+                        offLabel=DashIconify(icon="wi:strong-wind", width=25),
+                        onLabel=DashIconify(icon="wi:cloudy", width=25),
                         checked=True,
                         label="Plots",
                         size="sm",

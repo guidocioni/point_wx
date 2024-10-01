@@ -1,8 +1,10 @@
 from dash import dcc
 import pandas as pd
-from utils.settings import images_config
+from utils.settings import images_config, DEFAULT_TEMPLATE
+from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
 
 
 def make_heatmap(df, var, models, title=None):
@@ -130,6 +132,78 @@ def make_heatmap(df, var, models, title=None):
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
 
     return fig
+
+
+def make_lineplot(
+    df, var, models, mode="lines+markers", showlegend=False, fill="none", alpha=1, title=None, showgrid=True
+):
+    fig = go.Figure()
+    traces = []
+    # Define cyclical colors to be used
+    colors = pio.templates[DEFAULT_TEMPLATE]["layout"]["colorway"] * 5
+    i = 0
+    for model in models:
+        if len(models) > 1:
+            var_model = var + "_" + model
+        else:
+            var_model = var
+        if var_model in df.columns:
+            color = attach_alpha_to_hex_color(alpha, colors[i])
+            color = hex2rgba(color)
+            traces.append(
+                go.Scatter(
+                    x=df.loc[:, "time"],
+                    y=df.loc[:, var_model],
+                    mode=mode,
+                    name=model,
+                    marker=dict(size=5, color=color),
+                    line=dict(width=2, color=color),
+                    fillcolor=color,
+                    hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
+                    showlegend=showlegend,
+                    fill=fill,
+                ),
+            )
+        i += 1
+    for trace in traces:
+        fig.add_trace(trace)
+
+    fig.update_layout(
+        modebar=dict(orientation='v'),
+        dragmode=False,
+        xaxis=dict(showgrid=showgrid, tickformat='%a %-d %b\n%H:%M'),
+        yaxis=dict(showgrid=showgrid, fixedrange=True),
+        margin={"r": 5, "t": 40, "l": 5, "b": 5},
+        updatemenus=[
+            dict(
+                type="buttons",
+                x=0.5,
+                y=-0.09,
+                xanchor='center',
+                direction='right',
+                buttons=[
+                    dict(label="24H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": df['time'].min() - pd.to_timedelta('0.5h'),
+                                "xaxis.range[1]": df['time'].min() + pd.to_timedelta('24.5h')}]),
+                    dict(label="48H",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": df['time'].min() - pd.to_timedelta('0.5h'),
+                                "xaxis.range[1]": df['time'].min() + pd.to_timedelta('48.5h')}]),
+                    dict(label="Reset",
+                         method="relayout",
+                         args=[{"xaxis.range[0]": df['time'].min() - pd.to_timedelta('0.5h'),
+                                "xaxis.range[1]": df['time'].max() + pd.to_timedelta('0.5h')}]),
+                ],
+                pad=dict(b=5),
+            ),
+        ],
+    )
+    if title is not None:
+        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
+    
+    return fig
+
 
 # CARDS for layout
 fig_subplots = dcc.Graph(

@@ -16,6 +16,7 @@ opts_selector = dbc.Card(
             hidePickedOptions=True,
         ),
         dmc.Group(
+            gap=10,
             children=[
                 dmc.Tooltip(
                     label="When selected the data will be subset "
@@ -66,8 +67,9 @@ opts_selector = dbc.Card(
                         step=1,
                         value=7,
                         size="xs",
-                        w=90,
-                        persistence="true"
+                        w=60,
+                        persistence="true",
+                        className='custom-number-input'
                     ),
                 ),
             ]
