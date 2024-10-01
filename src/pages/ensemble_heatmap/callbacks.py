@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data
 from utils.custom_logger import logging
-from .figures import make_heatmap
+from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
 
@@ -20,10 +20,11 @@ from io import StringIO
         State("variable-selection-heatmap", "value"),
         State("from-now-switch", "checked"),
         State("decimate-switch", "checked"),
+        State("heatmap-line-plot-switch", "checked"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable, from_now_, decimate_):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, decimate_, _is_heatmap):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -51,8 +52,10 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             f"<sup>Variable = <b>{variable}</b> | "
             f"Ens = <b>{model.upper()}</b></sup>"
         )
-
-        return make_heatmap(data, var=variable, title=loc_label), None, False
+        if _is_heatmap:
+            return make_heatmap(data, var=variable, title=loc_label), None, False
+        else:
+            return make_lineplot(data, var=variable, title=loc_label), None, False
 
     except Exception as e:
         logging.error(
