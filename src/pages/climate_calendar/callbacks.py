@@ -35,13 +35,13 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
             var = 'precipitation_sum'
         elif graph_type == 'snow_days':
             var = 'snowfall_sum'
-        elif graph_type in ['frost_days', 'tropical_nights']:
+        elif graph_type in ['frost_days', 'tropical_nights', 'temperature_min']:
             var = 'temperature_2m_min'
-        elif graph_type in ['hot_days']:
+        elif graph_type in ['hot_days', 'temperature_max']:
             var = 'temperature_2m_max'
         elif graph_type in ['overcast_days', 'partly_cloudy_days', 'sunny_days']:
             var = 'cloudcover_mean'
-        elif graph_type == 'temperature_anomaly':
+        elif graph_type in ['temperature_anomaly', 'temperature_mean']:
             var = 'temperature_2m_mean'
         else:
             raise ValueError()

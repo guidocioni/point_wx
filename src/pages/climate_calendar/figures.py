@@ -107,6 +107,16 @@ def make_calendar_figure(df, graph_type, title=None):
         )
         out = out.round(1)
         cmap = "RdBu_r"
+    elif graph_type in ["temperature_mean", "temperature_min", "temperature_max"]:
+        aggfunc = graph_type.replace("temperature_", "")
+        out = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values=f"temperature_2m_{aggfunc}",
+            aggfunc=aggfunc,
+        )
+        out = out.round(1)
+        cmap = "Turbo"
     elif graph_type == 'precipitation_anomaly':
         values = df.pivot_table(
             index=df.time.dt.month,
