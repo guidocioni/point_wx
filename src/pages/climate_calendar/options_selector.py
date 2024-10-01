@@ -20,6 +20,7 @@ opts_selector = dbc.Card(
                     {"label": "Wet days (P >= 1mm)", "value": "precipitation_days"},
                     {"label": "Precipitation anomaly", "value": "precipitation_anomaly"},
                     {"label": "Snow days", "value": "snow_days"},
+                    {"label": "Total snowfall", "value": "snowfall"},
                     {"label": "Dry days", "value": "dry_days"},
                     {"label": "Frost days (Tmin <= 0°C)", "value": "frost_days"},
                     {"label": "Overcast days", "value": "overcast_days"},
@@ -27,6 +28,7 @@ opts_selector = dbc.Card(
                     {"label": "Sunny days", "value": "sunny_days"},
                     {"label": "Hot days (Tmax >= 30°C)", "value": "hot_days"},
                     {"label": "Tropical nights (Tmin >= 20°C)", "value": "tropical_nights"},
+                    {"label": "Dominant wind direction", "value": "dominant_wind_direction"},
                     {"label": "Temperature anomaly", "value": "temperature_anomaly"},
                     {"label": "Average temperature", "value": "temperature_mean"},
                     {"label": "Minimum temperature", "value": "temperature_min"},
@@ -35,6 +37,7 @@ opts_selector = dbc.Card(
             value="accumulated_precipitation",
             className="mb-2",
             allowDeselect=False,
+            searchable=True,
             persistence='true'
         ),
         dbc.Button(

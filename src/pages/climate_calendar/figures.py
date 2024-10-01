@@ -33,6 +33,15 @@ def make_calendar_figure(df, graph_type, title=None):
             aggfunc="sum",
         )
         cmap = 'Burgyl'
+    elif graph_type == 'snowfall':
+        out = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values="snowfall_sum",
+            aggfunc="sum",
+        )
+        out = out.round(1)
+        cmap = 'Burgyl'
     elif graph_type == 'dry_days':
         df['dry_days'] = df['precipitation_sum'] < 1.0
         out = df.pivot_table(
@@ -107,6 +116,15 @@ def make_calendar_figure(df, graph_type, title=None):
         )
         out = out.round(1)
         cmap = "RdBu_r"
+    elif graph_type == 'dominant_wind_direction':
+        out = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values="wind_direction_10m_dominant",
+            aggfunc="median",
+        )
+        out = out.round(0)
+        cmap = "delta"
     elif graph_type in ["temperature_mean", "temperature_min", "temperature_max"]:
         aggfunc = graph_type.replace("temperature_", "")
         out = df.pivot_table(

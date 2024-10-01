@@ -33,7 +33,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
     try:
         if graph_type in ['accumulated_precipitation', 'precipitation_days', 'dry_days', 'precipitation_anomaly']:
             var = 'precipitation_sum'
-        elif graph_type == 'snow_days':
+        elif graph_type in ['snow_days', 'snowfall']:
             var = 'snowfall_sum'
         elif graph_type in ['frost_days', 'tropical_nights', 'temperature_min']:
             var = 'temperature_2m_min'
@@ -43,6 +43,8 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
             var = 'cloudcover_mean'
         elif graph_type in ['temperature_anomaly', 'temperature_mean']:
             var = 'temperature_2m_mean'
+        elif graph_type == 'dominant_wind_direction':
+            var = 'wind_direction_10m_dominant'
         else:
             raise ValueError()
 
