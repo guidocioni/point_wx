@@ -191,28 +191,28 @@ tools = [
         },
         "strict": True,
     },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_radar_data",
-            "description": (
-                "Radar-based nowcasting of precipitation up to 2 hours from now for locations that are in Germany. "
-                "The Response is a JSON containing array of objects with time and estimated precipitation (mm/h) every 15 minutes."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "An address located in Germany",
-                    },
-                },
-                "required": ["address"],
-                "additionalProperties": False,
-            },
-        },
-        "strict": True,
-    },
+    # {
+    #     "type": "function",
+    #     "function": {
+    #         "name": "get_radar_data",
+    #         "description": (
+    #             "Radar-based nowcasting of precipitation up to 2 hours from now for locations that are in Germany. "
+    #             "The Response is a JSON containing array of objects with time and estimated precipitation (mm/h) every 15 minutes."
+    #         ),
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "address": {
+    #                     "type": "string",
+    #                     "description": "An address located in Germany",
+    #                 },
+    #             },
+    #             "required": ["address"],
+    #             "additionalProperties": False,
+    #         },
+    #     },
+    #     "strict": True,
+    # },
     {
         "type": "function",
         "function": {
