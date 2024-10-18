@@ -114,17 +114,29 @@ def make_lineplot_timeseries(df, var, clima=None, break_hours="48h"):
         # Create a hourly array that matchest the start and end of the real data
         # Doesn't matter if that data is 1, 3 or 6 hourly. As the climatology
         # will be hourly we do this
-        time_selection = pd.date_range(
-            df["time"].min(), df["time"].max(), freq="1h", tz=df.attrs["timezone"]
+        # Create a pandas DataFrame with the new time axis
+        # Needs to be every hour, starting and ending on the bounds given
+        # by our input dataframe
+        time_sel = pd.DataFrame(
+            {
+                "time_selection": pd.date_range(
+                    df["time"].min(), df["time"].max(), freq="1h", tz=df.attrs["timezone"]
+                )
+            }
         )
+        time_sel["time_selection_str"] = time_sel["time_selection"].dt.strftime(
+            "%m%d"
+        ) + time_sel["time_selection"].dt.strftime("%H")
+
         clima["doy_hour"] = clima["doy"] + clima["hour"].astype(str).str.zfill(2)
-        clima = clima.loc[
-            clima["doy_hour"].isin(
-                time_selection.strftime("%m%d") + time_selection.strftime("%H")
-            ),:
-        ].copy()
-        clima["time"] = time_selection
-        clima = clima.drop(columns=["doy_hour", "doy", "hour"]).interpolate().round(1)
+        clima = clima.merge(time_sel, left_on="doy_hour", right_on="time_selection_str")
+        clima = (
+            clima.drop(columns=["doy_hour", "doy", "hour", "time_selection_str"])
+            .sort_values(by="time_selection")
+            .rename(columns={"time_selection": "time"})
+            .interpolate()
+            .round(1)
+        )
 
         traces.append(
             go.Scattergl(
@@ -420,16 +432,16 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
         row=1,
         col=1,
         zeroline=True,
-        zerolinewidth=4,
-        zerolinecolor="rgba(0,0,0,0.2)",
+        zerolinewidth=2,
+        zerolinecolor="rgba(0,0,0,0.5)",
     )
     fig.update_yaxes(
         ticksuffix="",
         row=2,
         col=1,
         zeroline=True,
-        zerolinewidth=4,
-        zerolinecolor="rgba(0,0,0,0.2)",
+        zerolinewidth=2,
+        zerolinecolor="rgba(0,0,0,0.5)",
     )
     fig.update_yaxes(
         row=3,
