@@ -888,7 +888,9 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         from_now=False,
         decimate=False)
     # Only select days with enough data
-    data = data.groupby(data['time'].dt.date).filter(lambda x: len(x) > 23)
+    # We use a more relaxed constraint to avoid issues when there are
+    # daylight saving time changes
+    data = data.groupby(data['time'].dt.date).filter(lambda x: len(x) > 21)
     # Best match ensemble/deterministic models
     # when the naming is different
     if model == 'bom_access_global_ensemble':
