@@ -18,11 +18,13 @@ from io import StringIO
         State("locations-list", "data"),
         State("location-selected", "data"),
         State("models-selection-climate-calendar", "value"),
-        State("graph-selection-climate-calendar", "value")
+        State("graph-selection-climate-calendar", "value"),
+        State("graph-selection-climate-calendar", "data"),
+        State("year-selection-calendar", "value")
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, graph_type):
+def generate_figure(n_clicks, locations, location, model, graph_type, graph_types, year_start):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -53,7 +55,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
-            start_date='1981-01-01',
+            start_date=f'{year_start}-01-01',
             end_date=(date.today() - timedelta(days=6)).strftime("%Y-%m-%d")
         )
         if graph_type in ['precipitation_anomaly', 'temperature_anomaly']:
@@ -73,10 +75,15 @@ def generate_figure(n_clicks, locations, location, model, graph_type):
             ).sort_values(by='time')
             data.attrs = clima.attrs.copy()
 
+        graph_title = [o["label"] for o in graph_types if o["value"] == graph_type]
+        if len(graph_title) == 1:
+            graph_title = graph_title[0]
+        else:
+            graph_title = graph_type
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
-            f"<sup>Metric = <b>{graph_type}</b> | "
+            f"<sup>Metric = <b>{graph_title}</b> | "
             f"Model = <b>{model.upper()}</b></sup>"
         )
 
