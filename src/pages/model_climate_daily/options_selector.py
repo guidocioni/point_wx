@@ -15,6 +15,7 @@ daily_vars_options = [
     {"label": "Mean temperature [°C]", "value": "temperature_2m_mean"},
     {"label": "Maximum temperature [°C]", "value": "temperature_2m_max"},
     {"label": "Minimum temperature [°C]", "value": "temperature_2m_min"},
+    {"label": "Mean MSLP [hPa]", "value": "pressure_msl_mean"},
 ]
 
 opts_selector = dbc.Card(

@@ -107,7 +107,7 @@ def make_daily_figure(df, year, var, title=None):
             x=df["time"],
             y=df["above"],
             fill="tonexty",
-            name="Hotter",
+            name="Above average",
             fillcolor="rgba(255, 76, 45, 1)",
             mode="none",
         )
@@ -127,7 +127,7 @@ def make_daily_figure(df, year, var, title=None):
             x=df["time"],
             y=df["below"],
             fill="tonexty",
-            name="Colder",
+            name="Below Average",
             fillcolor="rgba(99, 178, 207, 1)",
             mode="none",
         )
