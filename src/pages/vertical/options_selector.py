@@ -1,6 +1,8 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import DETERMINISTIC_MODELS
+from dash_iconify import DashIconify
+
 
 opts_selector = dbc.Card(
     [
@@ -29,6 +31,22 @@ opts_selector = dbc.Card(
                         onLabel="ON",
                         offLabel="OFF",
                         label="From now on",
+                        size="sm",
+                        labelPosition="left",
+                    ),
+                ),
+                dmc.Tooltip(
+                    label="Select between heatmap and skewT",
+                    w=200,
+                    multiline=True,
+                    withArrow=True,
+                    children=dmc.Switch(
+                        id="heatmap-skewt-plot-switch",
+                        offLabel=DashIconify(icon="clarity:scatter-plot-line", width=15),
+                        onLabel=DashIconify(icon="clarity:box-plot-line", width=15),
+                        checked=True,
+                        persistence='true',
+                        label="Type",
                         size="sm",
                         labelPosition="left",
                     ),
