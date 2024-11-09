@@ -210,13 +210,16 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
     )
 
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
+        fig.update_layout(
+            title=dict(text=title, font=dict(size=14), yref="container", y=0.98)
+        )
 
     return fig
 
 
 def make_figure_skewt(df, title=None):
     skew = 100.0
+
     def skew_transform(temp, pres):
         """Transform temperature based on pressure level for skewed coordinates"""
         # Convert pressure to log scale and normalize
@@ -231,7 +234,7 @@ def make_figure_skewt(df, title=None):
         pres = np.logspace(np.log10(100), np.log10(1000), 100)
 
         # Isotherms
-        for temp in range(-50, 41, 10):
+        for temp in range(-70, 41, 10):
             skewed_temps = skew_transform([temp] * len(pres), pres)
             fig.add_trace(
                 go.Scatter(
@@ -243,7 +246,46 @@ def make_figure_skewt(df, title=None):
                     hoverinfo="none",
                 )
             )
-
+            # Add label at the top of each isotherm line
+            fig.add_annotation(
+                x=skew_transform(temp, 300),
+                y=np.log10(300),
+                text=f"{temp}°C",
+                showarrow=False,
+                yshift=-5,  # Shift label slightly below the top
+                font=dict(size=10),
+                bgcolor="white",
+                bordercolor="gray",
+                borderwidth=1,
+                borderpad=2,
+                textangle=320
+            )
+            fig.add_annotation(
+                x=skew_transform(temp, 500),
+                y=np.log10(500),
+                text=f"{temp}°C",
+                showarrow=False,
+                yshift=-5,  # Shift label slightly below the top
+                font=dict(size=10),
+                bgcolor="white",
+                bordercolor="gray",
+                borderwidth=1,
+                borderpad=2,
+                textangle=320
+            )
+            fig.add_annotation(
+                x=skew_transform(temp, 900),
+                y=np.log10(900),
+                text=f"{temp}°C",
+                showarrow=False,
+                yshift=-5,  # Shift label slightly below the top
+                font=dict(size=10),
+                bgcolor="white",
+                bordercolor="gray",
+                borderwidth=1,
+                borderpad=2,
+                textangle=320
+            )
         # Dry adiabats (simplified calculation)
         for temp in range(-150, 31, 5):
             dry_adiabat = (
@@ -290,7 +332,9 @@ def make_figure_skewt(df, title=None):
         # Calculate parcel profile
         pressure_levels = df_time["pressure"].values * units.hPa
         parcel_temps = (
-            parcel_profile(pressure_levels, surface_t * units.degC, surface_td * units.degC)
+            parcel_profile(
+                pressure_levels, surface_t * units.degC, surface_td * units.degC
+            )
             .to("degC")
             .magnitude
         )
@@ -300,11 +344,15 @@ def make_figure_skewt(df, title=None):
 
         return go.Scatter(
             x=skewed_temps,
-            y=pressure_levels,
+            y=pressure_levels.magnitude,
             mode="lines",
             name="Parcel Profile",
             line=dict(color="black", dash="dash", width=3),
             showlegend=True,
+            customdata=np.vectorize(lambda t, p: f"Pressure={p:.0f} hPa, Temperature={t:.1f}°C")(
+                parcel_temps, pressure_levels.magnitude
+            ),
+            hovertemplate="<extra></extra>%{customdata}",
         )
 
     # Create figure
@@ -322,46 +370,43 @@ def make_figure_skewt(df, title=None):
 
     # Transform variables for skewed coordinate system
     for var in variables_to_plot:
-        df[f"{var}_skewed"] = skew_transform(
-            df[var].values, df["pressure"].values
-        )
+        df[f"{var}_skewed"] = skew_transform(df[var].values, df["pressure"].values)
     # Create initial traces
     for var in variables_to_plot:
         fig.add_trace(
             go.Scatter(
-                x=df[df["time"] == df["time"].iloc[0]][
-                    f"{var}_skewed"
-                ],
+                x=df[df["time"] == df["time"].iloc[0]][f"{var}_skewed"],
                 y=df[df["time"] == df["time"].iloc[0]]["pressure"],
                 mode="lines+markers",
                 name=names[var],
                 line=dict(color=colors[var], width=3),
                 marker=dict(size=8),
                 showlegend=True,
+                customdata=np.vectorize(
+                    lambda t, p: f"Pressure={p:.0f} hPa, Temperature={t:.1f}°C"
+                )(
+                    df[df["time"] == df["time"].iloc[0]][f"{var}"],
+                    df[df["time"] == df["time"].iloc[0]]["pressure"],
+                ),
+                hovertemplate="<extra></extra>%{customdata}",
             )
         )
 
     fig.add_trace(
         go.Scatter(
-            x=[36]
-            * len(df[df["time"] == df["time"].iloc[0]]["pressure"]),
+            x=[36] * len(df[df["time"] == df["time"].iloc[0]]["pressure"]),
             y=df[df["time"] == df["time"].iloc[0]]["pressure"],
             mode="markers",
             name="Winds",
             showlegend=True,
             marker=dict(
                 size=15,
-                color=df[df["time"] == df["time"].iloc[0]][
-                    "windspeed"
-                ],
+                color=df[df["time"] == df["time"].iloc[0]]["windspeed"],
                 colorscale="YlOrBr",
                 cmin=0,
                 cmax=100,
                 symbol="arrow",
-                angle=df[df["time"] == df["time"].iloc[0]][
-                    "winddirection"
-                ]
-                - 180.0,
+                angle=df[df["time"] == df["time"].iloc[0]]["winddirection"] - 180.0,
                 line=dict(width=0.5, color="DarkSlateGrey"),
             ),
         )
@@ -385,6 +430,8 @@ def make_figure_skewt(df, title=None):
                     name=names[var],
                     line=dict(color=colors[var]),  # Explicit color definition
                     showlegend=True,
+                    customdata=np.vectorize(lambda t, p: f"Pressure={p:.0f} hPa, Temperature={t:.1f}°C")(df_time[f"{var}"], df_time["pressure"]),
+                    hovertemplate="<extra></extra>%{customdata}",
                 )
             )
         # Add parcel profile trace
@@ -414,7 +461,9 @@ def make_figure_skewt(df, title=None):
                 data=frame_data,
                 name=str(time),
                 layout=go.Layout(title=str(time)),
-                traces=[base_trace_index + i for i in range(len(variables_to_plot) + 2)],
+                traces=[
+                    base_trace_index + i for i in range(len(variables_to_plot) + 2)
+                ],
             )
         )
 
@@ -431,14 +480,13 @@ def make_figure_skewt(df, title=None):
             "yanchor": "top",
         },
         xaxis_title="",
+        xaxis_showticklabels=False,
         yaxis_title="Pressure (hPa)",
-        # height=800,
-        # width=700,
         yaxis_type="log",
+        yaxis_showgrid=True,
         yaxis_range=[np.log10(1050), np.log10(195)],
-        xaxis_range=[-31, 40],
+        xaxis_range=[df['dewpoint'].min() + 60, df['temperature'].max() + 20],
         xaxis_showgrid=False,
-        yaxis_showgrid=False,
         xaxis_zeroline=False,
         legend=dict(
             yanchor="top",
@@ -475,4 +523,8 @@ def make_figure_skewt(df, title=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="vertical"), config=images_config, style={'height':'90vh'})
+fig_subplots = dcc.Graph(
+    id=dict(type="figure", id="vertical"),
+    config=images_config,
+    style={"height": "90vh"},
+)
