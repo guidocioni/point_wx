@@ -122,6 +122,7 @@ ENSEMBLE_MODELS = [
             {"label": "ICON-EPS (🌐, 26km, 40 members)", "value": "icon_global"},
             {"label": "GFS ENS (🌐, 25km, 31 members)", "value": "gfs025"},
             {"label": "GFS ENS (🌐, 50km, 31 members)", "value": "gfs05"},
+            {"label": "MOGREPS-G (🌐, 20km, 18 members)", "value": "ukmo_global_ensemble_20km"},
             {
                 "label": "ACCESS-GE (🌐, 40km, 18 members)",
                 "value": "bom_access_global_ensemble",

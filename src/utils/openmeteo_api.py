@@ -419,7 +419,7 @@ def get_ensemble_data(
                 dfs,
             )
             data = data.reset_index()
-        elif model in ["icon_seamless", "icon_global", "icon_eu"]:
+        elif model in ["icon_seamless", "icon_global", "icon_eu", "ukmo_global_ensemble_20km"]:
             # For these models we want to preserve the original hourly resolution
             # because it is the original one! Actually, for ICON-EPS the data
             # is every 6 hours, but I don't want to implement a different logic
