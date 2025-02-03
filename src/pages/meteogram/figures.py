@@ -189,7 +189,7 @@ def make_barplot_timeseries(
             y=df[var],
             text=text,
             name="",
-            textposition="auto",
+            ttextposition="auto",
             texttemplate=text_formatting,
             hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,
@@ -393,4 +393,4 @@ def make_subplot_figure(data, title=None, clima=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh'})
+fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh', 'min-height': '650px'})
