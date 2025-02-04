@@ -189,7 +189,7 @@ def make_barplot_timeseries(
             y=df[var],
             text=text,
             name="",
-            ttextposition="auto",
+            textposition="auto",
             texttemplate=text_formatting,
             hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,

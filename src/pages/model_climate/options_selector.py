@@ -12,7 +12,7 @@ opts_selector = dbc.Card(
             className="mb-2",
             allowDeselect=False
         ),
-        dmc.DatePicker(
+        dmc.DatePickerInput(
             label="Date Range",
             id="date-range-climate",
             value=["1991-01-01", "2020-12-31"],

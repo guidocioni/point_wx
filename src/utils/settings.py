@@ -10,7 +10,7 @@ import tempfile
 ROOT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 ASSETS_DIR = os.path.join(ROOT_DIR, "assets")
 
-APP_PORT = 8083
+APP_PORT = int(os.getenv("APP_PORT", "8083"))
 URL_BASE_PATHNAME = os.getenv("URL_BASE_PATHNAME", "/pointwx/")
 MAPBOX_API_KEY = os.getenv("MAPBOX_KEY", None)
 OPENMETEO_KEY = os.getenv("OPENMETEO_KEY", None)
@@ -18,6 +18,7 @@ OPENAI_KEY = os.getenv("OPENAI_KEY", None)
 OPENWEATHERMAP_KEY = os.getenv("OPENWEATHERMAP_KEY", None)
 MAPBOX_API_PLACES_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 CACHE_DIR = os.getenv("CACHE_DIR", "/var/cache/pointwx/")
+DISABLE_CACHE = os.getenv("DISABLE_CACHE", "false").lower() == "true"
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
@@ -39,7 +40,6 @@ def get_cache_directory():
 
     if os.path.exists(primary_cache_dir):
         if os.access(primary_cache_dir, os.W_OK):
-            logging.info(f"Using {primary_cache_dir} as cache directory")
             return primary_cache_dir
         else:
             logging.warning(
@@ -49,7 +49,6 @@ def get_cache_directory():
         try:
             os.makedirs(primary_cache_dir, exist_ok=True)
             if os.access(primary_cache_dir, os.W_OK):
-                logging.info(f"Using {primary_cache_dir} as cache directory")
                 return primary_cache_dir
         except Exception as e:
             logging.warning(
@@ -58,7 +57,6 @@ def get_cache_directory():
 
     if os.path.exists(fallback_cache_dir):
         if os.access(fallback_cache_dir, os.W_OK):
-            logging.info(f"Using {fallback_cache_dir} as cache directory")
             return fallback_cache_dir
         else:
             logging.warning(
@@ -68,22 +66,23 @@ def get_cache_directory():
         try:
             os.makedirs(fallback_cache_dir, exist_ok=True)
             if os.access(fallback_cache_dir, os.W_OK):
-                logging.info(f"Using {fallback_cache_dir} as cache directory")
                 return fallback_cache_dir
         except Exception as e:
             logging.warning(
                 f"Could not create fallback cache directory {fallback_cache_dir}: {e}"
             )
-    logging.warning("No suitable cache directory found. Disabling cache!")
+    
 
     return None
 
 
 cache_dir = get_cache_directory()
 
-if cache_dir:
+if cache_dir and not DISABLE_CACHE:
+    logging.info(f"Using {cache_dir} as cache directory")
     cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": cache_dir})
 else:
+    logging.warning("Disabling cache!")
     cache = Cache(config={"CACHE_TYPE": "null"})
 
 
@@ -92,7 +91,7 @@ images_config = {
         "format": "png",  # one of png, svg, jpeg, webp
         "height": None,
         "width": None,
-        "scale": 1.5,  # Multiply title/legend/axis/canvas sizes by this factor
+        "scale": 1.3,  # Multiply title/legend/axis/canvas sizes by this factor
     },
     "modeBarButtonsToRemove": [
         "select",
@@ -256,6 +255,14 @@ DETERMINISTIC_VARS = [
             {"label": "500hPa Temperature", "value": "temperature_500hPa"},
             {"label": "500hPa Relative Humidity", "value": "relative_humidity_500hPa"},
             {"label": "500hPa geopotential", "value": "geopotential_height_500hPa"},
+            {"label": "250hPa Temperature", "value": "temperature_250hPa"},
+            {"label": "250hPa geopotential", "value": "geopotential_height_250hPa"},
+            {"label": "100hPa Temperature", "value": "temperature_100hPa"},
+            {"label": "100hPa geopotential", "value": "geopotential_height_100hPa"},
+            {"label": "50hPa Temperature", "value": "temperature_50hPa"},
+            {"label": "50hPa geopotential", "value": "geopotential_height_50hPa"},
+            {"label": "30hPa Temperature", "value": "temperature_30hPa"},
+            {"label": "30hPa geopotential", "value": "geopotential_height_30hPa"},
             {"label": "2m Dew Point", "value": "dew_point_2m"},
             {"label": "Apparent Temperature", "value": "apparent_temperature"},
             {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},

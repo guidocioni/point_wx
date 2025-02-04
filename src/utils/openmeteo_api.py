@@ -86,7 +86,9 @@ def get_forecast_data(latitude=53.55,
                       past_days=None,
                       start_date=None,
                       end_date=None,
-                      minutes_15=False):
+                      minutes_15=False,
+                      cell_selection='land',
+                      elevation=None):
     # For the accumulated variables
     if "accumulated_precip" in variables:
         variables = variables.replace("accumulated_precip", "precipitation")
@@ -101,6 +103,7 @@ def get_forecast_data(latitude=53.55,
         "hourly" if not minutes_15 else "minutely_15": variables,
         "timezone": timezone,
         "models": model,
+        "cell_selection":cell_selection
     }
 
     if past_days:
@@ -111,6 +114,8 @@ def get_forecast_data(latitude=53.55,
         payload['start_date'] = start_date
     if end_date:
         payload['end_date'] = end_date
+    if elevation:
+        payload['elevation'] = elevation
 
     resp = make_request(
         "https://api.open-meteo.com/v1/forecast",
@@ -227,13 +232,16 @@ def get_forecast_daily_data(latitude=53.55,
                             forecast_days=7,
                             past_days=None,
                             start_date=None,
-                            end_date=None):
+                            end_date=None,
+                            cell_selection='land',
+                            elevation=None):
     payload = {
         "latitude": latitude,
         "longitude": longitude,
         "daily": variables,
         "timezone": timezone,
         "models": model,
+        "cell_selection": cell_selection
     }
 
     if past_days:
@@ -244,6 +252,8 @@ def get_forecast_daily_data(latitude=53.55,
         payload['start_date'] = start_date
     if end_date:
         payload['end_date'] = end_date
+    if elevation:
+        payload['elevation'] = elevation
 
     resp = make_request(
         "https://api.open-meteo.com/v1/forecast",
@@ -275,6 +285,8 @@ def get_ensemble_data(
     model="icon_seamless",
     from_now=False,
     decimate=False,
+    cell_selection="land",
+    elevation=None,
 ):
     """
     Get the ensemble data
@@ -305,7 +317,11 @@ def get_ensemble_data(
         "timezone": timezone,
         "models": model,
         "forecast_days": forecast_days,
+        "cell_selection": cell_selection,
     }
+
+    if elevation:
+        payload["elevation"] = elevation
 
     resp = make_request("https://ensemble-api.open-meteo.com/v1/ensemble", payload).json()
 
@@ -563,7 +579,9 @@ def get_historical_data(latitude=53.55,
                         timezone='auto',
                         model='best_match',
                         start_date='1991-01-01',
-                        end_date='2020-12-31'):
+                        end_date='2020-12-31',
+                        elevation=None,
+                        cell_selection='land'):
     """
     Get historical data for a point
     """
@@ -574,8 +592,12 @@ def get_historical_data(latitude=53.55,
         "timezone": timezone,
         "models": model,
         "start_date": start_date,
-        "end_date": end_date
+        "end_date": end_date,
+        "cell_selection": cell_selection
     }
+
+    if elevation:
+        payload['elevation'] = elevation
 
     resp = make_request(
         "https://archive-api.open-meteo.com/v1/archive",
@@ -606,7 +628,9 @@ def get_historical_daily_data(latitude=53.55,
                               timezone='GMT',
                               model='best_match',
                               start_date='1991-01-01',
-                              end_date='2020-12-31'):
+                              end_date='2020-12-31',
+                              elevation=None,
+                              cell_selection='land'):
     """
     Get historical data for a point
     """
@@ -617,8 +641,12 @@ def get_historical_daily_data(latitude=53.55,
         "timezone": timezone,
         "models": model,
         "start_date": start_date,
-        "end_date": end_date
+        "end_date": end_date,
+        "cell_selection": cell_selection
     }
+
+    if elevation:
+        payload['elevation'] = elevation
 
     resp = make_request(
         "https://archive-api.open-meteo.com/v1/archive",
@@ -658,11 +686,25 @@ def compute_climatology(latitude=53.55,
     so it should be cached!
     """
     if daily:
-        data = get_historical_daily_data(latitude, longitude, variables,
-                                         timezone, model, start_date, end_date)
+        data = get_historical_daily_data(
+            latitude=latitude,
+            longitude=longitude,
+            variables=variables,
+            timezone=timezone,
+            model=model,
+            start_date=start_date,
+            end_date=end_date,
+        )
     else:
-        data = get_historical_data(latitude, longitude, variables,
-                                   timezone, model, start_date, end_date)
+        data = get_historical_data(
+            latitude=latitude,
+            longitude=longitude,
+            variables=variables,
+            timezone=timezone,
+            model=model,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     # Add doy not as integer but as string to allow for leap years
     data['doy'] = data.time.dt.strftime("%m%d")
@@ -744,7 +786,7 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
         daily['wind_speed_10m_max'] < 5)
     daily['w_calm'] = daily['wind_speed_10m_max'] <= 0.1
     #
-    bool_cols = daily.dtypes[daily.dtypes == bool].index
+    bool_cols = daily.dtypes[daily.dtypes == np.bool_].index
     # Compute monthly stats
     monthly = daily[bool_cols].resample('1ME').sum().add_suffix('_days')
     monthly['monthly_rain'] = daily['precipitation_sum'].resample('1ME').sum()
@@ -893,10 +935,12 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     data = data.groupby(data['time'].dt.date).filter(lambda x: len(x) > 21)
     # Best match ensemble/deterministic models
     # when the naming is different
-    if model == 'bom_access_global_ensemble':
+    if model == "bom_access_global_ensemble":
         model = "bom_access_global"
     elif model in ["gfs025", "gfs05"]:
-        model = "gfs_global"
+        model = "gfs_seamless"
+    elif model == "ukmo_global_ensemble_20km":
+        model = "ukmo_seamless"
     data_deterministic = get_forecast_data(
         latitude=latitude,
         longitude=longitude,
