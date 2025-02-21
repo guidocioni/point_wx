@@ -202,6 +202,7 @@ DETERMINISTIC_MODELS = [
             {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
             {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
             {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
+            {"label": "AIFS single (🌐, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
             {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
             {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
