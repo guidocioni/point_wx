@@ -56,9 +56,9 @@ def make_heatmap(df, var, title=None):
         import plotly.graph_objects as go
 
         fig = go.Figure()
-        if df.shape[0] <= 46:
-            freq = "3h"
-        elif (df.shape[0] > 46) & (df.shape[0] <= 100):
+        if df.attrs["request"]["models"] == "icon_d2":
+            freq = "2h"
+        elif (df.shape[0] > 47) & (df.shape[0] <= 100):
             freq = "6h"
         else:
             freq = "12h"

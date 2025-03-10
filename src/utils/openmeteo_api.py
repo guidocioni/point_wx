@@ -168,6 +168,7 @@ def get_forecast_data(latitude=53.55,
     # Add metadata (experimental)
     data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
+    data.attrs["request"] = payload
 
     return data
 
@@ -272,6 +273,7 @@ def get_forecast_daily_data(latitude=53.55,
     # Add metadata (experimental)
     data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
+    data.attrs["request"] = payload
 
     return data
 
@@ -565,6 +567,7 @@ def get_ensemble_data(
     data.attrs = {
         x: resp[x] for x in resp if x not in ["hourly", "daily"]
     }
+    data.attrs["request"] = payload
 
     return data
 
@@ -663,6 +666,7 @@ def get_historical_daily_data(latitude=53.55,
     # Add metadata (experimental)
     data.attrs = {x: resp[x] for x in resp if x not in [
         "hourly", "daily"]}
+    data.attrs["request"] = payload
 
     return data
 
