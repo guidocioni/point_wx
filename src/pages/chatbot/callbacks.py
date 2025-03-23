@@ -147,11 +147,11 @@ def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
 
     # Step 1: Make the initial call to the model
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="o3-mini",
         messages=messages,
         tools=tools,  # Add tools for function calling
-        max_tokens=300,
-        temperature=0.9,
+        # max_tokens=300,
+        # temperature=0.9,
     )
 
     # Check the finish_reason to determine how to handle the response
@@ -242,10 +242,10 @@ def handle_tool_calls(response, messages, chat_history, session_id):
 
     # Make another call to the model with the tool's output
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="o3-mini",
         messages=messages,
-        max_tokens=300,
-        temperature=0.9,
+        # max_tokens=300,
+        # temperature=0.9,
     )
 
     # Handle the model's response after tool usage
