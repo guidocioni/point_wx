@@ -18,7 +18,7 @@ opts_selector = dbc.Card(
             data=[
                     {"label": "Accumulated precipitation (mm)", "value": "accumulated_precipitation"},
                     {"label": "Wet days (Precipitation >= 1 mm)", "value": "precipitation_days"},
-                    {"label": "Precipitation anomaly (mm)", "value": "precipitation_anomaly"},
+                    {"label": "Precipitation anomaly (%)", "value": "precipitation_anomaly"},
                     {"label": "Snow days (snowfall >= 1 cm)", "value": "snow_days"},
                     {"label": "Total snowfall (cm)", "value": "snowfall"},
                     {"label": "Dry days (Precipitation < 1 mm)", "value": "dry_days"},

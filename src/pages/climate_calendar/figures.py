@@ -23,7 +23,7 @@ def make_calendar_figure(df, graph_type, title=None):
             values="precipitation_days",
             aggfunc="sum",
         )
-        cmap = 'Burgyl'
+        cmap = 'deep'
     elif graph_type == 'snow_days':
         df['snow_days'] = df['snowfall_sum'] >= 1.0
         out = df.pivot_table(
@@ -50,7 +50,7 @@ def make_calendar_figure(df, graph_type, title=None):
             values="dry_days",
             aggfunc="sum",
         )
-        cmap = 'Burgyl'
+        cmap = 'deep_r'
     elif graph_type == 'frost_days':
         df['frost_days'] = df['temperature_2m_min'] <= 0
         out = df.pivot_table(
@@ -59,7 +59,7 @@ def make_calendar_figure(df, graph_type, title=None):
             values="frost_days",
             aggfunc="sum",
         )
-        cmap = "RdBu"
+        cmap = "dense"
     elif graph_type == 'overcast_days':
         df['overcast_days'] = df['cloudcover_mean'] >= 80
         out = df.pivot_table(
@@ -96,7 +96,7 @@ def make_calendar_figure(df, graph_type, title=None):
             values="hot_days",
             aggfunc="sum",
         )
-        cmap = "RdBu_r"
+        cmap = "Hot_r"
     elif graph_type == 'tropical_nights':
         df['tropical_nights'] = df['temperature_2m_min'] >= 20
         out = df.pivot_table(
@@ -105,7 +105,7 @@ def make_calendar_figure(df, graph_type, title=None):
             values="tropical_nights",
             aggfunc="sum",
         )
-        cmap = "RdBu_r"
+        cmap = "Hot_r"
     elif graph_type == 'temperature_anomaly':
         df['temperature_anomaly'] = (df['temperature_2m_mean'] - df['temperature_2m_mean_clima'])
         out = df.pivot_table(
