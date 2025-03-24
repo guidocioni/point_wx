@@ -194,6 +194,7 @@ DETERMINISTIC_MODELS = [
             # {"label": "DMI Seamless 🇪🇺", "value": "dmi_seamless"},
             {"label": "COSMO Seamless 🇪🇺", "value": "arpae_cosmo_seamless"},
             {"label": "UKMO Seamless 🌐", "value": "ukmo_seamless"},
+            {"label": "KMA Seamless 🌐", "value": "kma_seamless"},
         ],
     },
     {
@@ -211,6 +212,7 @@ DETERMINISTIC_MODELS = [
             {"label": "CMA GRAPES (🌐, 15km)", "value": "cma_grapes_global"},
             {"label": "GEM Global (🌐, 15km)", "value": "gem_global"},
             {"label": "ACCESS-G (🌐, 15km)", "value": "bom_access_global"},
+            {"label": "GDPS (🌐, 12km)", "value": "kma_gdps"},
         ],
     },
     {
@@ -239,6 +241,7 @@ DETERMINISTIC_MODELS = [
             {"label": "MSM (🇯🇵, 5km)", "value": "jma_msm"},
             {"label": "GEM Regional (🇺🇸, 10km)", "value": "gem_regional"},
             {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},
+            {"label": "LDPS (🇰🇷, 2.5km)", "value": "kma_ldps"},
         ],
     },
 ]
