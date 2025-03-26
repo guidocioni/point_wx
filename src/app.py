@@ -85,6 +85,7 @@ def serve_layout():
                 dcc.Store(id="locations-favorites", storage_type="local"),
                 dcc.Store(id="client-details", data={}, storage_type="session"),
                 dcc.Store(id="client-first-visit", storage_type="local"),
+                dcc.Store(id='dummy-data'),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -280,19 +281,23 @@ def activate_submit_button(location):
         "is_open",
     ),
     Input({"type": "submit-button", "index": MATCH}, "n_clicks"),
+    State({"type": "fade", "index": MATCH}, "is_open"),
     prevent_initial_call=True,
 )
-def toggle_fade(n):
+def toggle_fade(n, is_open):
     """
     Open the collapse element containing the plots once
-    the submit button has been pressed (on all pages)
-    TODO, avoid running this if the plot is not correctly generated,
+    the submit button has been pressed (on all pages), but do nothing
+    if the element is already open.
+    TODO: avoid running this if the plot is not correctly generated,
     because if there's an error then an empty plot will be shown anyway.
     """
-    if not n:
-        # Button has never been clicked
-        return False
-    return True
+    if is_open:
+        # Do not update if already open.
+        raise PreventUpdate
+    if n:
+        return True
+    return False
 
 
 '''
@@ -326,20 +331,33 @@ for the scrollIntoView function to work.
 '''
 clientside_callback(
     """
-    function(n_clicks, element_id) {
+    function(figure_data, element_id) {
+        // console.log("Triggered clientside callback");
+        if (!figure_data || figure_data[0] === undefined || figure_data[0] === null) {
+            return window.dash_clientside.no_update;
+        }
+        // console.log(figure_data);
         element_id = element_id[0];
         if (!(typeof element_id === 'string' || element_id instanceof String)) {
             element_id = JSON.stringify(element_id, Object.keys(element_id).sort());
+            // console.log(element_id);
         };
+        // Delay execution to allow element to load
+        setTimeout(function() {
             var targetElement = document.getElementById(element_id);
+            // console.log(targetElement);
             if (targetElement) {
+                // Optional further delay before scrolling
                 setTimeout(function() {
                     targetElement.scrollIntoView({ behavior: 'smooth' });
-                }, 200); // in milliseconds
+                }, 200);
             }
+        }, 500); // Wait 1 second before retrieving the element
+
         return null;
     }
     """,
+    Output("dummy-data", "data"),
     Input(dict(type="figure", id=ALL), "figure"),
     State(dict(type="figure", id=ALL), "id"),
     prevent_initial_call=True,

@@ -1,4 +1,12 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash import (
+    callback,
+    Output,
+    Input,
+    State,
+    no_update,
+    dcc,
+    clientside_callback,
+)
 from utils.openmeteo_api import compute_monthly_clima, get_historical_daily_data
 from utils.custom_logger import logging
 from .figures import (
@@ -12,16 +20,17 @@ from .figures import (
 import pandas as pd
 from io import StringIO
 from datetime import date, timedelta
+from utils.settings import images_config
 
 
 @callback(
     [
-        Output(dict(type="figure", id="temp-prec-climate"), "figure"),
-        Output("clouds-climate-figure", "figure"),
-        Output("temperature-climate-figure", "figure"),
-        Output("precipitation-climate-figure", "figure"),
-        Output("winds-climate-figure", "figure"),
-        Output("winds-rose-climate-figure", "figure"),
+        Output("temp-prec-climate-container", "children"),
+        Output("clouds-climate-container", "children"),
+        Output("precipitation-climate-container", "children"),
+        Output("temperature-climate-container", "children"),
+        Output("winds-climate-container", "children"),
+        Output("winds-rose-climate-container", "children"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -36,7 +45,7 @@ from datetime import date, timedelta
 )
 def generate_figure(n_clicks, locations, location, model, dates):
     if n_clicks is None:
-        return [
+        return (
             no_update,
             no_update,
             no_update,
@@ -45,7 +54,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
             no_update,
             no_update,
-        ]
+        )
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -81,16 +90,49 @@ def generate_figure(n_clicks, locations, location, model, dates):
         fig_winds = make_winds_climate_figure(data, title=loc_label)
         fig_winds_rose = make_wind_rose_figure(wind_rose_data)
 
-        return [
-            fig_temp_prec,
-            fig_clouds,
-            fig_temperature,
-            fig_precipitation,
-            fig_winds,
-            fig_winds_rose,
+        temp_prec_container = dcc.Graph(
+            figure=fig_temp_prec,
+            id=dict(type="figure", id="temp-prec-climate"),
+            config=images_config,
+            style={"height": "45vh", "minHeight": "300px"},
+        )
+
+        clouds_container = dcc.Graph(
+            figure=fig_clouds,
+            config=images_config,
+            style={"height": "45vh", "minHeight": "300px"},
+        )
+
+        precipitation_container = dcc.Graph(
+            figure=fig_precipitation,
+            config=images_config,
+            style={"height": "45vh", "minHeight": "300px"},
+        )
+
+        temperature_container = dcc.Graph(
+            figure=fig_temperature,
+            config=images_config,
+            style={"height": "45vh", "minHeight": "300px"},
+        )
+
+        winds_container = dcc.Graph(
+            figure=fig_winds,
+            config=images_config,
+            style={"height": "45vh", "minHeight": "300px"},
+        )
+
+        winds_rose_container = dcc.Graph(figure=fig_winds_rose, config=images_config)
+
+        return (
+            temp_prec_container,
+            clouds_container,
+            precipitation_container,
+            temperature_container,
+            winds_container,
+            winds_rose_container,
             None,
             False,
-        ]
+        )
 
     except Exception as e:
         logging.error(
@@ -104,7 +146,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
             no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
         )
 
 

@@ -1,16 +1,18 @@
-from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash import callback, Output, Input, State, no_update, clientside_callback, dcc
+import dash_bootstrap_components as dbc
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
 from .figures import make_acc_figure, make_daily_figure
 import pandas as pd
 from io import StringIO
 from datetime import date
+from utils.settings import images_config
 
 
 @callback(
     [
-        Output(dict(type="figure", id="prec-climate-daily"), "figure"),
-        Output("temp-climate-daily-figure", "figure"),
+        Output("prec-climate-daily-container", "children"),
+        Output("temp-climate-daily-container", "children"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -27,7 +29,7 @@ from datetime import date
 )
 def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var):
     if n_clicks is None:
-        return [no_update, no_update, no_update, no_update]
+        return no_update, no_update, no_update, no_update
 
     if model == "cerra" and ((year > 2021) or (year < 1985)):
         return (
@@ -70,18 +72,27 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
             data_2, year=year, var=inst_var, title=loc_label
         )
 
-        return [fig_prec, fig_temp, None, False]
+        graph_prec = dcc.Graph(
+                            id=dict(type="figure", id="prec-climate-daily"),
+                            figure=fig_prec,
+                            config=images_config,
+                            style={'height':'45vh', 'minHeight':'300px'}
+                        )
+
+        graph_temp = dcc.Graph(
+                            figure=fig_temp,
+                            config=images_config,
+                            style={'height':'45vh', 'minHeight':'300px'}
+                        )
+
+
+        return graph_prec, graph_temp, None, False
 
     except Exception as e:
         logging.error(
             f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}. Parameters used model={model}, year={year}"
         )
-        return (
-            no_update,
-            no_update,
-            "An error occurred when processing the data",
-            True,  # Error message
-        )
+        return no_update, no_update, "An error occurred when processing the data", True
 
 
 @callback(
