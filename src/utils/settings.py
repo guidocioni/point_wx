@@ -133,6 +133,7 @@ ENSEMBLE_MODELS = [
         "items": [
             {"label": "ICON-EU-EPS (🇪🇺, 13km, 40 members)", "value": "icon_eu"},
             {"label": "ICON-D2-EPS (🇩🇪, 2km, 20 members)", "value": "icon_d2"},
+            {"label": "MOGREPS-UK (🌐, 2km, 3 members)", "value": "ukmo_uk_ensemble_2km"},
         ],
     },
 ]
@@ -144,6 +145,7 @@ ENSEMBLE_VARS = [
         "items": [
             {"label": "2m Temperature", "value": "temperature_2m"},
             {"label": "850hPa Temperature", "value": "temperature_850hPa"},
+            {"label": "500hPa Geopotential Height", "value": "geopotential_height_500hPa"},
             {"label": "2m Dew Point", "value": "dew_point_2m"},
             {"label": "Apparent Temperature", "value": "apparent_temperature"},
             {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},
@@ -157,6 +159,8 @@ ENSEMBLE_VARS = [
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
             {"label": "Weather", "value": "weather_code"},
+            {"label": "850hPa Geopotential Height", "value": "geopotential_height_850hPa"},
+            {"label": "500hPa Temperature", "value": "temperature_500hPa"},
         ],
     },
     {
