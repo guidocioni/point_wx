@@ -289,21 +289,25 @@ def get_ensemble_data(
     decimate=False,
     cell_selection="land",
     elevation=None,
+    forecast_days=None,
+    start_date=None,
+    end_date=None
 ):
     """
     Get the ensemble data
     """
-    # Adjust forecast_days depending on the model
-    if model == "icon_eu":
-        forecast_days = 6
-    elif model == "icon_d2":
-        forecast_days = 3
-    elif model in ["gfs_seamless", "gfs05", "gem_global"]:
-        forecast_days = 16
-    elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
-        forecast_days = 11
-    else: # icon_seamlss and global fall in this category!
-        forecast_days = 8
+    if not forecast_days and not start_date and not end_date:
+        # Adjust forecast_days depending on the model
+        if model == "icon_eu":
+            forecast_days = 6
+        elif model == "icon_d2":
+            forecast_days = 3
+        elif model in ["gfs_seamless", "gfs05", "gem_global"]:
+            forecast_days = 16
+        elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
+            forecast_days = 11
+        else: # icon_seamlss and global fall in this category!
+            forecast_days = 8
     # For the accumulated variables
     if "accumulated_precip" in variables:
         variables = variables.replace("accumulated_precip", "precipitation")
@@ -320,6 +324,8 @@ def get_ensemble_data(
         "models": model,
         "forecast_days": forecast_days,
         "cell_selection": cell_selection,
+        "start_date": start_date,
+        "end_date": end_date
     }
 
     if elevation:
@@ -822,26 +828,77 @@ def compute_yearly_accumulation(latitude=53.55,
                     pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
             variables=var)
 
-    if year == pd.to_datetime('now', utc=True).year:
-        # Add missing dates and forecasts
-        additional = get_forecast_daily_data(
-            latitude=latitude,
-            longitude=longitude,
-            variables=var,
-            model='ecmwf_ifs025',
-            forecast_days=None,
-            start_date=(daily['time'].max() + pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
-            end_date=(pd.to_datetime('now', utc=True) + pd.to_timedelta('10 days')).strftime("%Y-%m-%d")
-            ).dropna(subset=[var])
-        additional['time'] = additional['time'].dt.tz_localize(
-            None, ambiguous='NaT', nonexistent='NaT')
-        daily = pd.concat([daily, additional]).drop_duplicates(subset=['time']).reset_index(drop=True)
+    if year == pd.to_datetime("now", utc=True).year:
+        try:
+            ensemble_var = var
+            if var == "precipitation_sum":
+                ensemble_var = "precipitation"
+            elif var == "rain_sum":
+                ensemble_var = "rain"
+            elif var == "snowfall_sum":
+                ensemble_var = "snowfall"
+            elif var == "shortwave_radiation_sum":
+                ensemble_var = "shortwave_radiation"
+
+            #  We fill the missing days directly using the history of ensemble...hopefully this is not too bad
+            forecast_start = daily["time"].max() + pd.to_timedelta("1 day")
+            forecast_end = pd.to_datetime("now", utc=True) + pd.to_timedelta("25 days")
+
+            ensemble = get_ensemble_data(
+                model="ecmwf_ifs025",
+                latitude=latitude,
+                longitude=longitude,
+                variables=ensemble_var,
+                from_now=False,
+                start_date=forecast_start.strftime("%Y-%m-%d"),
+                end_date=forecast_end.strftime("%Y-%m-%d"),
+                #
+                decimate=False,
+            )
+            # Compute daily aggregation per ensemble
+            ensemble = (
+                ensemble.loc[:, ensemble.columns.str.contains(f"{ensemble_var}|time")]
+                .resample("1D", on="time")
+                .sum()
+            )
+            # 
+            ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
+                ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
+                left_index=True,
+                right_index=True,
+            ).merge(
+                ensemble.quantile(0.95, axis=1).to_frame(name=f"{var}_max"),
+                left_index=True,
+                right_index=True,
+            ).reset_index()
+            ensemble['time'] = ensemble['time'].dt.tz_localize(
+                None, ambiguous='NaT', nonexistent='NaT')
+            daily = pd.concat([daily, ensemble]).drop_duplicates(subset=['time']).reset_index(drop=True)
+        except Exception as e:
+            logging.error(
+                f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            )
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
-    # Compute cumulative sum
+    # Compute cumulative sum of the mean first
     daily[f'{var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
-        var].transform(lambda x: x.cumsum())
+            var].transform(lambda x: x.cumsum())
+
+    if year == pd.to_datetime("now", utc=True).year:
+        try:
+            # Then add this value to the forecasts min and max at the start
+            offset = daily.loc[daily['time'] ==  forecast_start, f'{var}_yearly_acc'].item()
+
+            for _var in [f"{var}_min", f"{var}_max"]:
+                daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
+                    _var].transform(lambda x: x.cumsum()) + offset
+        except Exception as e:
+            logging.error(
+                f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            )
+
+
 
     # Only compute quantiles on a subset of data
     # TODO, understand how to do it better
@@ -865,41 +922,58 @@ def compute_yearly_accumulation(latitude=53.55,
 
     daily = daily[daily.time.dt.year == year].merge(
         quantiles, left_on='time', right_on='dummy_date', how='left')
-
     return daily
 
 
 @cache.memoize(3600)
-def compute_yearly_comparison(latitude=53.55,
-                              longitude=9.99,
-                              var='temperature_2m_mean',
-                              model='era5',
-                              year=pd.to_datetime('now', utc=True).year):
-    """ Based on daily data compute first a daily climatology and then merge with the observed values
+def compute_yearly_comparison(
+    latitude=53.55,
+    longitude=9.99,
+    var="temperature_2m_mean",
+    model="era5",
+    year=pd.to_datetime("now", utc=True).year,
+):
+    """Based on daily data compute first a daily climatology and then merge with the observed values
     over a certain year"""
     daily = get_historical_daily_data(
         latitude=latitude,
         longitude=longitude,
         model=model,
-        start_date='1981-01-01',
-        end_date=(pd.to_datetime('now', utc=True) -
-                  pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
-        variables=var)
+        start_date="1981-01-01",
+        end_date=(pd.to_datetime("now", utc=True) - pd.to_timedelta("1 day")).strftime(
+            "%Y-%m-%d"
+        ),
+        variables=var,
+    )
 
-    if year == pd.to_datetime('now', utc=True).year:
+    if year == pd.to_datetime("now", utc=True).year:
         # Add missing dates and forecasts
-        additional = get_forecast_daily_data(
-            latitude=latitude,
-            longitude=longitude,
-            variables=var,
-            model='ecmwf_ifs025',
-            forecast_days=None,
-            start_date=(daily['time'].max() + pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
-            end_date=(pd.to_datetime('now', utc=True) + pd.to_timedelta('10 days')).strftime("%Y-%m-%d")
-            ).drop_duplicates(subset=['time']).reset_index(drop=True).dropna(subset=[var])
-        additional['time'] = additional['time'].dt.tz_localize(
-            None, ambiguous='NaT', nonexistent='NaT')
-        daily = pd.concat([daily, additional]).drop_duplicates(subset=['time']).reset_index(drop=True)
+        additional = (
+            get_forecast_daily_data(
+                latitude=latitude,
+                longitude=longitude,
+                variables=var,
+                model="ecmwf_ifs025",
+                forecast_days=None,
+                start_date=(daily["time"].max() + pd.to_timedelta("1 day")).strftime(
+                    "%Y-%m-%d"
+                ),
+                end_date=(
+                    pd.to_datetime("now", utc=True) + pd.to_timedelta("15 days")
+                ).strftime("%Y-%m-%d"),
+            )
+            .drop_duplicates(subset=["time"])
+            .reset_index(drop=True)
+            .dropna(subset=[var])
+        )
+        additional["time"] = additional["time"].dt.tz_localize(
+            None, ambiguous="NaT", nonexistent="NaT"
+        )
+        daily = (
+            pd.concat([daily, additional])
+            .drop_duplicates(subset=["time"])
+            .reset_index(drop=True)
+        )
 
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]

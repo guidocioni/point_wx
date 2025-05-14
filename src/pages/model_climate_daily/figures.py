@@ -3,6 +3,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from .options_selector import acc_vars_options, daily_vars_options
+from utils.custom_logger import logging
 
 
 def make_acc_figure(df, year, var, title=None):
@@ -26,7 +27,7 @@ def make_acc_figure(df, year, var, title=None):
             y=df["q3"],
             mode="lines",
             name="5-95th percentiles range",
-            line=dict(width=0.1, color="gray"),
+            line=dict(width=0, color="gray"),
             showlegend=True,
             fill="tonexty",
         ),
@@ -55,18 +56,59 @@ def make_acc_figure(df, year, var, title=None):
     )
 
     if year == pd.to_datetime("now", utc=True).year:
-        fig.add_vline(
-            x=pd.to_datetime("now", utc=True),
-            line_width=2,
-            line_dash="dash",
-            line_color="rgba(1, 1, 1, 0.2)",
-        )
-        fig.add_annotation(
-            x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
-            y=0.01, text='TODAY', showarrow=False, textangle=-90,
-            xref='x', yref='y domain', yanchor='bottom', xanchor='center',
-            font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
-        )
+        try:
+            fig.add_vline(
+                x=pd.to_datetime("now", utc=True),
+                line_width=2,
+                line_dash="dash",
+                line_color="rgba(1, 1, 1, 0.2)",
+            )
+            fig.add_annotation(
+                x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
+                y=0.01, text='TODAY', showarrow=False, textangle=-90,
+                xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+                font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
+            )
+            # Add circular marker at current time
+            current_value = df[df['time'] == pd.to_datetime("now").normalize()][f"{var}_yearly_acc"].item()
+            fig.add_trace(
+                go.Scatter(
+                    x=[pd.to_datetime("now", utc=True)],
+                    y=[current_value],
+                    mode='markers',
+                    marker=dict(size=10, color='black'),
+                    showlegend=False,
+                    hoverinfo='y'
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=df.dummy_date,
+                    y=df[f"{var}_min_yearly_acc"],
+                    mode="lines",
+                    name="Forecast q15",
+                    line=dict(width=0, color="red"),
+                    showlegend=False,
+                    hoverinfo="skip"
+                ),
+            )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=df.dummy_date,
+                    y=df[f"{var}_max_yearly_acc"],
+                    mode="lines",
+                    name="Forecast q95",
+                    line=dict(width=0, color="red"),
+                    showlegend=False,
+                    fill="tonexty",
+                ),
+            )
+        except Exception as e:
+            logging.error(
+                f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            )
+
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
@@ -165,6 +207,17 @@ def make_daily_figure(df, year, var, title=None):
     )
 
     if year == pd.to_datetime("now", utc=True).year:
+        current_value = df[df['time'] == pd.to_datetime("now").normalize()][var].item()
+        fig.add_trace(
+            go.Scatter(
+                x=[pd.to_datetime("now", utc=True)],
+                y=[current_value],
+                mode='markers',
+                marker=dict(size=10, color='black'),
+                showlegend=False,
+                hoverinfo='y'
+            )
+        )
         fig.add_vline(
             x=pd.to_datetime("now", utc=True),
             line_width=2,
