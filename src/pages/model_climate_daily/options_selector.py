@@ -7,7 +7,7 @@ acc_vars_options = [
     {"label": "Rain [mm]", "value": "rain_sum"},
     {"label": "Snow [cm]", "value": "snowfall_sum"},
     {"label": "Precipitation hours", "value": "precipitation_hours"},
-    {"label": "Sunshine hours", "value": "sunshine_duration"},
+    # {"label": "Sunshine hours", "value": "sunshine_duration"},
     {"label": "Shortwave radiation [MJ/m²]", "value": "shortwave_radiation_sum"},
     {"label": "Wind speed maximum [km/h]", "value": "wind_speed_10m_max"},
 ]

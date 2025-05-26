@@ -278,6 +278,101 @@ def get_forecast_daily_data(latitude=53.55,
     return data
 
 
+@cache.memoize(21600)
+def get_ensemble_daily_data(latitude=53.55,
+                            longitude=9.99,
+                            variables="precipitation_sum",
+                            timezone='auto',
+                            model="icon_seamless",
+                            forecast_days=None,
+                            past_days=None,
+                            start_date=None,
+                            end_date=None,
+                            cell_selection='land',
+                            elevation=None):
+    if not forecast_days and not start_date and not end_date:
+        # Adjust forecast_days depending on the model
+        if model == "icon_eu":
+            forecast_days = 6
+        elif model == "icon_d2":
+            forecast_days = 3
+        elif model in ["gfs_seamless", "gfs05", "gem_global"]:
+            forecast_days = 16
+        elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
+            forecast_days = 11
+        else: # icon_seamlss and global fall in this category!
+            forecast_days = 8
+    # For the accumulated variables
+    if "accumulated_precip" in variables:
+        variables = variables.replace("accumulated_precip", "precipitation_sum")
+    if "accumulated_liquid" in variables:
+        variables = variables.replace("accumulated_liquid", "rain_sum")
+    if "accumulated_snow" in variables:
+        variables = variables.replace("accumulated_snow", "snowfall_sum")
+
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": variables,
+        "timezone": timezone,
+        "models": model,
+        "cell_selection": cell_selection
+    }
+
+    if past_days:
+        payload['past_days'] = past_days
+    if forecast_days:
+        payload['forecast_days'] = forecast_days
+    if start_date:
+        payload['start_date'] = start_date
+    if end_date:
+        payload['end_date'] = end_date
+    if elevation:
+        payload['elevation'] = elevation
+
+    resp = make_request(
+        "https://ensemble-api.open-meteo.com/v1/ensemble",
+        payload).json()
+
+    data = pd.DataFrame.from_dict(resp['daily'])
+    data['time'] = pd.to_datetime(
+        data['time']).dt.tz_localize(resp['timezone'], ambiguous='NaT', nonexistent='NaT')
+    
+    # Units conversion
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
+
+    # Compute accumulated variables
+    # Comment if not needed
+    # Note that we have to change the name of the resulting accumulated variables
+    # so as not to conflict with the functions that always request data using columns.str.contains()
+    if data.columns.str.contains("precipitation_sum").any():
+        prec_acc = data.loc[:, data.columns.str.contains("precipitation_sum")].cumsum()
+        prec_acc.columns = prec_acc.columns.str.replace(
+            "precipitation_sum", "accumulated_precip"
+        )
+        data = data.merge(prec_acc, left_index=True, right_index=True)
+    if data.columns.str.contains("rain_sum").any():
+        rain_acc = data.loc[:, data.columns.str.contains("rain_sum")].cumsum()
+        rain_acc.columns = rain_acc.columns.str.replace("rain_sum", "accumulated_liquid")
+        data = data.merge(rain_acc, left_index=True, right_index=True)
+    if data.columns.str.contains("snowfall_sum").any():
+        snowfall_acc = data.loc[:, data.columns.str.contains("snowfall_sum")].cumsum()
+        snowfall_acc.columns = snowfall_acc.columns.str.replace(
+            "snowfall_sum", "accumulated_snow"
+        )
+        data = data.merge(snowfall_acc, left_index=True, right_index=True)
+
+    # Add metadata (experimental)
+    data.attrs = {x: resp[x] for x in resp if x not in [
+        "hourly", "daily"]}
+    data.attrs["request"] = payload
+
+    return data
+
+
 @cache.memoize(3600)
 def get_ensemble_data(
     latitude=53.55,
@@ -830,37 +925,22 @@ def compute_yearly_accumulation(latitude=53.55,
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
-            ensemble_var = var
-            if var == "precipitation_sum":
-                ensemble_var = "precipitation"
-            elif var == "rain_sum":
-                ensemble_var = "rain"
-            elif var == "snowfall_sum":
-                ensemble_var = "snowfall"
-            elif var == "shortwave_radiation_sum":
-                ensemble_var = "shortwave_radiation"
-
             #  We fill the missing days directly using the history of ensemble...hopefully this is not too bad
             forecast_start = daily["time"].max() + pd.to_timedelta("1 day")
-            forecast_end = pd.to_datetime("now", utc=True) + pd.to_timedelta("25 days")
+            forecast_end = daily["time"].max() + pd.to_timedelta("15 days")
 
-            ensemble = get_ensemble_data(
+            ensemble = get_ensemble_daily_data(
                 model="ecmwf_ifs025",
                 latitude=latitude,
                 longitude=longitude,
-                variables=ensemble_var,
-                from_now=False,
+                variables=var,
                 start_date=forecast_start.strftime("%Y-%m-%d"),
                 end_date=forecast_end.strftime("%Y-%m-%d"),
-                #
-                decimate=False,
             )
-            # Compute daily aggregation per ensemble
-            ensemble = (
-                ensemble.loc[:, ensemble.columns.str.contains(f"{ensemble_var}|time")]
-                .resample("1D", on="time")
-                .sum()
-            )
+            ensemble = ensemble.set_index('time')
+            ensemble = ensemble.dropna(how='all')
+            # Only select the right variable
+            ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$')]
             # 
             ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
                 ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
@@ -897,8 +977,6 @@ def compute_yearly_accumulation(latitude=53.55,
             logging.error(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
-
-
 
     # Only compute quantiles on a subset of data
     # TODO, understand how to do it better
