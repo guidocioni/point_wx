@@ -132,6 +132,19 @@ def make_daily_figure(df, year, var, title=None):
     df["above"] = np.where(mask, df[var], df[f"{var}_clima"])
     df["below"] = np.where(mask, df[f"{var}_clima"], df[var])
 
+    color_above = "rgba(255, 76, 45, 1)"
+    color_below = "rgba(99, 178, 207, 1)"
+    if var in [
+        "pressure_msl_mean",
+        "cloud_cover_mean",
+        "relative_humidity_2m_mean",
+        "soil_moisture_0_to_7cm_mean",
+        "soil_moisture_7_to_28cm_mean",
+        "soil_moisture_28_to_100cm_mean",
+    ]:
+        color_above = "rgba(99, 178, 255, 1)"  # light blue
+        color_below = "rgba(205, 133, 63, 1)"  # light brown
+
     fig.add_trace(
         go.Scatter(
             x=df["time"],
@@ -148,7 +161,7 @@ def make_daily_figure(df, year, var, title=None):
             y=df["above"],
             fill="tonexty",
             name="Above average",
-            fillcolor="rgba(255, 76, 45, 1)",
+            fillcolor=color_above,
             mode="none",
         )
     )
@@ -168,7 +181,7 @@ def make_daily_figure(df, year, var, title=None):
             y=df["below"],
             fill="tonexty",
             name="Below Average",
-            fillcolor="rgba(99, 178, 207, 1)",
+            fillcolor=color_below,
             mode="none",
         )
     )

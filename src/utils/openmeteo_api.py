@@ -927,7 +927,7 @@ def compute_yearly_accumulation(latitude=53.55,
         try:
             #  We fill the missing days directly using the history of ensemble...hopefully this is not too bad
             forecast_start = daily["time"].max() + pd.to_timedelta("1 day")
-            forecast_end = daily["time"].max() + pd.to_timedelta("15 days")
+            forecast_end = daily["time"].max() + pd.to_timedelta("25 days")
 
             ensemble = get_ensemble_daily_data(
                 model="ecmwf_ifs025",
@@ -973,6 +973,7 @@ def compute_yearly_accumulation(latitude=53.55,
             for _var in [f"{var}_min", f"{var}_max"]:
                 daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
                     _var].transform(lambda x: x.cumsum()) + offset
+                daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
         except Exception as e:
             logging.error(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
