@@ -10,7 +10,8 @@ opts_selector = dbc.Card(
             data=REANALYSIS_MODELS,
             value="era5_seamless",
             className="mb-2",
-            allowDeselect=False
+            allowDeselect=False,
+            style={'display': 'none'} # Hide model selection for the moment to avoid confusion
         ),
         dmc.DatePickerInput(
             label="Date Range",
