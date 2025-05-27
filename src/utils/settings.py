@@ -86,6 +86,35 @@ else:
     cache = Cache(config={"CACHE_TYPE": "null"})
 
 
+def filter_options(values_to_find, options):
+    """
+    Helper function which helps in filtering a set of options
+    used for a dropdown or a multi-select component in mantine.
+    values_to_find is a list of values to find in the options.
+    options is a list of dictionaries with the structure:
+    [
+        {
+            "group": "Group Name",
+            "items": [
+                {"label": "Item Label", "value": "item_value"},
+                ...
+            ]
+        },
+        ...
+    ]
+    The function returns a filtered list of options where
+    only the items with values in values_to_find are kept.
+    """
+    return [
+        {
+            "group": group["group"],
+            "items": [item for item in group["items"] if item["value"] in values_to_find]
+        }
+        for group in options
+        if any(item["value"] in values_to_find for item in group["items"])
+    ]
+
+
 images_config = {
     "toImageButtonOptions": {
         "format": "png",  # one of png, svg, jpeg, webp
