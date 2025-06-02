@@ -278,7 +278,7 @@ def get_forecast_daily_data(latitude=53.55,
     return data
 
 
-@cache.memoize(21600)
+@cache.memoize(43200)
 def get_ensemble_daily_data(latitude=53.55,
                             longitude=9.99,
                             variables="precipitation_sum",
