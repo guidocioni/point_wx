@@ -4,7 +4,6 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
-from utils.custom_logger import logging, time_this_func
 
 
 def make_boxplot_timeseries(df, var, clima=None):
@@ -325,7 +324,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     fig.update_annotations(font=dict(size=13))
 
     # Manually calculate tick values and labels
-    tickvals = pd.date_range(start=data["time"].min().normalize(),
+    tickvals = pd.date_range(start=data["time"].min().normalize() + pd.Timedelta('1 day'),
                              end=data["time"].max().normalize(),
                              freq='D')
     ticktext = [date.strftime('%a %d %b') for date in tickvals]
@@ -416,10 +415,10 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     )
 
     if sun is not None:
-        for _, s in sun.iterrows():
+        for i, s in sun.iterrows():
             fig.add_vrect(
-                x0=s["sunrise"],
-                x1=s["sunset"],
+                x0=s["sunrise"] if i != 0 else max(s["sunrise"], data["time"].min()),
+                x1=s["sunset"] if i != len(sun) - 1 else min(s["sunset"], data["time"].max()),
                 fillcolor="rgba(255, 255, 0, 0.3)",
                 layer="below",
                 line=dict(width=0),
