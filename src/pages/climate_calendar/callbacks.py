@@ -56,9 +56,10 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             longitude=loc["longitude"].item(),
             model=model,
             start_date=f'{year_start}-01-01',
-            end_date=(date.today() - timedelta(days=6)).strftime("%Y-%m-%d")
+            end_date=date.today().strftime("%Y-%m-%d")
         )
         if graph_type in ['precipitation_anomaly', 'temperature_anomaly']:
+            # TODO, Report in the frontend that it's better to use ERA5 when comparing to the clima
             data['doy'] = data.time.dt.strftime("%m%d")
             clima = compute_climatology(
                         latitude=loc["latitude"].item(),
