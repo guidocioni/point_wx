@@ -453,6 +453,7 @@ def get_ensemble_data(
             "gfs025",
             "ecmwf_ifs04",
             "ecmwf_ifs025",
+            "ecmwf_aifs025",
             "gem_global",
             "bom_access_global_ensemble",
         ]:
@@ -1098,6 +1099,8 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         model = "gfs_seamless"
     elif model == "ukmo_global_ensemble_20km":
         model = "ukmo_seamless"
+    elif model == "ecmwf_aifs025":
+        model = "ecmwf_aifs025_single"
     data_deterministic = get_forecast_data(
         latitude=latitude,
         longitude=longitude,

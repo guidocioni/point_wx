@@ -146,6 +146,7 @@ ENSEMBLE_MODELS = [
         "group": "Global",
         "items": [
             {"label": "IFS (🌐, 25km, 51 members)", "value": "ecmwf_ifs025"},
+            {"label": "AIFS (🌐, 25km, 51 members)", "value": "ecmwf_aifs025"},
             {"label": "GEM (🌐, 25km, 21 members)", "value": "gem_global"},
             {"label": "ICON-EPS (🌐, 26km, 40 members)", "value": "icon_global"},
             {"label": "GFS ENS (🌐, 25km, 31 members)", "value": "gfs025"},
