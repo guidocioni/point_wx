@@ -227,8 +227,10 @@ DETERMINISTIC_MODELS = [
             {"label": "ICON-CH Seamless 🇨🇭", "value": "meteoswiss_icon_seamless"},
             {"label": "JMA Seamless 🌐", "value": "jma_seamless"},
             {"label": "GEM Seamless 🌐", "value": "gem_seamless"},
+            # These seamless do not make any sense to me
             # {"label": "KNMI Seamless 🇪🇺", "value": "knmi_seamless"},
             # {"label": "DMI Seamless 🇪🇺", "value": "dmi_seamless"},
+            # 
             {"label": "UKMO Seamless 🌐", "value": "ukmo_seamless"},
             {"label": "KMA Seamless 🌐", "value": "kma_seamless"},
         ],
@@ -237,6 +239,7 @@ DETERMINISTIC_MODELS = [
         "group": "Global",
         "items": [
             {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
+            {"label": "IFS (🌐, 9km)", "value": "ecmwf_ifs"},
             {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
             {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
             {"label": "AIFS single (🌐, 25km)", "value": "ecmwf_aifs025_single"},
@@ -274,9 +277,11 @@ DETERMINISTIC_MODELS = [
         "items": [
             {"label": "HRRR (🇺🇸, 3km)", "value": "gfs_hrrr"},
             {"label": "NBM (🇺🇸, 2.5km)", "value": "ncep_nbm_conus"},
+            {"label": "NAM (🇺🇸, 3km)", "value": "ncep_nam_conus"},
             {"label": "MSM (🇯🇵, 5km)", "value": "jma_msm"},
             {"label": "GEM Regional (🇺🇸, 10km)", "value": "gem_regional"},
             {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},
+            {"label": "HRDPS West (🇨🇦, 1km)", "value": "gem_hrdps_west"},
             {"label": "LDPS (🇰🇷, 2.5km)", "value": "kma_ldps"},
         ],
     },
