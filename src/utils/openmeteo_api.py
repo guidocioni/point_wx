@@ -1000,6 +1000,10 @@ def compute_yearly_accumulation(latitude=53.55,
         .sort_values(by='dummy_date')
     )
 
+    # Smooth quantiles with a centered 15-day rolling window, extend to avoid gaps
+    for col in ['q1', 'q2', 'q3']:
+        quantiles[col] = quantiles[col].rolling(window=10, center=True, min_periods=1).mean()
+
     daily = daily[daily.time.dt.year == year].merge(
         quantiles, left_on='time', right_on='dummy_date', how='left')
     return daily
@@ -1067,6 +1071,10 @@ def compute_yearly_comparison(
                              ].groupby('doy').quantile(q=0.05, numeric_only=True).add_suffix("_q05").values
     clima['q95'] = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
                              ].groupby('doy').quantile(q=0.95, numeric_only=True).add_suffix("_q95").values
+
+    # Smooth quantiles with a centered 15-day rolling window, extend to avoid gaps
+    for col in ['q05', 'q95']:
+        clima[col] = pd.Series(clima[col]).rolling(window=10, center=True, min_periods=1).mean().values
 
     clima['dummy_date'] = pd.to_datetime(
         str(year) + clima.index, format='%Y%m%d')
