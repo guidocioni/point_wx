@@ -318,7 +318,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
             "<b>Rain [mm] | Snow [cm] | Prob. [%]",
             f"<b>{additional_title}",
         ],
-        row_heights=[0.35, height_graph, 0.3, 0.25],
+        row_heights=[0.35, height_graph, 0.25, 0.25],
     )
     # Update subplot titles font size
     fig.update_annotations(font=dict(size=13))
@@ -471,6 +471,6 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
 
 
 fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"),
-                         config=images_config, style={'height':'90vh', 'min-height': '650px'})
+                         config=images_config, style={'height':'90vh', 'min-height': '850px'})
 # fig_polar = dcc.Graph(id='polar-plot',
 #                       config={**images_config, 'displayModeBar': False})
