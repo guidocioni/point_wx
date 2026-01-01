@@ -47,7 +47,7 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
             model=",".join(models),
             forecast_days=days_,
             from_now=from_now_,
-            variables='temperature_2m,precipitation,snowfall,windgusts_10m,cloudcover,winddirection_10m',
+            variables='temperature_2m,precipitation,rain,snowfall,windgusts_10m,cloudcover,winddirection_10m',
             minutes_15=minutes_15_
         )
 

@@ -162,7 +162,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     # traces_sunshine = make_lineplot_timeseries(
     #     data, 'sunshine_duration', models=models,
     #     fill="tozeroy", alpha=0.3)
-    traces_precipitation = make_barplot_timeseries(data, "precipitation", models=models)
+    traces_precipitation = make_barplot_timeseries(data, "rain", models=models)
     if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
         traces_snow = make_barplot_timeseries(
             data, "snowfall", models=models, color="rgb(214, 138, 219)"
@@ -185,7 +185,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
         row_heights=[0.44, 0.25, 0.3, 0.2],
         subplot_titles=[
             "<b>2m Temp",
-            "<b>Precip[mm] / Snow[cm]",
+            "<b>Rain[mm] / Snow[cm]",
             "<b>Winds [km/h]",
             "<b>Clouds [%]",
         ],
