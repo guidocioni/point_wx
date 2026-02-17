@@ -145,15 +145,16 @@ ENSEMBLE_MODELS = [
     {
         "group": "Global",
         "items": [
-            {"label": "IFS (🌐, 25km, 51 members)", "value": "ecmwf_ifs025"},
-            {"label": "AIFS (🌐, 25km, 51 members)", "value": "ecmwf_aifs025"},
-            {"label": "GEM (🌐, 25km, 21 members)", "value": "gem_global"},
-            {"label": "ICON-EPS (🌐, 26km, 40 members)", "value": "icon_global"},
-            {"label": "GFS ENS (🌐, 25km, 31 members)", "value": "gfs025"},
-            {"label": "GFS ENS (🌐, 50km, 31 members)", "value": "gfs05"},
-            {"label": "MOGREPS-G (🌐, 20km, 18 members)", "value": "ukmo_global_ensemble_20km"},
+            {"label": "IFS (🌐, 25km, 🎲 51)", "value": "ecmwf_ifs025"},
+            {"label": "AIFS (🌐, 25km, 🎲 51)", "value": "ecmwf_aifs025"},
+            {"label": "GEM (🌐, 25km, 🎲 21)", "value": "gem_global"},
+            {"label": "ICON-EPS (🌐, 26km, 🎲 40)", "value": "icon_global"},
+            {"label": "GFS ENS (🌐, 25km, 🎲 31)", "value": "gfs025"},
+            {"label": "GFS ENS (🌐, 50km, 🎲 31)", "value": "gfs05"},
+            {"label": "AIGFS (🌐, 25km, 🎲 31)", "value": "ncep_aigefs025"},
+            {"label": "MOGREPS-G (🌐, 20km, 🎲 18)", "value": "ukmo_global_ensemble_20km"},
             {
-                "label": "ACCESS-GE (🌐, 40km, 18 members)",
+                "label": "ACCESS-GE (🌐, 40km, 🎲 18)",
                 "value": "bom_access_global_ensemble",
             },
         ],
@@ -161,11 +162,11 @@ ENSEMBLE_MODELS = [
     {
         "group": "Regional",
         "items": [
-            {"label": "ICON-EU-EPS (🇪🇺, 13km, 40 members)", "value": "icon_eu"},
-            {"label": "ICON-CH1-EPS (🇨🇭, 1km, 11 members)", "value": "meteoswiss_icon_ch1"},
-            {"label": "ICON-CH2-EPS (🇨🇭, 2km, 21 members)", "value": "meteoswiss_icon_ch2"},
-            {"label": "ICON-D2-EPS (🇩🇪, 2km, 20 members)", "value": "icon_d2"},
-            {"label": "MOGREPS-UK (🌐, 2km, 3 members)", "value": "ukmo_uk_ensemble_2km"},
+            {"label": "ICON-EU-EPS (🇪🇺, 13km, 🎲 40)", "value": "icon_eu"},
+            {"label": "ICON-CH1-EPS (🇨🇭, 1km, 🎲 11)", "value": "meteoswiss_icon_ch1"},
+            {"label": "ICON-CH2-EPS (🇨🇭, 2km, 🎲 21)", "value": "meteoswiss_icon_ch2"},
+            {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "icon_d2"},
+            {"label": "MOGREPS-UK (🌐, 2km, 🎲 3)", "value": "ukmo_uk_ensemble_2km"},
         ],
     },
 ]
@@ -183,7 +184,9 @@ ENSEMBLE_VARS = [
             {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},
             {"label": "Total Cloud Cover", "value": "cloudcover"},
             {"label": "Freezing level", "value": "freezinglevel_height"},
+            {"label": "Snowfall height", "value": "snowfall_height"},
             {"label": "Snow depth", "value": "snow_depth"},
+            {"label": "Snow depth (water equivalent)", "value": "snow_depth_water_equivalent"},
             {"label": "10m Wind Speed", "value": "wind_speed_10m"},
             {"label": "10m Wind Direction", "value": "wind_direction_10m"},
             {"label": "MSL Pressure", "value": "pressure_msl"},
@@ -200,6 +203,7 @@ ENSEMBLE_VARS = [
         "items": [
             {"label": "Rain", "value": "rain"},
             {"label": "Snowfall", "value": "snowfall"},
+            {"label": "Snowfall (water equivalent)", "value": "snowfall_water_equivalent"},
             {"label": "Precipitation", "value": "precipitation"},
             {"label": "Sunshine duration", "value": "sunshine_duration"},
             {"label": "Accumulated precipitation (total)", "value": "accumulated_precip"},
@@ -211,6 +215,13 @@ ENSEMBLE_VARS = [
         "group": "Preceding hour maximum",
         "items": [
             {"label": "10m Wind Gusts", "value": "windgusts_10m"},
+            {"label": "2m Max. Temperature", "value": "temperature_2m_max"},
+        ],
+    },
+    {
+        "group": "Preceding hour minimum",
+        "items": [
+            {"label": "2m Min. Temperature", "value": "temperature_2m_min"},
         ],
     },
 ]
@@ -240,11 +251,13 @@ DETERMINISTIC_MODELS = [
         "items": [
             {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
             {"label": "IFS (🌐, 9km)", "value": "ecmwf_ifs"},
-            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
+            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"}, 
             {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
             {"label": "AIFS single (🌐, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
             {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
+            {"label": "AIGFS (🌐, 25km)", "value": "ncep_aigfs025"},
+            {"label": "HGEFS (🌐, 25km)", "value": "ncep_hgefs025_ensemble_mean"},
             {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
             {"label": "UKMO (🌐, 10km)", "value": "ukmo_global_deterministic_10km"},
             {"label": "GSM (🌐, 55km)", "value": "jma_gsm"},
