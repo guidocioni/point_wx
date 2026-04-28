@@ -397,9 +397,11 @@ def get_ensemble_data(
             forecast_days = 6
         elif model == "icon_d2":
             forecast_days = 3
-        elif model in ["gfs_seamless", "gfs05", "gem_global"]:
+        elif model == "gfs05":
+            forecast_days = 35
+        elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025"]:
             forecast_days = 16
-        elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
+        elif model in ["ecmwf_ifs025", "ecmwf_aifs025", "gfs025", "bom_access_global_ensemble"]:
             forecast_days = 11
         else: # icon_seamlss and global fall in this category!
             forecast_days = 8
@@ -451,11 +453,11 @@ def get_ensemble_data(
             "gfs_seamless",
             "gfs05",
             "gfs025",
-            "ecmwf_ifs04",
             "ecmwf_ifs025",
             "ecmwf_aifs025",
             "gem_global",
             "bom_access_global_ensemble",
+            "ncep_aigefs025"
         ]:
             # The original data for all these models is 3 hourly, so there is no added
             # value in showing hourly data. Here we decimate every 3 hours considering
@@ -539,7 +541,7 @@ def get_ensemble_data(
                 dfs,
             )
             data = data.reset_index()
-        elif model in ["icon_seamless", "icon_global", "icon_eu", "ukmo_global_ensemble_20km"]:
+        elif model in ["icon_seamless", "icon_global", "icon_eu", "ukmo_global_ensemble_20km", "ukmo_uk_ensemble_2km"]:
             # For these models we want to preserve the original hourly resolution
             # because it is the original one! Actually, for ICON-EPS the data
             # is every 6 hours, but I don't want to implement a different logic

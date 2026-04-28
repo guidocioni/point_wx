@@ -13,9 +13,11 @@ opts_selector = dbc.Card(
                     "gfs_seamless",
                     "ecmwf_ifs025",
                     "ecmwf_aifs025",
+                    "ncep_aigefs025",
                     "icon_global",
-                    "ukmo_global_ensemble_20km",
                     "icon_eu",
+                    "ukmo_global_ensemble_20km",
+                    
                 ],
                 ENSEMBLE_MODELS,
             ),
