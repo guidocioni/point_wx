@@ -214,7 +214,7 @@ ENSEMBLE_VARS = [
     {
         "group": "Preceding hour maximum",
         "items": [
-            {"label": "10m Wind Gusts", "value": "windgusts_10m"},
+            {"label": "10m Wind Gusts", "value": "wind_gusts_10m"},
             {"label": "2m Max. Temperature", "value": "temperature_2m_max"},
         ],
     },
