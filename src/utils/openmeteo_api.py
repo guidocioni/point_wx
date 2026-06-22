@@ -958,7 +958,7 @@ def compute_yearly_accumulation(latitude=53.55,
                 None, ambiguous='NaT', nonexistent='NaT')
             daily = pd.concat([daily, ensemble]).drop_duplicates(subset=['time']).reset_index(drop=True)
         except Exception as e:
-            logging.error(
+            logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
 
@@ -978,7 +978,7 @@ def compute_yearly_accumulation(latitude=53.55,
                     _var].transform(lambda x: x.cumsum()) + offset
                 daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
         except Exception as e:
-            logging.error(
+            logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
 

@@ -118,9 +118,9 @@ def filter_options(values_to_find, options):
 images_config = {
     "toImageButtonOptions": {
         "format": "png",  # one of png, svg, jpeg, webp
-        "height": None,
-        "width": None,
-        "scale": 1.3,  # Multiply title/legend/axis/canvas sizes by this factor
+        "height": 800,
+        "width": 900,
+        "scale": 1.5
     },
     "modeBarButtonsToRemove": [
         "select",
