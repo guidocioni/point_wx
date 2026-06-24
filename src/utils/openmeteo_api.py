@@ -917,14 +917,30 @@ def compute_yearly_accumulation(latitude=53.55,
                                 q2=0.5,
                                 q3=0.95):
     """Compute cumulative sum of some variable over the year"""
-    daily = get_historical_daily_data(
+    current_year = pd.to_datetime("now", utc=True).year
+    
+    # Download static base period for quantiles (fully cacheable)
+    base_daily = get_historical_daily_data(
             latitude=latitude,
             longitude=longitude,
             model=model,
-            start_date='1951-01-01',
-            end_date=(pd.to_datetime('now', utc=True) -
-                    pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
+            start_date='1991-01-01',
+            end_date='2020-12-31',
             variables=var)
+
+    # Conditionally download the target year if outside the base period
+    if year < 1991 or year > 2020:
+        end_dt = (pd.to_datetime("now", utc=True) - pd.to_timedelta("1 day")).strftime("%Y-%m-%d") if year == current_year else f"{year}-12-31"
+        target_daily = get_historical_daily_data(
+            latitude=latitude,
+            longitude=longitude,
+            model=model,
+            start_date=f"{year}-01-01",
+            end_date=end_dt,
+            variables=var)
+        daily = pd.concat([base_daily, target_daily]).drop_duplicates(subset=['time']).reset_index(drop=True)
+    else:
+        daily = base_daily.copy()
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
@@ -983,8 +999,7 @@ def compute_yearly_accumulation(latitude=53.55,
             )
 
     # Only compute quantiles on a subset of data
-    # TODO, understand how to do it better
-    period = (daily['time'] >= '1981-01-01') & (daily['time'] <= '2020-12-31')
+    period = (daily['time'] >= '1991-01-01') & (daily['time'] <= '2020-12-31')
 
     quantiles = (
         daily.loc[period]
@@ -1021,16 +1036,32 @@ def compute_yearly_comparison(
 ):
     """Based on daily data compute first a daily climatology and then merge with the observed values
     over a certain year"""
-    daily = get_historical_daily_data(
+    current_year = pd.to_datetime("now", utc=True).year
+
+    # Download static base period for climatology (fully cacheable)
+    base_daily = get_historical_daily_data(
         latitude=latitude,
         longitude=longitude,
         model=model,
-        start_date="1951-01-01",
-        end_date=(pd.to_datetime("now", utc=True) - pd.to_timedelta("1 day")).strftime(
-            "%Y-%m-%d"
-        ),
+        start_date="1991-01-01",
+        end_date="2020-12-31",
         variables=var,
     )
+
+    # Conditionally download the target year if outside the base period
+    if year < 1991 or year > 2020:
+        end_dt = (pd.to_datetime("now", utc=True) - pd.to_timedelta("1 day")).strftime("%Y-%m-%d") if year == current_year else f"{year}-12-31"
+        target_daily = get_historical_daily_data(
+            latitude=latitude,
+            longitude=longitude,
+            model=model,
+            start_date=f"{year}-01-01",
+            end_date=end_dt,
+            variables=var,
+        )
+        daily = pd.concat([base_daily, target_daily]).drop_duplicates(subset=["time"]).reset_index(drop=True)
+    else:
+        daily = base_daily.copy()
 
     if year == pd.to_datetime("now", utc=True).year:
         # Add missing dates and forecasts
@@ -1064,8 +1095,7 @@ def compute_yearly_comparison(
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
 
-    # Although the data starts from 1981, we compute the quantiles and mean only over the 1991-2020 period
-    # This is different from what we do for the accumulated variable
+    # Although the data starts from 1981 (or 1991 depending on base), we compute the quantiles and mean only over the 1991-2020 period
     daily['doy'] = daily.time.dt.strftime("%m%d")
     clima = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
                       ].groupby('doy').mean(numeric_only=True).add_suffix("_clima")
