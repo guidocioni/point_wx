@@ -43,7 +43,7 @@ opts_selector = dbc.Card(
         dmc.NumberInput(
             id="year-selection-climate",
             label="Year",
-            min=1981,
+            min=1951,
             step=1,
             className="mb-2",
         ),

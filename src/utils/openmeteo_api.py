@@ -921,7 +921,7 @@ def compute_yearly_accumulation(latitude=53.55,
             latitude=latitude,
             longitude=longitude,
             model=model,
-            start_date='1981-01-01',
+            start_date='1951-01-01',
             end_date=(pd.to_datetime('now', utc=True) -
                     pd.to_timedelta('1 day')).strftime("%Y-%m-%d"),
             variables=var)
@@ -1025,7 +1025,7 @@ def compute_yearly_comparison(
         latitude=latitude,
         longitude=longitude,
         model=model,
-        start_date="1981-01-01",
+        start_date="1951-01-01",
         end_date=(pd.to_datetime("now", utc=True) - pd.to_timedelta("1 day")).strftime(
             "%Y-%m-%d"
         ),
