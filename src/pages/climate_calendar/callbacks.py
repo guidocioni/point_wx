@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_historical_daily_data, compute_climatology
+from utils.openmeteo_api import get_historical_daily_data, compute_climatology, get_forecast_daily_data
 from utils.custom_logger import logging
 from datetime import date, timedelta
 from .figures import make_calendar_figure
@@ -58,6 +58,35 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             start_date=f'{year_start}-01-01',
             end_date=date.today().strftime("%Y-%m-%d")
         )
+        additional = (
+            get_forecast_daily_data(
+                latitude=loc["latitude"].item(),
+                longitude=loc["longitude"].item(),
+                variables=var,
+                model="ecmwf_ifs025",
+                forecast_days=None,
+                start_date=(data["time"].max() + pd.to_timedelta("1 day")).strftime(
+                    "%Y-%m-%d"
+                ),
+                end_date=(
+                    pd.to_datetime("now", utc=True)
+                ).strftime("%Y-%m-%d"),
+            )
+            .drop_duplicates(subset=["time"])
+            .reset_index(drop=True)
+            .dropna(subset=[var])
+        )
+        additional["time"] = additional["time"].dt.tz_localize(
+            None, ambiguous="NaT", nonexistent="NaT"
+        )
+        saved_attrs = data.attrs.copy()
+        data = (
+            pd.concat([data, additional])
+            .drop_duplicates(subset=["time"])
+            .reset_index(drop=True)
+        )
+        data.attrs = saved_attrs
+
         if graph_type in ['precipitation_anomaly', 'temperature_anomaly']:
             # TODO, Report in the frontend that it's better to use ERA5 when comparing to the clima
             data['doy'] = data.time.dt.strftime("%m%d")
