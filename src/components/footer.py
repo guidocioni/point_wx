@@ -22,10 +22,12 @@ footer = html.Footer(
                 href="#content"
             ),
             html.Hr(),
-            html.A('Guido Cioni', title='email_me',
+            html.A('Contact', title='email_me',
                    href='mailto:guidocioni@gmail.com', target='_blank'),
             " | ",
-            html.A("Open Meteo", href='https://open-meteo.com/')
+            html.A("Open Meteo", href='https://open-meteo.com/'),
+            " | ",
+            html.A("Source", href='https://github.com/guidocioni/point_wx')
         ]
     )
 )

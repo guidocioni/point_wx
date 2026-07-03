@@ -106,7 +106,7 @@ def make_acc_figure(df, year, var, title=None):
                 ),
             )
         except Exception as e:
-            logging.error(
+            logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
 
