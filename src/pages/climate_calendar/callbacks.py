@@ -81,11 +81,13 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             graph_title = graph_title[0]
         else:
             graph_title = graph_type
+        last_date = data['time'].max().strftime('%Y-%m-%d')
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
             f"<sup>Metric = <b>{graph_title}</b> | "
-            f"Model = <b>{model.upper()}</b></sup>"
+            f"Model = <b>{model.upper()}</b> | "
+            f"Until <b>{last_date}</b></sup>"
         )
 
         return make_calendar_figure(data, graph_type=graph_type, title=loc_label), None, False

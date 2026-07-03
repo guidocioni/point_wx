@@ -18,7 +18,9 @@ def add_attribution(fig, text="Created with PointWx - hh.guidocioni.it/pointwx")
         yanchor="top",
         showarrow=False,
         align="right",
-        font=dict(size=8, color="rgba(0,0,0,0.45)"),
+        font=dict(size=9, color="rgba(0,0,0,0.45)"),
+        bgcolor="white",
+        opacity=0.7
     )
     return fig
 
