@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from plotly.subplots import make_subplots
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 
 
 x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -92,7 +93,7 @@ def make_temp_prec_climate_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_clouds_climate_figure(df, title=None):
@@ -166,7 +167,7 @@ def make_clouds_climate_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_temperature_climate_figure(df, title=None):
@@ -311,7 +312,7 @@ def make_temperature_climate_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_precipitation_climate_figure(df, title=None):
@@ -433,7 +434,7 @@ def make_precipitation_climate_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_winds_climate_figure(df, title=None):
@@ -566,7 +567,7 @@ def make_winds_climate_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_wind_rose_figure(df, title=None):
@@ -638,4 +639,4 @@ def make_wind_rose_figure(df, title=None):
     if title is not None:
         fig.update_layout(title_text=title, font=dict(size=11))
 
-    return fig
+    return add_attribution(fig)

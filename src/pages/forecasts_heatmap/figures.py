@@ -1,7 +1,7 @@
 from dash import dcc
 import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE
-from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba
+from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba, add_attribution
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
@@ -131,7 +131,7 @@ def make_heatmap(df, var, models, title=None):
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_lineplot(
@@ -202,7 +202,7 @@ def make_lineplot(
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
     
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout

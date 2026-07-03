@@ -3,6 +3,25 @@ import dash_leaflet as dl
 from utils.settings import MAPBOX_API_KEY, ASSETS_DIR
 import numpy as np
 
+def add_attribution(fig, text="Created with PointWx - hh.guidocioni.it/pointwx"):
+    """Add a small, fixed attribution note pinned to the lower-right of the plot
+    area. Uses paper coordinates so it stays visible during zoom/pan.
+    Returns the same fig for convenient chaining (return add_attribution(fig)).
+    """
+    fig.add_annotation(
+        text=text,
+        xref="paper",
+        yref="paper",
+        x=1,
+        y=1.02,
+        xanchor="right",
+        yanchor="top",
+        showarrow=False,
+        align="right",
+        font=dict(size=8, color="rgba(0,0,0,0.45)"),
+    )
+    return fig
+
 def get_weather_icons(
     df,
     icons_path=f"{ASSETS_DIR}/yrno_png_reduced/",

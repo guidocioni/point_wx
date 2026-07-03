@@ -4,7 +4,7 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
-from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba
+from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba, add_attribution
 
 
 def make_lineplot_timeseries(
@@ -344,7 +344,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout

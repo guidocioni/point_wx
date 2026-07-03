@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from dash import dcc
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 from metpy.calc import parcel_profile, moist_lapse, dry_lapse
 from metpy.units import units
 
@@ -214,7 +215,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
             title=dict(text=title, font=dict(size=14), yref="container", y=0.98)
         )
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_figure_skewt(df, title=None):
@@ -518,7 +519,7 @@ def make_figure_skewt(df, title=None):
         ],
     )
 
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout

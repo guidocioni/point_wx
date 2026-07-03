@@ -2,6 +2,7 @@ from dash import dcc
 import plotly.express as px
 import pandas as pd
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 import plotly.graph_objects as go
 
 
@@ -165,7 +166,7 @@ def make_heatmap(df, var, title=None):
             title=dict(text=title, font=dict(size=14), yref="container", y=0.98)
         )
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_lineplot(
@@ -254,7 +255,7 @@ def make_lineplot(
             title=dict(text=title, font=dict(size=14), yref="container", y=0.97)
         )
 
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout

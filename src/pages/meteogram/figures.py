@@ -2,6 +2,7 @@ from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 from PIL import Image
 import pandas as pd
 
@@ -388,7 +389,7 @@ def make_subplot_figure(data, title=None, clima=None):
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout

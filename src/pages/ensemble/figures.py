@@ -4,6 +4,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 
 
 def make_boxplot_timeseries(df, var, clima=None):
@@ -281,7 +282,7 @@ def make_barpolar_figure(df, n_partitions=15, bins=np.linspace(0, 360, 15)):
         margin={"r": 2, "t": 1, "l": 2, "b": 0.1}, height=100, dragmode=False
     )
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot='clouds'):
@@ -464,7 +465,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.98))
 
-    return fig
+    return add_attribution(fig)
 
 
 # Figures for layout

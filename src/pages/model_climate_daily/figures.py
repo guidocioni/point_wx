@@ -4,6 +4,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 from .options_selector import acc_vars_options, daily_vars_options
 from utils.custom_logger import logging
+from utils.figures_utils import add_attribution
 
 
 def make_acc_figure(df, year, var, title=None):
@@ -121,7 +122,7 @@ def make_acc_figure(df, year, var, title=None):
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
 
-    return fig
+    return add_attribution(fig)
 
 
 def make_daily_figure(df, year, var, title=None):
@@ -266,4 +267,4 @@ def make_daily_figure(df, year, var, title=None):
     if title is not None:
         fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
 
-    return fig
+    return add_attribution(fig)

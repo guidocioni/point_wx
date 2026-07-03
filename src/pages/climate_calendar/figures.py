@@ -2,6 +2,7 @@ from dash import dcc
 import plotly.express as px
 import pandas as pd
 from utils.settings import images_config
+from utils.figures_utils import add_attribution
 
 
 def make_calendar_figure(df, graph_type, title=None):
@@ -184,7 +185,7 @@ def make_calendar_figure(df, graph_type, title=None):
         )
 
 
-    return fig
+    return add_attribution(fig)
 
 
 # CARDS for layout
