@@ -3,6 +3,46 @@ import dash_leaflet as dl
 from utils.settings import MAPBOX_API_KEY, ASSETS_DIR
 import numpy as np
 
+def estimate_legend_rows(items, avail_px=1300, entry_overhead_px=45, char_px=6.5):
+    """Greedily pack a horizontal legend's entries into rows sized by each
+    item's label length, to estimate how many rows it will wrap onto. A flat
+    "N entries per row" guess drifts when label lengths vary a lot (e.g.
+    "gfs_global" vs "ukmo_global_deterministic_10km").
+    """
+    row_width = 0
+    rows = 1
+    for item in items:
+        entry_width = entry_overhead_px + char_px * len(item)
+        if row_width + entry_width > avail_px:
+            rows += 1
+            row_width = entry_width
+        else:
+            row_width += entry_width
+    return max(1, rows)
+
+
+def wrap_comma_separated(items, max_chars=90):
+    """Join a list of strings with ', ', inserting '<br>' breaks so no line
+    exceeds max_chars. Used to keep long model-name lists from overflowing a
+    plot title/subtitle, which never wraps on its own.
+    """
+    lines = []
+    current = []
+    current_len = 0
+    for item in items:
+        piece_len = len(item) + (2 if current else 0)  # + ", " separator
+        if current and current_len + piece_len > max_chars:
+            lines.append(", ".join(current))
+            current = [item]
+            current_len = len(item)
+        else:
+            current.append(item)
+            current_len += piece_len
+    if current:
+        lines.append(", ".join(current))
+    return "<br>".join(lines)
+
+
 def add_attribution(fig, text="Created with PointWx - hh.guidocioni.it/pointwx"):
     """Add a small, fixed attribution note pinned to the lower-right of the plot
     area. Uses paper coordinates so it stays visible during zoom/pan.

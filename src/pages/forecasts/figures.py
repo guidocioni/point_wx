@@ -4,7 +4,9 @@ import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
-from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba, add_attribution
+from utils.figures_utils import (
+    attach_alpha_to_hex_color, hex2rgba, add_attribution, estimate_legend_rows,
+)
 
 
 def make_lineplot_timeseries(
@@ -33,6 +35,7 @@ def make_lineplot_timeseries(
                     fillcolor=color,
                     hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
                     showlegend=showlegend,
+                    legendgroup=model,
                     fill=fill,
                 ),
             )
@@ -75,6 +78,7 @@ def make_windarrow_timeseries(
                     marker=marker,
                     hoverinfo="skip",
                     showlegend=showlegend,
+                    legendgroup=model,
                 ),
             )
             # we always add to respect the colors order
@@ -103,6 +107,7 @@ def make_barplot_timeseries(df, var, models, color="rgb(26, 118, 255)"):
                     marker=dict(color=color),
                     hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y:.1f}",
                     showlegend=False,
+                    legendgroup=model,
                 ),
             )
             # Add marker to identify model
@@ -115,6 +120,7 @@ def make_barplot_timeseries(df, var, models, color="rgb(26, 118, 255)"):
                     hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y:.1f}",
                     marker=dict(size=5, color=colors[i]),
                     showlegend=False,
+                    legendgroup=model,
                 ),
             )
         i += 1
@@ -157,7 +163,7 @@ def add_weather_icons(data, fig, row_fig, col_fig, var, models):
 
 def make_subplot_figure(data, models, title=None, sun=None):
     traces_temp = make_lineplot_timeseries(
-        data, "temperature_2m", showlegend=False, models=models
+        data, "temperature_2m", showlegend=True, models=models
     )
     # traces_sunshine = make_lineplot_timeseries(
     #     data, 'sunshine_duration', models=models,
@@ -237,13 +243,35 @@ def make_subplot_figure(data, models, title=None, sun=None):
     for trace_cloud in traces_cloud:
         fig.add_trace(trace_cloud, row=4, col=1)
 
+    LEGEND_STYLE = "header"  # or "floating" — flip to compare, remove once decided
+
+    if LEGEND_STYLE == "header":
+        legend = dict(
+            orientation="h",
+            yref="container",
+            yanchor="top", y=0.965, xanchor="left", x=0,
+            font=dict(size=10),
+            groupclick="togglegroup",
+            tracegroupgap=0,
+            bgcolor="rgba(255,255,255,0)",
+        )
+        margin_t = 55 + estimate_legend_rows(models) * 22
+    else:  # floating
+        legend = dict(
+            yanchor="top", y=0.99, xanchor="right", x=0.99,
+            font=dict(size=10),
+            groupclick="togglegroup",
+            bgcolor="rgba(255,255,255,0.7)",
+        )
+        margin_t = 50  # unchanged, legend overlays the plot instead of the margin
+
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
         xaxis=dict(showgrid=True),
-        margin={"r": 1, "t": 50, "l": 1, "b": 0.1},
+        margin={"r": 1, "t": margin_t, "l": 1, "b": 0.1},
         barmode="overlay",
-        # legend=dict(orientation="h", y=-0.04),
+        legend=legend,
         updatemenus=[
             dict(
                 type="buttons",

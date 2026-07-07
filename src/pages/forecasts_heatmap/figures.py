@@ -1,7 +1,10 @@
 from dash import dcc
 import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE
-from utils.figures_utils import attach_alpha_to_hex_color, hex2rgba, add_attribution
+from utils.figures_utils import (
+    attach_alpha_to_hex_color, hex2rgba, add_attribution, wrap_comma_separated,
+    estimate_legend_rows,
+)
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
@@ -25,7 +28,21 @@ def make_heatmap(df, var, models, title=None):
         cmap = 'solar'
     else:
         cmap = 'RdBu_r'
-    
+
+    # Wrap the model list so a long selection doesn't overflow the subtitle;
+    # no legend needed here since models are already the y-axis categories.
+    if title is not None:
+        models_line = wrap_comma_separated(models, max_chars=90)
+        n_extra_lines = models_line.count("<br>")
+        margin_t = 40 + n_extra_lines * 14
+        title_text = (
+            f"{title}<br><sup>Variable = <b>{var}</b> | "
+            f"Models = <b>{models_line}</b></sup>"
+        )
+    else:
+        margin_t = 40
+        title_text = None
+
     y_positions = list(range(len(models)))
     if var!='weather_code':
         fig = px.imshow(
@@ -100,7 +117,7 @@ def make_heatmap(df, var, models, title=None):
                    tickfont=dict(size=8),
                    tickvals=y_positions, tickangle=-90),
         height=height,
-        margin={"r": 5, "t": 40, "l": 5, "b": 5},
+        margin={"r": 5, "t": margin_t, "l": 5, "b": 5},
         updatemenus=[
             dict(
                 type="buttons",
@@ -128,14 +145,14 @@ def make_heatmap(df, var, models, title=None):
     )
 
     fig.update_coloraxes(showscale=False)
-    if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
+    if title_text is not None:
+        fig.update_layout(title=dict(text=title_text, font=dict(size=14), yref='container', y=0.97))
 
     return add_attribution(fig)
 
 
 def make_lineplot(
-    df, var, models, mode="lines+markers", showlegend=False, fill="none", alpha=1, title=None, showgrid=True
+    df, var, models, mode="lines+markers", showlegend=True, fill="none", alpha=1, title=None, showgrid=True
 ):
     fig = go.Figure()
     traces = []
@@ -161,6 +178,7 @@ def make_lineplot(
                     fillcolor=color,
                     hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
                     showlegend=showlegend,
+                    legendgroup=model,
                     fill=fill,
                 ),
             )
@@ -168,12 +186,24 @@ def make_lineplot(
     for trace in traces:
         fig.add_trace(trace)
 
+    legend = dict(
+        orientation="h",
+        yref="container",
+        yanchor="top", y=0.965, xanchor="left", x=0,
+        font=dict(size=10),
+        groupclick="togglegroup",
+        tracegroupgap=0,
+        bgcolor="rgba(255,255,255,0)",
+    )
+    margin_t = 55 + estimate_legend_rows(models) * 22 if showlegend else 40
+
     fig.update_layout(
         modebar=dict(orientation='v'),
         dragmode=False,
         xaxis=dict(showgrid=showgrid, tickformat='%a %-d %b\n%H:%M'),
         yaxis=dict(showgrid=showgrid, fixedrange=True),
-        margin={"r": 5, "t": 40, "l": 5, "b": 5},
+        margin={"r": 5, "t": margin_t, "l": 5, "b": 5},
+        legend=legend,
         updatemenus=[
             dict(
                 type="buttons",
@@ -200,8 +230,9 @@ def make_lineplot(
         ],
     )
     if title is not None:
-        fig.update_layout(title=dict(text=title, font=dict(size=14), yref='container', y=0.97))
-    
+        title_text = f"{title}<br><sup>Variable = <b>{var}</b></sup>"
+        fig.update_layout(title=dict(text=title_text, font=dict(size=14), yref='container', y=0.98))
+
     return add_attribution(fig)
 
 

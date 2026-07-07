@@ -60,17 +60,8 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
-            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
-            # f'<sup>Models = {", ".join(models)}</sup>'
+            f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)"
         )
-        # Add colored models to the title
-        colors = pio.templates[DEFAULT_TEMPLATE]["layout"]["colorway"] * 5
-        colored_models = []
-        for i, model in enumerate(models):
-            color = colors[i % len(colors)]  # Cycle through colors if there are more models than colors
-            colored_models.append(f'<span style="color:{color}"><b>{model}</b></span>')
-
-        loc_label += "<sup>Models = " + ", ".join(colored_models) + '</sup>'
 
         return (
             make_subplot_figure(data=data, title=loc_label, sun=sun, models=models),
