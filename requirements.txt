@@ -2,11 +2,14 @@ dash
 dash-bootstrap-components
 dash_leaflet==1.0.16rc2
 dash_mantine_components
+dash-iconify
+flask
 Flask-Caching
 gunicorn
 jdcal
 numpy
 pandas
 plotly
+pytz
 requests
 Pillow

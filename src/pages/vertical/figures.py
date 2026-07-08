@@ -4,8 +4,17 @@ import numpy as np
 from dash import dcc
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
-from metpy.calc import parcel_profile, moist_lapse, dry_lapse
-from metpy.units import units
+from utils.custom_logger import logging
+
+try:
+    from metpy.calc import parcel_profile, moist_lapse, dry_lapse
+    from metpy.units import units
+except ImportError:
+    parcel_profile = moist_lapse = dry_lapse = units = None
+    logging.warning(
+        "metpy is not installed; the vertical page's skew-T diagram will not work. "
+        "Install with `pip install metpy` to enable it."
+    )
 
 
 def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
@@ -219,6 +228,11 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
 
 
 def make_figure_skewt(df, title=None):
+    if units is None:
+        raise RuntimeError(
+            "metpy is not installed; install with `pip install metpy` to use this feature"
+        )
+
     skew = 100.0
 
     def skew_transform(temp, pres):

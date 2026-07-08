@@ -1205,7 +1205,16 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     BETA!!
     Get the climatology of 850hPa temperature from a zarr array
     """
-    import xarray as xr
+    try:
+        import xarray as xr
+    except ImportError:
+        logging.warning(
+            "xarray is not installed; compute_climatology_zarr is unavailable. "
+            "Install with `pip install xarray` to enable it."
+        )
+        raise RuntimeError(
+            "xarray is not installed; install with `pip install xarray` to use this feature"
+        )
     ds = xr.open_zarr("/media/WD/download/era5/zarr2/")
     ds = (
         ds.sel(latitude=latitude, longitude=longitude, method="nearest")

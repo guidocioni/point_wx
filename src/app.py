@@ -65,7 +65,13 @@ def create_weather_report():
     logging.info(
         f"Making request to /report with address={address_search}, date={date_forecast}, prompt={additional_prompt}"
     )
-    report = create_ai_report(address_search, date_forecast, additional_prompt)
+    try:
+        report = create_ai_report(address_search, date_forecast, additional_prompt)
+    except Exception as e:
+        logging.error(
+            f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+        )
+        return {"error": "An error occurred when generating the AI report"}, 500
 
     return {"search": address_search, "date": date_forecast, "report": report}
 

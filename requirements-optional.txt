@@ -1,0 +1,8 @@
+# Optional dependencies — only needed for specific pages/features.
+# The app starts and runs fine without these; the corresponding
+# page/feature will show an error (logged server-side) if used
+# without the package installed.
+
+openai      # AI report (/report route, src/utils/ai_utils.py) and the chatbot page
+metpy       # vertical page (skew-T diagram)
+xarray      # ensemble page's BETA zarr climatology (compute_climatology_zarr)

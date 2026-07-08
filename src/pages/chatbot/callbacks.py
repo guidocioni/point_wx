@@ -3,12 +3,20 @@ from dash.exceptions import PreventUpdate
 from utils.settings import OPENAI_KEY, logging
 from .system import system_prompt
 from .functions import *
-from openai import OpenAI
 import dash_mantine_components as dmc
 import dash_bootstrap_components as dbc
 import json
 
-client = OpenAI(api_key=OPENAI_KEY)
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+    logging.warning(
+        "openai is not installed; the chatbot page will not work. "
+        "Install with `pip install openai` to enable it."
+    )
+
+client = OpenAI(api_key=OPENAI_KEY) if OpenAI is not None else None
 logging.getLogger("openai").setLevel(logging.ERROR)
 logging.getLogger("httpx").setLevel(logging.ERROR)
 
@@ -135,6 +143,14 @@ def run_chatbot(n_clicks, n_submit, user_input, store_data, client_data):
 
     if user_input is None or user_input == "":
         return store_data, False
+
+    if client is None:
+        logging.error(
+            f"Chat SUBMIT => Session {client_data['session_id']}: openai is not installed, chatbot is unavailable."
+        )
+        error_message = "The chatbot is currently unavailable (the `openai` package is not installed on this server). Please contact the site administrator."
+        chat_history.append({"role": "assistant", "content": error_message})
+        return {"chat_history": chat_history, "messages": messages}, False
 
     # Add user input to messages
     user_message = {"role": "user", "content": user_input}

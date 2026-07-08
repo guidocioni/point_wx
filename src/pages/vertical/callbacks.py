@@ -4,8 +4,16 @@ from utils.custom_logger import logging
 from .figures import make_figure_vertical, make_figure_skewt
 import pandas as pd
 from io import StringIO
-from metpy.calc import dewpoint_from_relative_humidity
-from metpy.units import units
+
+try:
+    from metpy.calc import dewpoint_from_relative_humidity
+    from metpy.units import units
+except ImportError:
+    dewpoint_from_relative_humidity = units = None
+    logging.warning(
+        "metpy is not installed; the vertical page's skew-T diagram will not work. "
+        "Install with `pip install metpy` to enable it."
+    )
 
 @callback(
     [
@@ -42,6 +50,10 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
                 forecast_days=days_
             )
         else:
+            if units is None:
+                raise RuntimeError(
+                    "metpy is not installed; install with `pip install metpy` to use this feature"
+                )
             variables=['temperature', 'relative_humidity', 'windspeed', 'winddirection']
             df, _, time_axis, vertical_levels, arrs = get_vertical_data(
                         latitude=loc["latitude"].item(),

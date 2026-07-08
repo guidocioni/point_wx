@@ -1,7 +1,16 @@
 from .openmeteo_api import get_locations, make_request, compute_climatology
 from datetime import datetime, timedelta
-from openai import OpenAI
 from .settings import OPENAI_KEY, cache
+from .custom_logger import logging
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+    logging.warning(
+        "openai is not installed; the AI report (/report route) will not work. "
+        "Install with `pip install openai` to enable it."
+    )
 
 system_prompt = """
 You are a weather analyst. You're expected to process hourly weather forecast data that can comprises different weather variables like 2 meters temperature, 2 meters relative humidity, precipitation (both probability and total amount, with the fraction of rain and snow), cloud cover (could be only total or also the fraction of low, mid and high clouds), snowfall, 10 meters wind speed and direction, convective available potential energy, mean sea level pressure. Based on this input data you need to compile a summary of the daily weather evolution which extract the most meaningful features of the day. Generally the informations that shouldn't miss are the daily maximum and minimum temperatures, together with a comparison to the climatological values, and the probability of rain (if it is substantial) together with the period where rain (or any other precipitation form) is expected. Optional informations may include especially high wind gusts, substantial thunderstorm risk based on convective available potential energy, potential for high precipitation events, heatwaves, high risk situation due to high temperatures and humidity values, strong snowfall or cold snaps.
@@ -120,6 +129,11 @@ def create_weather_data(location, date):
 
 @cache.memoize(900)
 def create_ai_report(location, date, additional_prompt):
+    if OpenAI is None:
+        raise RuntimeError(
+            "openai is not installed; install with `pip install openai` to enable the AI report"
+        )
+
     weather_data = create_weather_data(location, date)
 
     client = OpenAI(api_key=OPENAI_KEY)
