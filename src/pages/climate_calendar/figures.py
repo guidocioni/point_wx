@@ -1,8 +1,17 @@
 from dash import dcc
 import plotly.express as px
 import pandas as pd
+import numpy as np
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
+
+DAY_COUNT_TYPES = (
+    'precipitation_days', 'snow_days', 'dry_days', 'frost_days',
+    'overcast_days', 'partly_cloudy_days', 'sunny_days', 'hot_days',
+    'tropical_nights',
+)
+
+MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 
 def make_calendar_figure(df, graph_type, title=None):
@@ -117,6 +126,34 @@ def make_calendar_figure(df, graph_type, title=None):
         )
         out = out.round(1)
         cmap = "RdBu_r"
+    elif graph_type == 'temperature_anomaly_rank':
+        df['temperature_anomaly'] = (df['temperature_2m_mean'] - df['temperature_2m_mean_clima'])
+        out = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values="temperature_anomaly",
+            aggfunc="mean",
+        )
+        # rank 1 = warmest anomaly for that calendar month, across all years present
+        out = out.rank(axis=1, ascending=False, method="min")
+        out = out.round(0)
+        cmap = "RdBu"
+    elif graph_type == 'snow_anomaly':
+        values = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values="snowfall_sum",
+            aggfunc="sum",
+        )
+        clima = df.pivot_table(
+            index=df.time.dt.month,
+            columns=df.time.dt.year,
+            values="snowfall_sum_clima",
+            aggfunc="sum",
+        )
+        out = 100 * (values - clima) / clima
+        out = out.replace([np.inf, -np.inf], np.nan).round(1)
+        cmap = "BrBg"
     elif graph_type == 'dominant_wind_direction':
         out = df.pivot_table(
             index=df.time.dt.month,
@@ -155,25 +192,42 @@ def make_calendar_figure(df, graph_type, title=None):
     else:
         raise ValueError()
 
+    if graph_type in DAY_COUNT_TYPES:
+        out = out.mask(out == 0)
+
+    years = out.columns.values
+    month_customdata = np.repeat(np.array(MONTH_LABELS)[:, None], len(years), axis=1)
+
     fig = px.imshow(
         out.values,
-        x=out.columns.values,
-        y=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        x=years,
+        y=list(range(1, 13)),
         text_auto=True,
         aspect="auto",
         color_continuous_scale=cmap,
         origin="upper",
     )
     fig.update_traces(
-        hovertemplate="<extra></extra><b>%{y} %{x}</b><br>Value = %{z}"
+        customdata=month_customdata,
+        hovertemplate="<extra></extra><b>%{customdata} %{x}</b><br>Value = %{z}"
     )
 
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
-        xaxis=dict(showgrid=True, title_text="Year"),
+        xaxis=dict(
+            showgrid=False,
+            title_text="Year",
+            minor=dict(showgrid=True, dtick=1, tick0=years.min() - 0.5, gridcolor="rgba(128,128,128,0.4)"),
+        ),
         yaxis=dict(
-            showgrid=True, showticklabels=True, title_text="Month"
+            showgrid=False,
+            showticklabels=True,
+            title_text="Month",
+            tickmode="array",
+            tickvals=list(range(1, 13)),
+            ticktext=MONTH_LABELS,
+            minor=dict(showgrid=True, dtick=1, tick0=0.5, gridcolor="rgba(128,128,128,0.4)"),
         ),
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
     )

@@ -35,7 +35,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
     try:
         if graph_type in ['accumulated_precipitation', 'precipitation_days', 'dry_days', 'precipitation_anomaly']:
             var = 'precipitation_sum'
-        elif graph_type in ['snow_days', 'snowfall']:
+        elif graph_type in ['snow_days', 'snowfall', 'snow_anomaly']:
             var = 'snowfall_sum'
         elif graph_type in ['frost_days', 'tropical_nights', 'temperature_min']:
             var = 'temperature_2m_min'
@@ -43,7 +43,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             var = 'temperature_2m_max'
         elif graph_type in ['overcast_days', 'partly_cloudy_days', 'sunny_days']:
             var = 'cloudcover_mean'
-        elif graph_type in ['temperature_anomaly', 'temperature_mean']:
+        elif graph_type in ['temperature_anomaly', 'temperature_anomaly_rank', 'temperature_mean']:
             var = 'temperature_2m_mean'
         elif graph_type == 'dominant_wind_direction':
             var = 'wind_direction_10m_dominant'
@@ -58,7 +58,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             start_date=f'{year_start}-01-01',
             end_date=date.today().strftime("%Y-%m-%d")
         )
-        if graph_type in ['precipitation_anomaly', 'temperature_anomaly']:
+        if graph_type in ['precipitation_anomaly', 'temperature_anomaly', 'temperature_anomaly_rank', 'snow_anomaly']:
             # TODO, Report in the frontend that it's better to use ERA5 when comparing to the clima
             data['doy'] = data.time.dt.strftime("%m%d")
             clima = compute_climatology(
