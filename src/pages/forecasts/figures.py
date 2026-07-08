@@ -168,8 +168,11 @@ def make_subplot_figure(data, models, title=None, sun=None):
     # traces_sunshine = make_lineplot_timeseries(
     #     data, 'sunshine_duration', models=models,
     #     fill="tozeroy", alpha=0.3)
-    traces_precipitation = make_barplot_timeseries(data, "rain", models=models)
-    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+    has_rain = data.loc[:, data.columns.str.contains('rain')].max().max() >= 0.1
+    has_snow = data.loc[:, data.columns.str.contains('snowfall')].max().max() >= 0.1
+    if has_rain:
+        traces_precipitation = make_barplot_timeseries(data, "rain", models=models)
+    if has_snow:
         traces_snow = make_barplot_timeseries(
             data, "snowfall", models=models, color="rgb(214, 138, 219)"
         )
@@ -231,11 +234,25 @@ def make_subplot_figure(data, models, title=None, sun=None):
         # add_weather_icons(data, fig, row_fig=1, col_fig=1, var='temperature_2m', models=models)
     # for trace_sunshine in traces_sunshine:
     #     fig.add_trace(trace_sunshine, row=1, col=1, secondary_y=True)
-    for trace_precipitation in traces_precipitation:
-        fig.add_trace(trace_precipitation, row=2, col=1)
-    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+    if has_rain:
+        for trace_precipitation in traces_precipitation:
+            fig.add_trace(trace_precipitation, row=2, col=1)
+    if has_snow:
         for trace_snow in traces_snow:
             fig.add_trace(trace_snow, row=2, col=1, secondary_y=True)
+    if not has_rain and not has_snow:
+        # Keep the row's axes/grid/background rendered even with nothing to plot
+        fig.add_trace(
+            go.Scatter(
+                x=[data["time"].min(), data["time"].max()],
+                y=[0, 0],
+                mode="none",
+                showlegend=False,
+                hoverinfo="skip",
+            ),
+            row=2,
+            col=1,
+        )
     for trace_wind in traces_wind:
         fig.add_trace(trace_wind, row=3, col=1)
     for trace_wind_dir in traces_wind_dir:
@@ -348,7 +365,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     )
     fig.update_yaxes(tickangle=-90, row=3, col=1)
     fig.update_yaxes(row=4, col=1, tickangle=-90)
-    if data.loc[:,data.columns.str.contains('snowfall')].max().max() >= 0.1:
+    if has_snow:
         fig.update_yaxes(
             tickangle=-90,
             row=2,

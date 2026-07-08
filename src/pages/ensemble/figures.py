@@ -298,8 +298,11 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
         )
         height_graph = 0.4
         subplot_title = "<b>850hPa Temp"
-    trace_rain = make_barplot_timeseries(data, "rain", color="cadetblue")
-    if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
+    has_rain = data.loc[:, data.columns.str.match(r'rain$|rain_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1
+    has_snow = data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1
+    if has_rain:
+        trace_rain = make_barplot_timeseries(data, "rain", color="cadetblue")
+    if has_snow:
         trace_snow = make_barplot_timeseries(data, "snowfall", color="rebeccapurple")
     if additional_plot == 'clouds':
         traces_clouds = make_scatterplot_timeseries(data, "cloudcover")
@@ -350,9 +353,23 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
     if len(data.loc[:, data.columns.str.match(r'temperature_850hPa$|temperature_850hPa_member(0[1-9]|[1-9][0-9])$')].dropna() > 0):
         for trace_temp_850 in traces_temp_850:
             fig.add_trace(trace_temp_850, row=2, col=1)
-    fig.add_trace(trace_rain, row=3, col=1)
-    if data.loc[:, data.columns.str.match(r'snowfall$|snowfall_member(0[1-9]|[1-9][0-9])$')].max().max() >= 0.1:
+    if has_rain:
+        fig.add_trace(trace_rain, row=3, col=1)
+    if has_snow:
         fig.add_trace(trace_snow, row=3, col=1)
+    if not has_rain and not has_snow:
+        # Keep the row's axes/grid/background rendered even with nothing to plot
+        fig.add_trace(
+            go.Scatter(
+                x=[data["time"].min(), data["time"].max()],
+                y=[0, 0],
+                mode="none",
+                showlegend=False,
+                hoverinfo="skip",
+            ),
+            row=3,
+            col=1,
+        )
     if additional_plot == 'clouds':
         for trace_clouds in traces_clouds:
             fig.add_trace(trace_clouds, row=4, col=1)
@@ -443,10 +460,11 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
         zerolinewidth=2,
         zerolinecolor="rgba(0,0,0,0.5)",
     )
+    rain_max = data["rain_mean"].max() if has_rain else 0
     fig.update_yaxes(
         row=3,
         col=1,
-        range=[0, max((data["rain_mean"].max()) * 1.5, 1)],
+        range=[0, max(rain_max * 1.5, 1)],
     )
     if additional_plot == 'clouds':
         fig.update_yaxes(range=[0, 100], row=4, col=1)
