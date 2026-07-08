@@ -527,5 +527,5 @@ def make_figure_skewt(df, title=None):
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="vertical"),
     config=images_config,
-    style={"height": "95vh", "min-height": "650px"},
+    style={"height": "95vh", "minHeight": "650px"},
 )

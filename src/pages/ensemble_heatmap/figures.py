@@ -263,5 +263,5 @@ def make_lineplot(
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="ensemble-heatmap"),
     config=images_config,
-    style={"height": "90vh", "min-height": "500px"},
+    style={"height": "90vh", "minHeight": "500px"},
 )

@@ -193,5 +193,5 @@ def make_calendar_figure(df, graph_type, title=None):
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="calendar"),
     config=images_config,
-    style={"height": "95vh", "min-height": "500px"},
+    style={"height": "95vh", "minHeight": "500px"},
 )

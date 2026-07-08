@@ -394,4 +394,4 @@ def make_subplot_figure(data, title=None, clima=None):
 
 # CARDS for layout
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh', 'min-height': '650px'})
+fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh', 'minHeight': '650px'})
