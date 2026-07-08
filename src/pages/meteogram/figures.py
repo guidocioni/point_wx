@@ -178,26 +178,35 @@ def make_barplot_timeseries(
     showlegend=False,
     color="rgb(73, 135, 230)",
     text_formatting="%{text:.1s}",
+    textposition="auto",
+    outside_on_zero=False,
     clima=None,
     clima_x_shift=0,
+    show_clima=True,
+    bar_x_shift=pd.to_timedelta(0),
+    bar_width=None,
 ):
     if var_text is not None:
         text = df[var_text]
+    if outside_on_zero:
+        textposition = ["inside" if v > 0 else "outside" for v in df[var]]
     traces = []
     traces.append(
         go.Bar(
-            x=df["time"],
+            x=df["time"] + bar_x_shift,
             y=df[var],
+            width=bar_width,
             text=text,
             name="",
-            textposition="auto",
+            textposition=textposition,
             texttemplate=text_formatting,
             hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,
             marker_color=color,
+            zorder=2,
         )
     )
-    if clima is not None:
+    if clima is not None and show_clima:
         df["doy"] = df.time.dt.strftime("%m%d")
         df = df.merge(clima, left_on="doy", right_on="doy")
         traces.append(
@@ -216,6 +225,7 @@ def make_barplot_timeseries(
                     line=dict(width=0.5, color="rgba(0, 0, 0, 0.5)"),
                 ),
                 showlegend=showlegend,
+                zorder=1,
             ),
         )
 
@@ -227,11 +237,11 @@ def make_subplot_figure(data, title=None, clima=None):
     traces_prec = make_barplot_timeseries(
         data,
         clima=clima,
+        show_clima=False,
         var="daily_prec_mean",
         var_text="prec_prob",
         color="rgba(73, 135, 230, 1.0)",
         text_formatting="%{text:.0f}%",
-        clima_x_shift=-pd.to_timedelta("1h"),
     )
     traces_sun = make_barplot_timeseries(
         data,
@@ -240,6 +250,7 @@ def make_subplot_figure(data, title=None, clima=None):
         var_text="sunshine_mean",
         color="rgba(255, 240, 184, 0.5)",
         text_formatting="%{text:.1f} hrs",
+        outside_on_zero=True,
         clima_x_shift=pd.to_timedelta("1h"),
     )
 
@@ -267,7 +278,11 @@ def make_subplot_figure(data, title=None, clima=None):
         fig.add_trace(trace_prec, row=3, col=1)
     for trace_sun in traces_sun:
         fig.add_trace(trace_sun, row=3, col=1, secondary_y=True)
+    cap_halfwidth = pd.to_timedelta("2h")
+    whisker_line = dict(color="rgba(0,0,0,0.3)", width=2)
     for _, row in data.iterrows():
+        if row["daily_prec_max"] <= 0:
+            continue
         fig.add_shape(
             type="line",
             yref="y",
@@ -276,10 +291,51 @@ def make_subplot_figure(data, title=None, clima=None):
             y0=row["daily_prec_min"],
             x1=row["time"],
             y1=row["daily_prec_max"],
-            line=dict(color="rgba(0,0,0,0.3)", width=2),
+            line=whisker_line,
             row=3,
             col=1,
         )
+        if row["daily_prec_min"] > 0:
+            fig.add_shape(
+                type="line",
+                yref="y",
+                xref="x",
+                x0=row["time"] - cap_halfwidth,
+                y0=row["daily_prec_min"],
+                x1=row["time"] + cap_halfwidth,
+                y1=row["daily_prec_min"],
+                line=whisker_line,
+                row=3,
+                col=1,
+            )
+        fig.add_shape(
+            type="line",
+            yref="y",
+            xref="x",
+            x0=row["time"] - cap_halfwidth,
+            y0=row["daily_prec_max"],
+            x1=row["time"] + cap_halfwidth,
+            y1=row["daily_prec_max"],
+            line=whisker_line,
+            row=3,
+            col=1,
+        )
+
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"],
+            y=data["daily_prec_mean"],
+            mode="text",
+            text=data["snow_prob"].apply(lambda p: f"❄ {p:.0f}%" if p > 0 else ""),
+            textposition="top center",
+            textfont=dict(color="rgba(90,90,200,1)", size=11),
+            name="",
+            hoverinfo="skip",
+            showlegend=False,
+        ),
+        row=3,
+        col=1,
+    )
 
     fig.add_trace(
         go.Scatter(
@@ -298,10 +354,12 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
+    wind_arrow_y = 0.7
+    wind_value_y = -0.7
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[0.5] * len(data["time"]),
+            y=[wind_arrow_y] * len(data["time"]),
             mode="markers",
             name="Dominant direction",
             marker=dict(
@@ -317,17 +375,59 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
+    wind_gust_orange = 50
+    wind_gust_red = 75
+    is_badge = data["wind_gusts_10m_max"] >= wind_gust_orange
+    plain_text = (
+        data["wind_speed_10m_max"].astype(int).astype(str) + "<sup>km/h</sup>"
+    ).where(~is_badge, "")
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[-0.5] * len(data["time"]),
+            y=[wind_value_y] * len(data["time"]),
             mode="text",
-            text=data['wind_speed_10m_max'].astype(int).astype(str) + "<sup>km/h</sup>",
-            customdata=data['wind_speed_10m_max'],
-            hovertemplate="<extra></extra>Max. wind speed = %{customdata}km/h",
+            text=plain_text,
             showlegend=False,
-        )
+            hoverinfo="skip",
+        ),
+        row=1,
+        col=1,
     )
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"],
+            y=[wind_value_y] * len(data["time"]),
+            mode="markers",
+            marker=dict(opacity=0, size=30),
+            customdata=data[["wind_speed_10m_max", "wind_gusts_10m_max"]].values,
+            hovertemplate=(
+                "<extra></extra>Max. wind speed = %{customdata[0]}km/h"
+                "<br>Max. wind gust = %{customdata[1]}km/h"
+            ),
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+    for _, row in data[is_badge].iterrows():
+        badge_color = (
+            "rgba(220,53,69,0.85)"
+            if row["wind_gusts_10m_max"] >= wind_gust_red
+            else "rgba(255,165,0,0.85)"
+        )
+        fig.add_annotation(
+            x=row["time"],
+            y=wind_value_y,
+            text=f"{int(row['wind_speed_10m_max'])}-{int(row['wind_gusts_10m_max'])}",
+            showarrow=False,
+            row=1,
+            col=1,
+            bgcolor=badge_color,
+            bordercolor="rgba(0,0,0,0.3)",
+            borderwidth=1,
+            borderpad=3,
+            font=dict(color="white", size=11),
+        )
     for _, row in data.iterrows():
         if row["icons"] != "":
             fig.add_layout_image(
@@ -372,7 +472,7 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
         minor=dict(showgrid=False),
-        range=[-0.7, 6],
+        range=[-0.9, 6],
         showticklabels=False,
         zeroline=False
     )

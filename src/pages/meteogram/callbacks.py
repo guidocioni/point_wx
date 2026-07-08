@@ -45,13 +45,12 @@ def generate_figure(n_clicks, locations, location, model):
             longitude=loc["longitude"].item(),
             daily=True,
             model="era5",
-            variables="temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration",
+            variables="temperature_2m_max,temperature_2m_min,sunshine_duration",
         )
         clima = clima.rename(
             columns={
                 "temperature_2m_max": "t_max_clima",
                 "temperature_2m_min": "t_min_clima",
-                "precipitation_sum": "daily_prec_clima",
                 "sunshine_duration": "sunshine_clima",
             }
         )
