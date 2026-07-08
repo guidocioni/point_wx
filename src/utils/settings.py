@@ -131,7 +131,8 @@ images_config = {
         "autoScale",
     ],
     "displaylogo": False,
-    "responsive": True
+    "responsive": True,
+    "doubleClick": False,
 }
 
 ENSEMBLE_MODELS = [
