@@ -71,7 +71,6 @@ def get_cache_directory():
             logging.warning(
                 f"Could not create fallback cache directory {fallback_cache_dir}: {e}"
             )
-    
 
     return None
 
@@ -108,7 +107,9 @@ def filter_options(values_to_find, options):
     return [
         {
             "group": group["group"],
-            "items": [item for item in group["items"] if item["value"] in values_to_find]
+            "items": [
+                item for item in group["items"] if item["value"] in values_to_find
+            ],
         }
         for group in options
         if any(item["value"] in values_to_find for item in group["items"])
@@ -120,7 +121,7 @@ images_config = {
         "format": "png",  # one of png, svg, jpeg, webp
         "height": 800,
         "width": 900,
-        "scale": 1.5
+        "scale": 1.5,
     },
     "modeBarButtonsToRemove": [
         "select",
@@ -131,7 +132,7 @@ images_config = {
     ],
     "displaylogo": False,
     "responsive": True,
-    "doubleClick": False,
+    "doubleClick": False
 }
 
 ENSEMBLE_MODELS = [
@@ -152,7 +153,10 @@ ENSEMBLE_MODELS = [
             {"label": "GFS ENS (🌐, 25km, 🎲 31)", "value": "gfs025"},
             {"label": "GFS ENS (🌐, 50km, 🎲 31)", "value": "gfs05"},
             {"label": "AIGFS (🌐, 25km, 🎲 31)", "value": "ncep_aigefs025"},
-            {"label": "MOGREPS-G (🌐, 20km, 🎲 18)", "value": "ukmo_global_ensemble_20km"},
+            {
+                "label": "MOGREPS-G (🌐, 20km, 🎲 18)",
+                "value": "ukmo_global_ensemble_20km",
+            },
             {
                 "label": "ACCESS-GE (🌐, 40km, 🎲 18)",
                 "value": "bom_access_global_ensemble",
@@ -178,7 +182,10 @@ ENSEMBLE_VARS = [
         "items": [
             {"label": "2m Temperature", "value": "temperature_2m"},
             {"label": "850hPa Temperature", "value": "temperature_850hPa"},
-            {"label": "500hPa Geopotential Height", "value": "geopotential_height_500hPa"},
+            {
+                "label": "500hPa Geopotential Height",
+                "value": "geopotential_height_500hPa",
+            },
             {"label": "2m Dew Point", "value": "dew_point_2m"},
             {"label": "Apparent Temperature", "value": "apparent_temperature"},
             {"label": "2m Relative Humidity", "value": "relative_humidity_2m"},
@@ -186,7 +193,10 @@ ENSEMBLE_VARS = [
             {"label": "Freezing level", "value": "freezinglevel_height"},
             {"label": "Snowfall height", "value": "snowfall_height"},
             {"label": "Snow depth", "value": "snow_depth"},
-            {"label": "Snow depth (water equivalent)", "value": "snow_depth_water_equivalent"},
+            {
+                "label": "Snow depth (water equivalent)",
+                "value": "snow_depth_water_equivalent",
+            },
             {"label": "10m Wind Speed", "value": "wind_speed_10m"},
             {"label": "10m Wind Direction", "value": "wind_direction_10m"},
             {"label": "MSL Pressure", "value": "pressure_msl"},
@@ -194,7 +204,10 @@ ENSEMBLE_VARS = [
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
             {"label": "Weather", "value": "weather_code"},
-            {"label": "850hPa Geopotential Height", "value": "geopotential_height_850hPa"},
+            {
+                "label": "850hPa Geopotential Height",
+                "value": "geopotential_height_850hPa",
+            },
             {"label": "500hPa Temperature", "value": "temperature_500hPa"},
         ],
     },
@@ -203,11 +216,20 @@ ENSEMBLE_VARS = [
         "items": [
             {"label": "Rain", "value": "rain"},
             {"label": "Snowfall", "value": "snowfall"},
-            {"label": "Snowfall (water equivalent)", "value": "snowfall_water_equivalent"},
+            {
+                "label": "Snowfall (water equivalent)",
+                "value": "snowfall_water_equivalent",
+            },
             {"label": "Precipitation", "value": "precipitation"},
             {"label": "Sunshine duration", "value": "sunshine_duration"},
-            {"label": "Accumulated precipitation (total)", "value": "accumulated_precip"},
-            {"label": "Accumulated precipitation (liquid)", "value": "accumulated_liquid"},
+            {
+                "label": "Accumulated precipitation (total)",
+                "value": "accumulated_precip",
+            },
+            {
+                "label": "Accumulated precipitation (liquid)",
+                "value": "accumulated_liquid",
+            },
             {"label": "Accumulated precipitation (solid)", "value": "accumulated_snow"},
         ],
     },
@@ -241,7 +263,7 @@ DETERMINISTIC_MODELS = [
             # These seamless do not make any sense to me
             # {"label": "KNMI Seamless 🇪🇺", "value": "knmi_seamless"},
             # {"label": "DMI Seamless 🇪🇺", "value": "dmi_seamless"},
-            # 
+            #
             {"label": "UKMO Seamless 🌐", "value": "ukmo_seamless"},
             {"label": "KMA Seamless 🌐", "value": "kma_seamless"},
         ],
@@ -251,7 +273,7 @@ DETERMINISTIC_MODELS = [
         "items": [
             {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
             {"label": "IFS (🌐, 9km)", "value": "ecmwf_ifs"},
-            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"}, 
+            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
             {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
             {"label": "AIFS single (🌐, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
@@ -273,12 +295,18 @@ DETERMINISTIC_MODELS = [
             {"label": "ICON-EU (🇪🇺, 7km)", "value": "icon_eu"},
             {"label": "Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
             {"label": "DMI Harmonie (🇪🇺, 2km)", "value": "dmi_harmonie_arome_europe"},
-            {"label": "KNMI Harmonie (🇪🇺, 5.5km)", "value": "knmi_harmonie_arome_europe"},
+            {
+                "label": "KNMI Harmonie (🇪🇺, 5.5km)",
+                "value": "knmi_harmonie_arome_europe",
+            },
             {"label": "ICON-D2 (🇩🇪, 2km)", "value": "icon_d2"},
             {"label": "ICON-CH1 (🇨🇭, 1km)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2 (🇨🇭, 2km)", "value": "meteoswiss_icon_ch2"},
             {"label": "MetNo (🇳🇴🇸🇪🇫🇮, 1km)", "value": "metno_nordic"},
-            {"label": "KNMI Harmonie Netherlands (🇳🇱, 2km)", "value": "knmi_harmonie_arome_netherlands"},
+            {
+                "label": "KNMI Harmonie Netherlands (🇳🇱, 2km)",
+                "value": "knmi_harmonie_arome_netherlands",
+            },
             {"label": "Arpege (🇫🇷, 2.5km)", "value": "meteofrance_arome_france"},
             {"label": "Arpege HD (🇫🇷, 1.5km)", "value": "meteofrance_arome_france_hd"},
             {"label": "ICON-2I (🇮🇹, 2km)", "value": "italia_meteo_arpae_icon_2i"},
@@ -339,11 +367,17 @@ DETERMINISTIC_VARS = [
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
             {"label": "Weather", "value": "weather_code"},
-            {"label": "Column Integrated Water Vapour", "value": "total_column_integrated_water_vapour"},
+            {
+                "label": "Column Integrated Water Vapour",
+                "value": "total_column_integrated_water_vapour",
+            },
             {"label": "Lifted Index", "value": "lifted_index"},
             {"label": "Convective Inhibition", "value": "convective_inhibition"},
             {"label": "Boundary Layer Height", "value": "boundary_layer_height"},
-            {"label": "Precipitation Probability", "value": "precipitation_probability"},
+            {
+                "label": "Precipitation Probability",
+                "value": "precipitation_probability",
+            },
             {"label": "Soil Temperature (0 cm)", "value": "soil_temperature_0cm"},
             {"label": "Soil Temperature (6 cm)", "value": "soil_temperature_6cm"},
             {"label": "Soil Temperature (18 cm)", "value": "soil_temperature_18cm"},
@@ -363,8 +397,14 @@ DETERMINISTIC_VARS = [
             {"label": "Snowfall", "value": "snowfall"},
             {"label": "Precipitation", "value": "precipitation"},
             {"label": "Sunshine duration", "value": "sunshine_duration"},
-            {"label": "Accumulated precipitation (total)", "value": "accumulated_precip"},
-            {"label": "Accumulated precipitation (liquid)", "value": "accumulated_liquid"},
+            {
+                "label": "Accumulated precipitation (total)",
+                "value": "accumulated_precip",
+            },
+            {
+                "label": "Accumulated precipitation (liquid)",
+                "value": "accumulated_liquid",
+            },
             {"label": "Accumulated precipitation (solid)", "value": "accumulated_snow"},
         ],
     },
@@ -384,6 +424,9 @@ REANALYSIS_MODELS = [
     {"label": "ERA5 (🌐, 25km)", "value": "era5"},
     {"label": "ERA5-Land (🌐, 10km)", "value": "era5_land"},
     {"label": "ECMWF-IFS (🌐, 9km, 2017-)", "value": "ecmwf_ifs"},
-    {"label": "ECMWF-IFS (🌐, 9km, 2024-, 6-hourly measurements)", "value": "ecmwf_ifs_analysis_long_window"},
+    {
+        "label": "ECMWF-IFS (🌐, 9km, 2024-, 6-hourly measurements)",
+        "value": "ecmwf_ifs_analysis_long_window",
+    },
     {"label": "CERRA (🇪🇺, 5km, 1985-2021)", "value": "cerra"},
 ]

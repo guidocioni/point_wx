@@ -4,7 +4,7 @@ import pandas as pd
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
 import plotly.graph_objects as go
-
+from copy import deepcopy
 
 def make_heatmap(df, var, title=None):
     if var in [
@@ -259,7 +259,8 @@ def make_lineplot(
 
 
 # CARDS for layout
-
+images_config = deepcopy(images_config)
+images_config.update({'toImageButtonOptions': {'width': 1500, 'height': 800}})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="ensemble-heatmap"),
     config=images_config,

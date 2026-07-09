@@ -4,12 +4,9 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 from plotly.subplots import make_subplots
-from utils.settings import images_config
 from utils.figures_utils import add_attribution
 
-
 x = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
 
 def make_temp_prec_climate_figure(df, title=None):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
