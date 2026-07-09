@@ -127,7 +127,6 @@ images_config = {
         "lasso2d",
         "zoomIn",
         "zoomOut",
-        "resetScale",
         "autoScale",
     ],
     "displaylogo": False,
