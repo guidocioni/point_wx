@@ -3,7 +3,7 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS
+from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP
 from .custom_logger import logging, time_this_func
 
 def make_request(url, payload):
@@ -371,6 +371,33 @@ def get_ensemble_daily_data(latitude=53.55,
     data.attrs["request"] = payload
 
     return data
+
+
+@cache.memoize(1800)
+def get_model_meta(model, base_url="https://ensemble-api.open-meteo.com"):
+    """
+    Get run metadata (e.g. last initialisation time) for a model, with
+    epoch-seconds fields parsed into UTC timestamps.
+    Returns None if the model has no meta.json (e.g. seamless models).
+    """
+    meta_model = MODEL_META_MAP.get(model)
+    if meta_model is None:
+        return None
+
+    resp = make_request(
+        f"{base_url}/data/{meta_model}/static/meta.json", {}
+    ).json()
+
+    for key in (
+        "last_run_initialisation_time",
+        "last_run_availability_time",
+        "last_run_modification_time",
+        "data_end_time",
+    ):
+        if resp.get(key) is not None:
+            resp[key] = pd.to_datetime(resp[key], unit="s", utc=True)
+
+    return resp
 
 
 @cache.memoize(3600)
