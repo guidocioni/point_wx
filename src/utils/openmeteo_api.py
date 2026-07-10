@@ -1124,7 +1124,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         latitude=latitude,
         longitude=longitude,
         model=model,
-        variables="temperature_2m,precipitation,snowfall",
+        variables="temperature_2m,precipitation,snowfall,wind_speed_10m,wind_gusts_10m",
         from_now=False,
         decimate=False)
     # Only select days with enough data
@@ -1166,6 +1166,10 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         'precipitation|time')].resample('1D', on='time').sum()
     daily_snow = data.loc[:, data.columns.str.contains(
         'snowfall|time')].resample('1D', on='time').sum()
+    daily_wind_speed = data.loc[:, data.columns.str.contains(
+        'wind_speed_10m|time')].resample('1D', on='time').max()
+    daily_wind_gusts = data.loc[:, data.columns.str.contains(
+        'wind_gusts_10m|time')].resample('1D', on='time').max()
     daily_wcode_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
         'weather_code|time')].resample('1D', on='time').median()
     # On days with at least 2 hrs of thunderstorms/showers we use the thunderstorms/showers weather code
@@ -1191,7 +1195,19 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     .merge(daily_prec.quantile(0.95, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
     .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
     .merge(((daily_snow[daily_snow > 0.1].count(axis=1) / daily_snow.shape[1]) * 100.).to_frame(name='snow_prob'), left_index=True, right_index=True)\
+    .merge(daily_wind_speed.min(axis=1).to_frame(name='wind_speed_min'), left_index=True, right_index=True)\
+    .merge(daily_wind_speed.max(axis=1).to_frame(name='wind_speed_max'), left_index=True, right_index=True)\
+    .merge(daily_wind_gusts.min(axis=1).to_frame(name='wind_gusts_min'), left_index=True, right_index=True)\
+    .merge(daily_wind_gusts.max(axis=1).to_frame(name='wind_gusts_max'), left_index=True, right_index=True)\
     .merge(data_deterministic_daily.rename(columns={'sunshine_duration': 'sunshine_mean'}), left_index=True, right_index=True)
+
+    # Some models don't provide wind gusts: fall back to wind speed so
+    # downstream code always has gust columns to work with
+    if daily['wind_gusts_min'].isna().all():
+        daily['wind_gusts_min'] = daily['wind_speed_min']
+        daily['wind_gusts_max'] = daily['wind_speed_max']
+    if daily['wind_gusts_10m_max'].isna().all():
+        daily['wind_gusts_10m_max'] = daily['wind_speed_10m_max']
 
     daily.attrs = data.attrs
 

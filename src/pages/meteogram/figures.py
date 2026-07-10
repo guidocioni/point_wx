@@ -6,6 +6,18 @@ from utils.figures_utils import add_attribution
 from PIL import Image
 import pandas as pd
 
+# Beaufort-style wind speed/gust color scale (km/h), mapped over cmin=0/cmax=100
+WIND_COLORSCALE = [
+    [0.00, "#80d4ff"],
+    [0.15, "#5cd65c"],
+    [0.30, "#c8e639"],
+    [0.45, "#ffeb3b"],
+    [0.60, "#ff9800"],
+    [0.75, "#f44336"],
+    [0.90, "#9c27b0"],
+    [1.00, "#4a0072"],
+]
+
 
 def make_temp_timeseries(df, showlegend=False, clima=None):
     traces = []
@@ -355,10 +367,8 @@ def make_subplot_figure(data, title=None, clima=None):
         col=1,
     )
 
-    # Use a unified Y value for both arrow and speed
+    # Wind direction arrow, colored by gust intensity (Beaufort-style banding)
     wind_y = 0.0
-
-    # 1. Wind Arrow Trace
     fig.add_trace(
         go.Scatter(
             x=data["time"],
@@ -366,88 +376,34 @@ def make_subplot_figure(data, title=None, clima=None):
             mode="markers",
             name="Dominant direction",
             marker=dict(
-                size=16,
-                color="DarkSlateGrey",
+                size=22,
                 symbol="arrow-wide",
-                angle=data['wind_direction_10m_dominant'] - 180.0,
+                angle=data["wind_direction_10m_dominant"] - 180.0,
+                color=data["wind_gusts_10m_max"],
+                colorscale=WIND_COLORSCALE,
+                cmin=0,
+                cmax=100,
+                line=dict(width=0.5, color="DarkSlateGrey"),
+                showscale=False,
             ),
-            customdata=data['wind_direction_10m_dominant'],
-            hovertemplate="<extra></extra>Dominant wind direction = %{customdata}°",
-            showlegend=False,
-        ),
-        row=1,
-        col=1,
-    )
-
-    wind_gust_orange = 50
-    wind_gust_red = 75
-    is_badge = data["wind_gusts_10m_max"] >= wind_gust_orange
-    
-    for _, row in data[~is_badge].iterrows():
-        fig.add_annotation(
-            x=row["time"],
-            y=wind_y,
-            text=str(int(row["wind_speed_10m_max"])),
-            showarrow=False,
-            row=1,
-            col=1,
-            xanchor="left",
-            xshift=10,  # Adjust this pixel value to increase/decrease the gap
-            font=dict(color="rgba(0, 0, 0, 1)", size=12),
-        )
-
-    # 3. Hidden hover marker
-    fig.add_trace(
-        go.Scatter(
-            x=data["time"],
-            y=[wind_y] * len(data["time"]),
-            mode="markers",
-            marker=dict(opacity=0, size=35),
-            customdata=data[["wind_speed_10m_max", "wind_gusts_10m_max"]].values,
+            customdata=data[
+                [
+                    "wind_direction_10m_dominant",
+                    "wind_speed_min",
+                    "wind_speed_max",
+                    "wind_gusts_min",
+                    "wind_gusts_max",
+                ]
+            ].values,
             hovertemplate=(
-                "<extra></extra>Max. wind speed = %{customdata[0]}km/h"
-                "<br>Max. wind gust = %{customdata[1]}km/h"
+                "<extra></extra>Dominant wind direction = %{customdata[0]:.0f}°"
+                "<br>Wind speed = %{customdata[1]:.0f}-%{customdata[2]:.0f} km/h"
+                "<br>Wind gusts = %{customdata[3]:.0f}-%{customdata[4]:.0f} km/h"
             ),
             showlegend=False,
         ),
         row=1,
         col=1,
-    )
-
-    # 4. Draw strong wind badges shifted slightly right of the arrows
-    for _, row in data[is_badge].iterrows():
-        badge_color = (
-            "rgba(220,53,69,0.85)"
-            if row["wind_gusts_10m_max"] >= wind_gust_red
-            else "rgba(255,165,0,0.85)"
-        )
-        fig.add_annotation(
-            x=row["time"],
-            y=wind_y,
-            text=f"{int(row['wind_speed_10m_max'])}-{int(row['wind_gusts_10m_max'])}",
-            showarrow=False,
-            row=1,
-            col=1,
-            xanchor="left",
-            xshift=15,
-            bgcolor=badge_color,
-            bordercolor="rgba(0,0,0,0.3)",
-            borderwidth=1,
-            borderpad=3,
-            font=dict(color="white", size=11),
-        )
-
-    # 5. Place a single 'km/h' unit text to the far left
-    fig.add_annotation(
-        x=data["time"].iloc[0],
-        y=wind_y,
-        text="km/h",
-        showarrow=False,
-        row=1,
-        col=1,
-        xanchor="right",
-        xshift=-25,
-        font=dict(size=11, color="rgba(0, 0, 0, 0.7)")
     )
 
     for _, row in data.iterrows():
