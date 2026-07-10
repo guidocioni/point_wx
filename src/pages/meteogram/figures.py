@@ -376,7 +376,7 @@ def make_subplot_figure(data, title=None, clima=None):
             mode="markers",
             name="Dominant direction",
             marker=dict(
-                size=22,
+                size=18,
                 symbol="arrow-wide",
                 angle=data["wind_direction_10m_dominant"] - 180.0,
                 color=data["wind_gusts_10m_max"],
