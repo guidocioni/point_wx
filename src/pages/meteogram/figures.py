@@ -354,16 +354,19 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
-    wind_arrow_y = 0.7
-    wind_value_y = -0.7
+
+    # Use a unified Y value for both arrow and speed
+    wind_y = 0.0
+
+    # 1. Wind Arrow Trace
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[wind_arrow_y] * len(data["time"]),
+            y=[wind_y] * len(data["time"]),
             mode="markers",
             name="Dominant direction",
             marker=dict(
-                size=14,
+                size=16,
                 color="DarkSlateGrey",
                 symbol="arrow-wide",
                 angle=data['wind_direction_10m_dominant'] - 180.0,
@@ -375,30 +378,31 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
+
     wind_gust_orange = 50
     wind_gust_red = 75
     is_badge = data["wind_gusts_10m_max"] >= wind_gust_orange
-    plain_text = (
-        data["wind_speed_10m_max"].astype(int).astype(str) + "<sup>km/h</sup>"
-    ).where(~is_badge, "")
+    
+    for _, row in data[~is_badge].iterrows():
+        fig.add_annotation(
+            x=row["time"],
+            y=wind_y,
+            text=str(int(row["wind_speed_10m_max"])),
+            showarrow=False,
+            row=1,
+            col=1,
+            xanchor="left",
+            xshift=10,  # Adjust this pixel value to increase/decrease the gap
+            font=dict(color="rgba(0, 0, 0, 1)", size=12),
+        )
+
+    # 3. Hidden hover marker
     fig.add_trace(
         go.Scatter(
             x=data["time"],
-            y=[wind_value_y] * len(data["time"]),
-            mode="text",
-            text=plain_text,
-            showlegend=False,
-            hoverinfo="skip",
-        ),
-        row=1,
-        col=1,
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=data["time"],
-            y=[wind_value_y] * len(data["time"]),
+            y=[wind_y] * len(data["time"]),
             mode="markers",
-            marker=dict(opacity=0, size=30),
+            marker=dict(opacity=0, size=35),
             customdata=data[["wind_speed_10m_max", "wind_gusts_10m_max"]].values,
             hovertemplate=(
                 "<extra></extra>Max. wind speed = %{customdata[0]}km/h"
@@ -409,6 +413,8 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
+
+    # 4. Draw strong wind badges shifted slightly right of the arrows
     for _, row in data[is_badge].iterrows():
         badge_color = (
             "rgba(220,53,69,0.85)"
@@ -417,17 +423,33 @@ def make_subplot_figure(data, title=None, clima=None):
         )
         fig.add_annotation(
             x=row["time"],
-            y=wind_value_y,
+            y=wind_y,
             text=f"{int(row['wind_speed_10m_max'])}-{int(row['wind_gusts_10m_max'])}",
             showarrow=False,
             row=1,
             col=1,
+            xanchor="left",
+            xshift=15,
             bgcolor=badge_color,
             bordercolor="rgba(0,0,0,0.3)",
             borderwidth=1,
             borderpad=3,
             font=dict(color="white", size=11),
         )
+
+    # 5. Place a single 'km/h' unit text to the far left
+    fig.add_annotation(
+        x=data["time"].iloc[0],
+        y=wind_y,
+        text="km/h",
+        showarrow=False,
+        row=1,
+        col=1,
+        xanchor="right",
+        xshift=-25,
+        font=dict(size=11, color="rgba(0, 0, 0, 0.7)")
+    )
+
     for _, row in data.iterrows():
         if row["icons"] != "":
             fig.add_layout_image(

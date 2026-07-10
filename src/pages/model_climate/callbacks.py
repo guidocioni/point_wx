@@ -21,7 +21,10 @@ import pandas as pd
 from io import StringIO
 from datetime import date, timedelta
 from utils.settings import images_config
+from copy import deepcopy
 
+images_config = deepcopy(images_config)
+images_config.update({'toImageButtonOptions': {'width': 1100, 'height': 500}})
 
 @callback(
     [

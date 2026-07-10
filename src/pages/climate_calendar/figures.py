@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
+from copy import deepcopy
 
 DAY_COUNT_TYPES = (
     'precipitation_days', 'snow_days', 'dry_days', 'frost_days',
@@ -217,17 +218,23 @@ def make_calendar_figure(df, graph_type, title=None):
         dragmode=False,
         xaxis=dict(
             showgrid=False,
-            title_text="Year",
+            title_text="<b>Year</b>",
             minor=dict(showgrid=True, dtick=1, tick0=years.min() - 0.5, gridcolor="rgba(128,128,128,0.4)"),
+            ticklabelstandoff=10,
+            title_standoff=5,
+            tickfont=dict(size=14)
         ),
         yaxis=dict(
             showgrid=False,
             showticklabels=True,
-            title_text="Month",
+            title_text="<b>Month</b>",
             tickmode="array",
             tickvals=list(range(1, 13)),
             ticktext=MONTH_LABELS,
             minor=dict(showgrid=True, dtick=1, tick0=0.5, gridcolor="rgba(128,128,128,0.4)"),
+            ticklabelstandoff=10,
+            title_standoff=5,
+            tickfont=dict(size=14)
         ),
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
     )
@@ -243,7 +250,8 @@ def make_calendar_figure(df, graph_type, title=None):
 
 
 # CARDS for layout
-
+images_config = deepcopy(images_config)
+images_config.update({'toImageButtonOptions': {'width': 1500, 'height': 700}})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="calendar"),
     config=images_config,
