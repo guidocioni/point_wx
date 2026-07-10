@@ -4,7 +4,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
-from utils.figures_utils import add_attribution
+from utils.figures_utils import add_attribution, get_precip_yaxis_max
 
 
 def make_boxplot_timeseries(df, var, clima=None):
@@ -461,10 +461,11 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
         zerolinecolor="rgba(0,0,0,0.5)",
     )
     rain_max = data["rain_mean"].max() if has_rain else 0
+    snow_max = data["snowfall_mean"].max() if has_snow else 0
     fig.update_yaxes(
         row=3,
         col=1,
-        range=[0, max(rain_max * 1.5, 1)],
+        range=[0, get_precip_yaxis_max(rain_max + snow_max)],
     )
     if additional_plot == 'clouds':
         fig.update_yaxes(range=[0, 100], row=4, col=1)
