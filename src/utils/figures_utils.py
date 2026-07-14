@@ -100,6 +100,21 @@ def get_weather_icons(
     return df
 
 
+PRECIP_AXIS_STEPS = [1, 5, 10, 25, 50, 100, 250, 500]
+
+
+def get_precip_yaxis_max(value, padding=1.1):
+    """Snap a precipitation max value to the smallest step in
+    PRECIP_AXIS_STEPS that comfortably fits it, so small values aren't
+    visually exaggerated by a continuously-scaled axis.
+    """
+    padded = (value or 0) * padding
+    for step in PRECIP_AXIS_STEPS:
+        if padded <= step:
+            return step
+    return padded
+
+
 def attach_alpha_to_hex_color(alpha, color):
     """Apply opacity to an hex color
 

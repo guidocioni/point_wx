@@ -6,6 +6,7 @@ import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
 from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, estimate_legend_rows,
+    get_precip_yaxis_max,
 )
 
 
@@ -361,7 +362,7 @@ def make_subplot_figure(data, models, title=None, sun=None):
     )
     fig.update_yaxes(
         tickangle=-90, color="rgb(26, 118, 255)", row=2, col=1, secondary_y=False,
-        range=[0, max(data.loc[:,data.columns.str.contains('precipitation')].max().max() * 1.5, 1)]
+        range=[0, get_precip_yaxis_max(data.loc[:, data.columns.str.contains('precipitation')].max().max())]
     )
     fig.update_yaxes(tickangle=-90, row=3, col=1)
     fig.update_yaxes(row=4, col=1, tickangle=-90)

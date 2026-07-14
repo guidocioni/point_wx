@@ -3,7 +3,7 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS
+from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP
 from .custom_logger import logging, time_this_func
 
 def make_request(url, payload):
@@ -371,6 +371,33 @@ def get_ensemble_daily_data(latitude=53.55,
     data.attrs["request"] = payload
 
     return data
+
+
+@cache.memoize(1800)
+def get_model_meta(model, base_url="https://ensemble-api.open-meteo.com"):
+    """
+    Get run metadata (e.g. last initialisation time) for a model, with
+    epoch-seconds fields parsed into UTC timestamps.
+    Returns None if the model has no meta.json (e.g. seamless models).
+    """
+    meta_model = MODEL_META_MAP.get(model)
+    if meta_model is None:
+        return None
+
+    resp = make_request(
+        f"{base_url}/data/{meta_model}/static/meta.json", {}
+    ).json()
+
+    for key in (
+        "last_run_initialisation_time",
+        "last_run_availability_time",
+        "last_run_modification_time",
+        "data_end_time",
+    ):
+        if resp.get(key) is not None:
+            resp[key] = pd.to_datetime(resp[key], unit="s", utc=True)
+
+    return resp
 
 
 @cache.memoize(3600)
@@ -1154,7 +1181,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         latitude=latitude,
         longitude=longitude,
         model=model,
-        variables="temperature_2m,precipitation,snowfall",
+        variables="temperature_2m,precipitation,snowfall,wind_speed_10m,wind_gusts_10m",
         from_now=False,
         decimate=False)
     # Only select days with enough data
@@ -1196,6 +1223,10 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         'precipitation|time')].resample('1D', on='time').sum()
     daily_snow = data.loc[:, data.columns.str.contains(
         'snowfall|time')].resample('1D', on='time').sum()
+    daily_wind_speed = data.loc[:, data.columns.str.contains(
+        'wind_speed_10m|time')].resample('1D', on='time').max()
+    daily_wind_gusts = data.loc[:, data.columns.str.contains(
+        'wind_gusts_10m|time')].resample('1D', on='time').max()
     daily_wcode_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
         'weather_code|time')].resample('1D', on='time').median()
     # On days with at least 2 hrs of thunderstorms/showers we use the thunderstorms/showers weather code
@@ -1221,7 +1252,19 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     .merge(daily_prec.quantile(0.95, axis=1).to_frame(name='daily_prec_max'), left_index=True, right_index=True)\
     .merge(((daily_prec[daily_prec > 0.1].count(axis=1) / daily_prec.shape[1]) * 100.).to_frame(name='prec_prob'), left_index=True, right_index=True)\
     .merge(((daily_snow[daily_snow > 0.1].count(axis=1) / daily_snow.shape[1]) * 100.).to_frame(name='snow_prob'), left_index=True, right_index=True)\
+    .merge(daily_wind_speed.min(axis=1).to_frame(name='wind_speed_min'), left_index=True, right_index=True)\
+    .merge(daily_wind_speed.max(axis=1).to_frame(name='wind_speed_max'), left_index=True, right_index=True)\
+    .merge(daily_wind_gusts.min(axis=1).to_frame(name='wind_gusts_min'), left_index=True, right_index=True)\
+    .merge(daily_wind_gusts.max(axis=1).to_frame(name='wind_gusts_max'), left_index=True, right_index=True)\
     .merge(data_deterministic_daily.rename(columns={'sunshine_duration': 'sunshine_mean'}), left_index=True, right_index=True)
+
+    # Some models don't provide wind gusts: fall back to wind speed so
+    # downstream code always has gust columns to work with
+    if daily['wind_gusts_min'].isna().all():
+        daily['wind_gusts_min'] = daily['wind_speed_min']
+        daily['wind_gusts_max'] = daily['wind_speed_max']
+    if daily['wind_gusts_10m_max'].isna().all():
+        daily['wind_gusts_10m_max'] = daily['wind_speed_10m_max']
 
     daily.attrs = data.attrs
 

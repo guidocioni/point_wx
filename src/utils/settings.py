@@ -175,6 +175,30 @@ ENSEMBLE_MODELS = [
     },
 ]
 
+# Maps internal model values (as used in this app) to the model slug used by
+# open-meteo's static meta.json endpoint (https://<api-host>/data/<slug>/static/meta.json),
+# which exposes info about the latest available run for a model (e.g. its
+# initialisation time). Currently only ensemble models are mapped; deterministic
+# models could be added here later following the same pattern.
+# Seamless models (icon_seamless, gfs_seamless) are intentionally excluded: they
+# blend multiple runs/models so there isn't a single meta.json to point to.
+MODEL_META_MAP = {
+    "ecmwf_ifs025": "ecmwf_ifs025_ensemble",
+    "ecmwf_aifs025": "ecmwf_aifs025_ensemble",
+    "gem_global": "cmc_gem_geps",
+    "icon_global": "dwd_icon_eps",
+    "gfs025": "ncep_gefs025",
+    "gfs05": "ncep_gefs05",
+    "ncep_aigefs025": "ncep_aigefs025",
+    "ukmo_global_ensemble_20km": "ukmo_global_ensemble_20km",
+    "bom_access_global_ensemble": "bom_access_global_ensemble",
+    "icon_eu": "dwd_icon_eu_eps",
+    "meteoswiss_icon_ch1": "meteoswiss_icon_ch1_ensemble",
+    "meteoswiss_icon_ch2": "meteoswiss_icon_ch2_ensemble",
+    "icon_d2": "dwd_icon_d2_eps",
+    "ukmo_uk_ensemble_2km": "ukmo_uk_ensemble_2km",
+}
+
 # The variables that we decide to expose as dropdown for ensemble models
 ENSEMBLE_VARS = [
     {
@@ -293,18 +317,19 @@ DETERMINISTIC_MODELS = [
         "group": "Regional (🇪🇺)",
         "items": [
             {"label": "ICON-EU (🇪🇺, 7km)", "value": "icon_eu"},
-            {"label": "Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
+            {"label": "MeteoFrance Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
             {"label": "DMI Harmonie (🇪🇺, 2km)", "value": "dmi_harmonie_arome_europe"},
             {
                 "label": "KNMI Harmonie (🇪🇺, 5.5km)",
                 "value": "knmi_harmonie_arome_europe",
             },
             {"label": "ICON-D2 (🇩🇪, 2km)", "value": "icon_d2"},
+            {"label": "Geosphere AROME (🇦🇹, 2.5km)", "value": "geosphere_arome_austria"},
             {"label": "ICON-CH1 (🇨🇭, 1km)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2 (🇨🇭, 2km)", "value": "meteoswiss_icon_ch2"},
             {"label": "MetNo (🇳🇴🇸🇪🇫🇮, 1km)", "value": "metno_nordic"},
             {
-                "label": "KNMI Harmonie Netherlands (🇳🇱, 2km)",
+                "label": "KNMI Harmonie (🇳🇱, 2km)",
                 "value": "knmi_harmonie_arome_netherlands",
             },
             {"label": "Arpege (🇫🇷, 2.5km)", "value": "meteofrance_arome_france"},
