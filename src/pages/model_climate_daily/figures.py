@@ -29,6 +29,7 @@ def make_acc_figure(df, year, var, title=None):
             mode="lines",
             name="5-95th percentiles range",
             line=dict(width=0, color="gray"),
+            fillcolor="rgba(0, 0, 0, 0.1)",
             showlegend=True,
             fill="tonexty",
         ),
@@ -45,10 +46,12 @@ def make_acc_figure(df, year, var, title=None):
         ),
     )
 
+    # Only plot the yearly accumulation where we have actual data (not NaN)
+    df_with_data = df[df[f"{var}_yearly_acc"].notna()]
     fig.add_trace(
         go.Scatter(
-            x=df.dummy_date,
-            y=df[f"{var}_yearly_acc"],
+            x=df_with_data.dummy_date,
+            y=df_with_data[f"{var}_yearly_acc"],
             mode="lines",
             name=year,
             line=dict(width=3, color="black"),
@@ -65,46 +68,51 @@ def make_acc_figure(df, year, var, title=None):
                 line_color="rgba(1, 1, 1, 0.2)",
             )
             fig.add_annotation(
-                x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
-                y=0.01, text='TODAY', showarrow=False, textangle=-90,
+                x=pd.to_datetime("now", utc=True),
+                y=0.2, text='TODAY', showarrow=False, textangle=-90,
                 xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+                xshift=-15,  # Offset 15 pixels to the left
                 font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
             )
             # Add circular marker at current time
-            current_value = df[df['time'] == pd.to_datetime("now").normalize()][f"{var}_yearly_acc"].item()
-            fig.add_trace(
-                go.Scatter(
-                    x=[pd.to_datetime("now", utc=True)],
-                    y=[current_value],
-                    mode='markers',
-                    marker=dict(size=10, color='black'),
-                    showlegend=False,
-                    hoverinfo='y'
+            current_row = df[df['time'] == pd.to_datetime("now").normalize()][f"{var}_yearly_acc"]
+            if not current_row.empty and not pd.isna(current_row.item()):
+                current_value = current_row.item()
+                fig.add_trace(
+                    go.Scatter(
+                        x=[pd.to_datetime("now", utc=True)],
+                        y=[current_value],
+                        mode='markers',
+                        marker=dict(size=10, color='black'),
+                        showlegend=False,
+                        hoverinfo='y'
+                    )
                 )
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=df.dummy_date,
-                    y=df[f"{var}_min_yearly_acc"],
-                    mode="lines",
-                    name="Forecast q15",
-                    line=dict(width=0, color="red"),
-                    showlegend=False,
-                    hoverinfo="skip"
-                ),
-            )
+            # Only add forecast range if the columns exist
+            if f"{var}_min_yearly_acc" in df.columns and f"{var}_max_yearly_acc" in df.columns:
+                fig.add_trace(
+                    go.Scatter(
+                        x=df.dummy_date,
+                        y=df[f"{var}_min_yearly_acc"],
+                        mode="lines",
+                        name="Forecast q15",
+                        line=dict(width=0, color="red"),
+                        showlegend=False,
+                        hoverinfo="skip"
+                    ),
+                )
 
-            fig.add_trace(
-                go.Scatter(
-                    x=df.dummy_date,
-                    y=df[f"{var}_max_yearly_acc"],
-                    mode="lines",
-                    name="Forecast q95",
-                    line=dict(width=0, color="red"),
-                    showlegend=False,
-                    fill="tonexty",
-                ),
-            )
+                fig.add_trace(
+                    go.Scatter(
+                        x=df.dummy_date,
+                        y=df[f"{var}_max_yearly_acc"],
+                        mode="lines",
+                        name="Forecast q95",
+                        line=dict(width=0, color="red"),
+                        showlegend=False,
+                        fill="tonexty",
+                    ),
+                )
         except Exception as e:
             logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
@@ -142,6 +150,9 @@ def make_daily_figure(df, year, var, title=None):
 
     insertions = []
     for i in range(len(y1) - 1):
+        # Skip if either value is NaN
+        if np.isnan(y1[i]) or np.isnan(y1[i+1]) or np.isnan(y2[i]) or np.isnan(y2[i+1]):
+            continue
         # Detect sign change (crossing)
         if (y1[i] - y2[i]) * (y1[i+1] - y2[i+1]) < 0:
             # Linear interpolation to find crossing time
@@ -164,9 +175,13 @@ def make_daily_figure(df, year, var, title=None):
         f"{var}_clima": new_y2,
     })
 
-    mask = dfi[var] > dfi[f"{var}_clima"]
-    dfi["above"] = np.where(mask, dfi[var], dfi[f"{var}_clima"])
-    dfi["below"] = np.where(mask, dfi[f"{var}_clima"], dfi[var])
+    # Filter out rows where the actual variable is NaN (future dates with no data)
+    # Keep these for climatology but not for the fills
+    dfi_valid = dfi[dfi[var].notna()].copy()
+
+    mask = dfi_valid[var] > dfi_valid[f"{var}_clima"]
+    dfi_valid["above"] = np.where(mask, dfi_valid[var], dfi_valid[f"{var}_clima"])
+    dfi_valid["below"] = np.where(mask, dfi_valid[f"{var}_clima"], dfi_valid[var])
 
     # Map dummy_date for the clima/percentile traces (join on time)
     dummy_map = df.set_index("time")["dummy_date"]
@@ -187,26 +202,26 @@ def make_daily_figure(df, year, var, title=None):
         color_above = "rgba(99, 178, 255, 1)"
         color_below = "rgba(205, 133, 63, 1)"
 
-    # Below-average fill (use dfi with interpolated crossings)
+    # Below-average fill (use dfi_valid with only actual data, not future NaN dates)
     fig.add_trace(go.Scatter(
-        x=dfi["time"], y=dfi[f"{var}_clima"],
+        x=dfi_valid["time"], y=dfi_valid[f"{var}_clima"],
         mode="lines", line=dict(width=0),
         showlegend=False, hoverinfo="skip"
     ))
     fig.add_trace(go.Scatter(
-        x=dfi["time"], y=dfi["below"],
+        x=dfi_valid["time"], y=dfi_valid["below"],
         fill="tonexty", name="Below Average",
         fillcolor=color_below, mode="none",
     ))
 
     # Above-average fill
     fig.add_trace(go.Scatter(
-        x=dfi["time"], y=dfi[f"{var}_clima"],
+        x=dfi_valid["time"], y=dfi_valid[f"{var}_clima"],
         mode="lines", line=dict(width=0),
         showlegend=False, hoverinfo="skip"
     ))
     fig.add_trace(go.Scatter(
-        x=dfi["time"], y=dfi["above"],
+        x=dfi_valid["time"], y=dfi_valid["above"],
         fill="tonexty", name="Above average",
         fillcolor=color_above, mode="none",
     ))
@@ -227,28 +242,31 @@ def make_daily_figure(df, year, var, title=None):
         x=df.dummy_date, y=df["q95"],
         mode="lines", name="5-95th percentiles range",
         line=dict(width=0, color="gray"),
-        fillcolor="rgba(0, 0, 0, 0.2)",
+        fillcolor="rgba(0, 0, 0, 0.1)",
         showlegend=True, fill="tonexty",
     ))
 
     if year == pd.to_datetime("now", utc=True).year:
-        current_value = df[df['time'] == pd.to_datetime("now").normalize()][var].item()
-        fig.add_trace(go.Scatter(
-            x=[pd.to_datetime("now", utc=True)],
-            y=[current_value],
-            mode='markers',
-            marker=dict(size=10, color='black'),
-            showlegend=False, hoverinfo='y'
-        ))
+        current_row = df[df['time'] == pd.to_datetime("now").normalize()][var]
+        if not current_row.empty and not pd.isna(current_row.item()):
+            current_value = current_row.item()
+            fig.add_trace(go.Scatter(
+                x=[pd.to_datetime("now", utc=True)],
+                y=[current_value],
+                mode='markers',
+                marker=dict(size=10, color='black'),
+                showlegend=False, hoverinfo='y'
+            ))
         fig.add_vline(
             x=pd.to_datetime("now", utc=True),
             line_width=2, line_dash="dash",
             line_color="rgba(1, 1, 1, 0.2)",
         )
         fig.add_annotation(
-            x=pd.to_datetime("now", utc=True) - pd.to_timedelta('2.5 day'),
-            y=0.01, text='TODAY', showarrow=False, textangle=-90,
+            x=pd.to_datetime("now", utc=True),
+            y=0.2, text='TODAY', showarrow=False, textangle=-90,
             xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+            xshift=-15,  # Offset 15 pixels to the left
             font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 

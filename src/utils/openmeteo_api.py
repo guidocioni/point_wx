@@ -975,7 +975,7 @@ def compute_yearly_accumulation(latitude=53.55,
             daily = pd.concat([daily, ensemble]).drop_duplicates(subset=['time']).reset_index(drop=True)
         except Exception as e:
             logging.warning(
-                f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+                f"Cannot add ensemble forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
 
     # Remove leap years
@@ -986,13 +986,26 @@ def compute_yearly_accumulation(latitude=53.55,
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
-            # Then add this value to the forecasts min and max at the start
-            offset = daily.loc[daily['time'] ==  forecast_start, f'{var}_yearly_acc'].item()
+            # Create the forecast min/max yearly accumulation columns
+            # The offset should be: the accumulated value just before the first forecast min/max appears
+            if f"{var}_min" in daily.columns and f"{var}_max" in daily.columns:
+                # Find the first date where min/max forecast data exists
+                first_forecast = daily[daily[f'{var}_min'].notna()]['time'].min()
 
-            for _var in [f"{var}_min", f"{var}_max"]:
-                daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
-                    _var].transform(lambda x: x.cumsum()) + offset
-                daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
+                # Find the accumulated value just before the forecast starts
+                # This ensures continuity between the main line and the forecast bands
+                dates_before = daily[daily['time'] < first_forecast]
+                if not dates_before.empty:
+                    last_before_forecast = dates_before['time'].max()
+                    offset_row = daily.loc[daily['time'] == last_before_forecast, f'{var}_yearly_acc']
+
+                    if not offset_row.empty:
+                        offset = offset_row.iloc[0] if len(offset_row) > 1 else offset_row.item()
+
+                        for _var in [f"{var}_min", f"{var}_max"]:
+                            daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
+                                _var].transform(lambda x: x.cumsum()) + offset
+                            daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
         except Exception as e:
             logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
@@ -1021,8 +1034,18 @@ def compute_yearly_accumulation(latitude=53.55,
     for col in ['q1', 'q2', 'q3']:
         quantiles[col] = quantiles[col].rolling(window=10, center=True, min_periods=1).mean()
 
-    daily = daily[daily.time.dt.year == year].merge(
-        quantiles, left_on='time', right_on='dummy_date', how='left')
+    # Filter to the target year first
+    daily_year = daily[daily.time.dt.year == year].copy()
+
+    # For the current year, use 'right' merge to keep all climatology dates through year-end
+    # For past years, use 'left' to only keep dates with actual data
+    if year == current_year:
+        daily = quantiles.merge(daily_year, left_on='dummy_date', right_on='time', how='left')
+        # Fill NaN time values with dummy_date for future dates
+        daily['time'] = daily['time'].fillna(daily['dummy_date'])
+    else:
+        daily = daily_year.merge(quantiles, left_on='time', right_on='dummy_date', how='left')
+
     return daily
 
 
@@ -1110,8 +1133,15 @@ def compute_yearly_comparison(
 
     clima['dummy_date'] = pd.to_datetime(
         str(year) + clima.index, format='%Y%m%d')
+    # Use 'right' merge to keep all climatology dates, then for current year don't drop NaN
+    # For past years, drop NaN to only show dates with actual data
     daily = daily.merge(clima, right_on='dummy_date',
-                        left_on='time', how='right').dropna()
+                        left_on='time', how='right')
+    if year != current_year:
+        daily = daily.dropna()
+    else:
+        # For current year, fill NaN time values with dummy_date so we have valid dates for future days
+        daily['time'] = daily['time'].fillna(daily['dummy_date'])
 
     return daily
 
