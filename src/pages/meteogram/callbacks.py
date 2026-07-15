@@ -44,7 +44,7 @@ def generate_figure(n_clicks, locations, location, model):
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             daily=True,
-            model="era5",
+            model="era5_seamless",
             variables="temperature_2m_max,temperature_2m_min,sunshine_duration",
         )
         clima = clima.rename(

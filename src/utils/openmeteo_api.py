@@ -1283,7 +1283,6 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     except ImportError:
         logging.warning(
             "xarray is not installed; compute_climatology_zarr is unavailable. "
-            "Install with `pip install xarray` to enable it."
         )
         raise RuntimeError(
             "xarray is not installed; install with `pip install xarray` to use this feature"

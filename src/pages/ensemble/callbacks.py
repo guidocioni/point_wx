@@ -61,7 +61,7 @@ def generate_figure(
                 latitude=loc["latitude"].item(),
                 longitude=loc["longitude"].item(),
                 variables="temperature_2m",
-                model='era5'
+                model='era5_seamless'
             )
             # BETA, load the climatology of 850hPa T from  a zarr
             try:
