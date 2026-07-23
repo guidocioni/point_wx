@@ -91,6 +91,30 @@ def filter_options(values_to_find, options):
     ]
 
 
+def get_valid_values(options):
+    """
+    Extract all valid values from a model/variable options list.
+    Used for validating cached selections against current options.
+    """
+    return [item["value"] for group in options for item in group["items"]]
+
+
+def validate_model_selection(model, options, model_type="model"):
+    """
+    Validate that a model selection is still in the current options list.
+    Returns (is_valid, error_message).
+    Use this in callbacks to catch stale cached selections.
+    """
+    if not model:
+        return True, None
+
+    valid_values = get_valid_values(options)
+    if model not in valid_values:
+        return False, f"The selected {model_type} is no longer available. Please select a different one."
+
+    return True, None
+
+
 images_config = {
     "toImageButtonOptions": {
         "format": "png",  # one of png, svg, jpeg, webp
@@ -270,7 +294,6 @@ DETERMINISTIC_MODELS = [
             {"label": "ICON Global (🌍, 11km)", "value": "icon_global"},
             {"label": "IFS (🌍, 9km)", "value": "ecmwf_ifs"},
             {"label": "IFS (🌍, 25km)", "value": "ecmwf_ifs025"},
-            {"label": "AIFS (🌍, 25km)", "value": "ecmwf_aifs025"},
             {"label": "AIFS single (🌍, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌍, 25/13km)", "value": "gfs_global"},
             {"label": "GFS Graphcast (🌍, 25km)", "value": "gfs_graphcast025"},

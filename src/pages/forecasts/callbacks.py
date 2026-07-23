@@ -2,7 +2,7 @@ from dash import callback, Output, Input, State, no_update
 from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
-from utils.settings import DEFAULT_TEMPLATE
+from utils.settings import DEFAULT_TEMPLATE, DETERMINISTIC_MODELS, get_valid_values
 from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
@@ -33,6 +33,16 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
         return (
             no_update,
             "You need to select a least one model!",
+            True,
+        )
+
+    # Validate model selections
+    valid_models = get_valid_values(DETERMINISTIC_MODELS)
+    invalid_models = [m for m in models if m not in valid_models]
+    if invalid_models:
+        return (
+            no_update,
+            f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
             True,
         )
 

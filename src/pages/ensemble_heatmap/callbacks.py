@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_ensemble_data
 from utils.custom_logger import logging
+from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS, validate_model_selection
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -27,6 +28,15 @@ from io import StringIO
 def generate_figure(n_clicks, locations, location, model, variable, from_now_, decimate_, _is_heatmap):
     if n_clicks is None:
         return no_update, no_update, no_update
+
+    # Validate model and variable selections
+    is_valid, error_msg = validate_model_selection(model, ENSEMBLE_MODELS, "model")
+    if not is_valid:
+        return no_update, error_msg, True
+
+    is_valid, error_msg = validate_model_selection(variable, ENSEMBLE_VARS, "variable")
+    if not is_valid:
+        return no_update, error_msg, True
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})

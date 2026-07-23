@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_historical_daily_data, compute_climatology
 from utils.custom_logger import logging
+from utils.settings import REANALYSIS_MODELS, validate_model_selection
 from datetime import date, timedelta
 from .figures import make_calendar_figure
 import pandas as pd
@@ -27,6 +28,11 @@ from io import StringIO
 def generate_figure(n_clicks, locations, location, model, graph_type, graph_types, year_start):
     if n_clicks is None:
         return no_update, no_update, no_update
+
+    # Validate model selection
+    is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
+    if not is_valid:
+        return no_update, error_msg, True
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})

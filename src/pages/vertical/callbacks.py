@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_vertical_data
 from utils.custom_logger import logging
+from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
 from .figures import make_figure_vertical, make_figure_skewt
 import pandas as pd
 from io import StringIO
@@ -35,6 +36,11 @@ except ImportError:
 def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, days_):
     if n_clicks is None:
         return no_update, no_update, no_update
+
+    # Validate model selection
+    is_valid, error_msg = validate_model_selection(model, DETERMINISTIC_MODELS, "model")
+    if not is_valid:
+        return no_update, error_msg, True
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
