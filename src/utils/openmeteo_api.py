@@ -3,7 +3,7 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP
+from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP, TEMPORAL_RESOLUTION_SPEC
 from .custom_logger import logging, time_this_func
 
 
@@ -439,6 +439,138 @@ def get_model_meta(model, base_url="https://ensemble-api.open-meteo.com"):
     return resp
 
 
+def _resample_by_variable_type(data, freq, origin, variable_groups):
+    """
+    Resample data with proper handling of accumulated/instantaneous/max/min variables.
+
+    Parameters:
+    - data: DataFrame with time column and data columns
+    - freq: Frequency string (e.g., "3h", "6h")
+    - origin: Origin timestamp for resampling
+    - variable_groups: ENSEMBLE_VARS structure
+
+    Returns: Resampled DataFrame
+    """
+    acc_vars_regex = "|".join([
+        item["value"] for group in variable_groups
+        if group["group"] == "Accumulated" for item in group["items"]
+    ])
+    inst_vars_regex = "|".join([
+        item["value"] for group in variable_groups
+        if group["group"] == "Instantaneous" for item in group["items"]
+    ])
+    max_vars_regex = "|".join([
+        item["value"] for group in variable_groups
+        if group["group"] == "Preceding hour maximum" for item in group["items"]
+    ])
+    min_vars_regex = "|".join([
+        item["value"] for group in variable_groups
+        if group["group"] == "Preceding hour minimum" for item in group["items"]
+    ])
+
+    dfs = []
+
+    # Accumulated variables: rolling sum then resample
+    if any(data.columns.str.contains(acc_vars_regex)):
+        acc = (
+            data.loc[:, data.columns.str.contains("time|" + acc_vars_regex)]
+            .rolling(window=freq, on="time")
+            .sum()
+            .resample(freq, on="time", origin=origin)
+            .first()
+        )
+        dfs.append(acc)
+
+    # Instantaneous variables: just resample (take first)
+    if any(data.columns.str.contains(inst_vars_regex)):
+        inst = (
+            data.loc[:, data.columns.str.contains("time|" + inst_vars_regex)]
+            .resample(freq, on="time", origin=origin)
+            .first()
+        )
+        dfs.append(inst)
+
+    # Max variables: rolling max then resample
+    if any(data.columns.str.contains(max_vars_regex)):
+        maxv = (
+            data.loc[:, data.columns.str.contains("time|" + max_vars_regex)]
+            .rolling(window=freq, on="time")
+            .max()
+            .resample(freq, on="time", origin=origin)
+            .first()
+        )
+        dfs.append(maxv)
+
+    # Min variables: rolling min then resample
+    if any(data.columns.str.contains(min_vars_regex)):
+        minv = (
+            data.loc[:, data.columns.str.contains("time|" + min_vars_regex)]
+            .rolling(window=freq, on="time")
+            .min()
+            .resample(freq, on="time", origin=origin)
+            .first()
+        )
+        dfs.append(minv)
+
+    # Merge all variable types
+    if not dfs:
+        return data
+
+    result = reduce(
+        lambda left, right: pd.merge(left, right, left_index=True, right_index=True),
+        dfs
+    )
+    return result.reset_index()
+
+
+def _decimate_to_native_resolution(data, model):
+    """
+    Decimate data from Open-Meteo's hourly interpolation to the model's native
+    varying resolution, properly handling accumulated vs instantaneous variables.
+
+    Only applies to models with varying resolution (defined in TEMPORAL_RESOLUTION_SPEC).
+    Models with constant resolution don't need decimation.
+    """
+    if model not in TEMPORAL_RESOLUTION_SPEC:
+        # Model has constant resolution, no decimation needed
+        return data
+
+    spec = TEMPORAL_RESOLUTION_SPEC[model]
+    start_time = data.iloc[0]["time"]
+    segments = []
+
+    for start_hour, end_hour, resolution in spec:
+        # Calculate absolute timestamps for this segment
+        segment_start = start_time + pd.Timedelta(hours=start_hour)
+        segment_end = start_time + pd.Timedelta(hours=end_hour)
+
+        # Extract data for this time range
+        segment_data = data[(data["time"] >= segment_start) & (data["time"] < segment_end)].copy()
+
+        if len(segment_data) == 0:
+            continue
+
+        # If resolution is 1h, keep as-is (no decimation needed)
+        if resolution == "1h":
+            segments.append(segment_data)
+        else:
+            # Decimate to the specified resolution
+            decimated = _resample_by_variable_type(
+                segment_data,
+                freq=resolution,
+                origin=segment_data.iloc[0]["time"],
+                variable_groups=ENSEMBLE_VARS
+            )
+            segments.append(decimated)
+
+    # Concatenate all segments
+    if not segments:
+        return data
+
+    result = pd.concat(segments, ignore_index=True)
+    return result
+
+
 @cache.memoize(3600)
 def get_ensemble_data(
     latitude=53.55,
@@ -491,6 +623,7 @@ def get_ensemble_data(
         "models": model,
         "forecast_days": forecast_days,
         "cell_selection": cell_selection,
+        "temporal_resolution": "native",
         "start_date": start_date,
         "end_date": end_date
     }
@@ -516,199 +649,10 @@ def get_ensemble_data(
             .floor("h")
         ]
 
-    # Optionally decimate data to a 3 hourly resolution
-    # This is useful when visualising a long timeseries
+    # Decimate to native resolution for models with varying resolution
+    # This reconstructs the original model resolution from Open-Meteo's hourly interpolation
     if decimate:
-        if model in [
-            "gfs_seamless",
-            "gfs05",
-            "gfs025",
-            "ecmwf_ifs025",
-            "ecmwf_aifs025",
-            "gem_global",
-            "bom_access_global_ensemble",
-            "ncep_aigefs025"
-        ]:
-            # The original data for all these models is 3 hourly, so there is no added
-            # value in showing hourly data. Here we decimate every 3 hours considering
-            # as starting point the first time value
-            # which means that, in case the from_now option is activated, it will start
-            # resampling every 3 hours from that starting point, otherwise it will resample
-            # at 0, 3, 6, 9, 12, 18, as the data always starts at 00 UTC.
-            #
-            acc_vars = None
-            acc_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Accumulated"
-                    for item in group["items"]
-                ]
-            )
-            if any(data.columns.str.contains(acc_vars_regex)):
-                # Consider only the variables that are defined as accumulation over the last hour
-                # First we do a rolling sum over the same period (3 hours) and then take only the
-                # first value
-                acc_vars = (
-                    data.loc[
-                        :,
-                        data.columns.str.contains("time|" + acc_vars_regex),
-                    ]
-                    .rolling(window="3h", on="time")
-                    .sum()
-                    .resample("3h", on="time", origin=data.iloc[0]["time"])
-                    .first()
-                )
-            inst_vars = None
-            inst_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Instantaneous"
-                    for item in group["items"]
-                ]
-            )
-            if any(data.columns.str.contains(inst_vars_regex)):
-                # Now the variables that are instantaneous
-                # In this case we can just take the first value directly every 3 hours
-                inst_vars = (
-                    data.loc[
-                        :,
-                        data.columns.str.contains(
-                            "time|" + inst_vars_regex
-                        ),
-                    ]
-                    .resample("3h", on="time", origin=data.iloc[0]["time"])
-                    .first()
-                )
-            max_vars = None
-            max_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Preceding hour maximum"
-                    for item in group["items"]
-                ]
-            )
-            if any(data.columns.str.contains(max_vars_regex)):
-                # Now variables with different aggregations (like preceding hour maximum)
-                max_vars = (
-                    data.loc[:, data.columns.str.contains("time|" + max_vars_regex)]
-                    .rolling(window="3h", on="time")
-                    .max()
-                    .resample("3h", on="time", origin=data.iloc[0]["time"])
-                    .first()
-                )
-            # Now merge everything together and overwrite the original data
-            dfs = [inst_vars, acc_vars, max_vars]
-            # Remove None objects
-            dfs = [df for df in dfs if df is not None]
-            # Merge all dataframes
-            data = reduce(
-                lambda left, right: pd.merge(
-                    left, right, left_index=True, right_index=True
-                ),
-                dfs,
-            )
-            data = data.reset_index()
-        elif model in ["icon_seamless", "icon_global", "icon_eu", "ukmo_global_ensemble_20km", "ukmo_uk_ensemble_2km"]:
-            # For these models we want to preserve the original hourly resolution
-            # because it is the original one! Actually, for ICON-EPS the data
-            # is every 6 hours, but I don't want to implement a different logic
-            # just for that....
-            # We leave the first 48 hrs untouched, and then decimate every 3 hours
-            # NOTE that we count 48 hrs from the first time value. In case from_now = True
-            # is activated, it could mean
-            # NOTE icon_d2 is not here because we don't need to do anything in that case
-            t48_start_date = data.iloc[0]["time"] + pd.to_timedelta("48h")
-            after_48_hrs = data.loc[
-                data.time >= t48_start_date + pd.to_timedelta("3h"), :
-            ]
-            # For this section does the same trick as before
-            acc_vars = None
-            acc_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Accumulated"
-                    for item in group["items"]
-                ]
-            )
-            if any(
-                after_48_hrs.columns.str.contains(
-                    acc_vars_regex
-                )
-            ):
-                acc_vars = (
-                    after_48_hrs.loc[
-                        :,
-                        after_48_hrs.columns.str.contains(
-                            "time|" + acc_vars_regex
-                        ),
-                    ]
-                    .rolling(window="3h", on="time")
-                    .sum()
-                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
-                    .first()
-                )
-            inst_vars = None
-            inst_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Instantaneous"
-                    for item in group["items"]
-                ]
-            )
-            if any(
-                after_48_hrs.columns.str.contains(
-                    inst_vars_regex
-                )
-            ):
-                inst_vars = (
-                    after_48_hrs.loc[
-                        :,
-                        after_48_hrs.columns.str.contains(
-                            "time|" + inst_vars_regex
-                        ),
-                    ]
-                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
-                    .first()
-                )
-            max_vars = None
-            max_vars_regex = "|".join(
-                [
-                    item["value"]
-                    for group in ENSEMBLE_VARS
-                    if group["group"] == "Preceding hour maximum"
-                    for item in group["items"]
-                ]
-            )
-            if any(after_48_hrs.columns.str.contains(max_vars_regex)):
-                max_vars = (
-                    after_48_hrs.loc[
-                        :, after_48_hrs.columns.str.contains("time|" + max_vars_regex)
-                    ]
-                    .rolling(window="3h", on="time")
-                    .max()
-                    .resample("3h", on="time", origin=after_48_hrs.iloc[0]["time"])
-                    .first()
-                )
-            # Now merge everything together and overwrite the original data
-            dfs = [inst_vars, acc_vars, max_vars]
-            # Remove None objects
-            dfs = [df for df in dfs if df is not None]
-            # Merge all dataframes
-            after_48_hrs = reduce(
-                lambda left, right: pd.merge(
-                    left, right, left_index=True, right_index=True
-                ),
-                dfs,
-            )
-            after_48_hrs = after_48_hrs.reset_index()
-            data = pd.concat(
-                [data.loc[data.time <= t48_start_date, :], after_48_hrs]
-            ).reset_index(drop=True)
+        data = _decimate_to_native_resolution(data, model)
 
     # Units conversion
     for col in data.columns[data.columns.str.contains("snow_depth")]:

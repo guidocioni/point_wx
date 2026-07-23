@@ -451,3 +451,46 @@ REANALYSIS_MODELS = [
     },
     {"label": "CERRA (🇪🇺, 5km, 1985-2021)", "value": "cerra"},
 ]
+
+# Temporal resolution specification for ensemble models with varying resolution
+# Models not listed here have constant resolution and don't need decimation
+# Format: model -> list of (start_hour, end_hour, resolution)
+TEMPORAL_RESOLUTION_SPEC = {
+    # ICON models - varying resolution
+    "icon_eu": [
+        (0, 48, "1h"),    # Hourly 0-48h
+        (48, 72, "3h"),   # 3-hourly 48-72h
+        (72, 120, "6h"),  # 6-hourly 72-120h
+    ],
+    "icon_global": [
+        (0, 48, "1h"),     # Hourly 0-48h
+        (48, 72, "3h"),    # 3-hourly 48-72h
+        (72, 120, "6h"),   # 6-hourly 72-120h
+        (120, 180, "12h"), # 12-hourly 120-180h
+    ],
+
+    # ECMWF IFS - transitions to 6-hourly
+    "ecmwf_ifs025": [
+        (0, 144, "3h"),    # 3-hourly 0-144h
+        (144, 360, "6h"),  # 6-hourly 144-360h
+    ],
+
+    # GFS 0.5 - transitions to 6-hourly
+    "gfs05": [
+        (0, 240, "3h"),    # 3-hourly 0-240h
+        (240, 840, "6h"),  # 6-hourly 240-840h
+    ],
+
+    # Seamless models - reconstructed from components
+    "icon_seamless": [
+        # Combines icon-d2 (0-48h hourly) + icon-eu (up to 120h) + icon-global
+        (0, 48, "1h"),     # From ICON-D2
+        (48, 72, "3h"),    # From ICON-EU
+        (72, 192, "6h"),   # From ICON-global
+    ],
+    "gfs_seamless": [
+        # Combines GFS 0.25 (0-240h) + GFS 0.5 (beyond)
+        (0, 240, "3h"),    # From GFS 0.25
+        (240, 384, "6h"),  # From GFS 0.5
+    ],
+}
