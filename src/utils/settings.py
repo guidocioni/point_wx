@@ -296,7 +296,6 @@ DETERMINISTIC_MODELS = [
             {"label": "IFS (🌍, 25km)", "value": "ecmwf_ifs025"},
             {"label": "AIFS single (🌍, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌍, 25/13km)", "value": "gfs_global"},
-            {"label": "GFS Graphcast (🌍, 25km)", "value": "gfs_graphcast025"},
             {"label": "AIGFS (🌍, 25km)", "value": "ncep_aigfs025"},
             {"label": "HGEFS (🌍, 25km)", "value": "ncep_hgefs025_ensemble_mean"},
             {"label": "Arpege (🌍, 55km)", "value": "meteofrance_arpege_world"},
@@ -318,6 +317,7 @@ DETERMINISTIC_MODELS = [
                 "label": "KNMI Harmonie (🇪🇺, 5.5km)",
                 "value": "knmi_harmonie_arome_europe",
             },
+            {"label": "CHMI Aladin (🇪🇺, 2km)", "value": "chmi_aladin_central_europe_2km"},
             {"label": "ICON-D2 (🇩🇪, 2km)", "value": "icon_d2"},
             {"label": "Geosphere AROME (🇦🇹, 2.5km)", "value": "geosphere_arome_austria"},
             {"label": "ICON-CH1 (🇨🇭, 1km)", "value": "meteoswiss_icon_ch1"},
@@ -331,6 +331,7 @@ DETERMINISTIC_MODELS = [
             {"label": "Arpege HD (🇫🇷, 1.5km)", "value": "meteofrance_arome_france_hd"},
             {"label": "ICON-2I (🇮🇹, 2km)", "value": "italia_meteo_arpae_icon_2i"},
             {"label": "UKMO (🇬🇧, 2km)", "value": "ukmo_uk_deterministic_2km"},
+            {"label": "CHMI Aladin (🇨🇿, 1km)", "value": "chmi_aladin_cz_1km"},
         ],
     },
     {
