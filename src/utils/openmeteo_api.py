@@ -461,14 +461,18 @@ def get_ensemble_data(
         # Adjust forecast_days depending on the model
         if model == "icon_eu":
             forecast_days = 6
-        elif model == "icon_d2":
+        elif model in ["icon_d2",  "ukmo_uk_ensemble_2km"]:
             forecast_days = 3
         elif model == "gfs05":
             forecast_days = 35
-        elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025"]:
+        elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025", "google_weathernext2_ensemble", "ecmwf_ifs025", "ecmwf_aifs025"]:
             forecast_days = 16
-        elif model in ["ecmwf_ifs025", "ecmwf_aifs025", "gfs025", "bom_access_global_ensemble"]:
+        elif model in ["gfs025", "bom_access_global_ensemble"]:
             forecast_days = 11
+        elif model == "meteoswiss_icon_ch1":
+            forecast_days = 2
+        elif model == "meteoswiss_icon_ch2":
+            forecast_days = 1
         else: # icon_seamlss and global fall in this category!
             forecast_days = 8
     # For the accumulated variables
