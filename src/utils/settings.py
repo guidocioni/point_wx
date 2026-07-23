@@ -228,6 +228,7 @@ ENSEMBLE_VARS = [
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
             {"label": "Weather", "value": "weather_code"},
+            {"label": "Precipitation Type", "value": "precipitation_type"},
             {
                 "label": "850hPa Geopotential Height",
                 "value": "geopotential_height_850hPa",

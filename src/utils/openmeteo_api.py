@@ -6,6 +6,45 @@ from functools import reduce
 from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP
 from .custom_logger import logging, time_this_func
 
+
+def weather_code_to_precip_type(weather_code):
+    """
+    Convert WMO weather code to precipitation type category.
+
+    Categories:
+    0 = No precipitation (empty/NaN for heatmap display)
+    1 = Rain (blue)
+    2 = Snow (purple)
+    3 = Freezing rain/drizzle (red/purple)
+    4 = Hail (distinct color)
+
+    Returns NaN for no precipitation to create empty cells in heatmap.
+    """
+    if pd.isna(weather_code):
+        return np.nan
+
+    code = int(weather_code)
+
+    # Rain: drizzle, rain, rain showers
+    if code in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
+        return 1
+
+    # Snow: snow fall, snow grains, snow showers
+    elif code in [71, 73, 75, 77, 85, 86]:
+        return 2
+
+    # Freezing: freezing drizzle, freezing rain
+    elif code in [56, 57, 66, 67]:
+        return 3
+
+    # Hail: thunderstorm with hail (only Central Europe)
+    elif code in [96, 99]:
+        return 4
+
+    # All other codes (clear, cloudy, fog, thunderstorm without hail, etc.)
+    else:
+        return np.nan
+
 def make_request(url, payload):
     if OPENMETEO_KEY:
         # In this case we have to prepend the 'customer-' string to the url
