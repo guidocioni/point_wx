@@ -202,20 +202,29 @@ def make_barplot_timeseries(
         text = df[var_text]
     if outside_on_zero:
         textposition = ["inside" if v > 0 else "outside" for v in df[var]]
+
+    # For bars with zero values, we need to ensure text is visible by setting a minimal y position
+    y_values = df[var].copy()
+    if outside_on_zero:
+        # Set a small positive value for zero bars so the "outside" text has a base to sit on
+        y_values = [v if v > 0 else 0.01 for v in y_values]
+
     traces = []
     traces.append(
         go.Bar(
             x=df["time"] + bar_x_shift,
-            y=df[var],
+            y=y_values,
             width=bar_width,
             text=text,
             name="",
             textposition=textposition,
             texttemplate=text_formatting,
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,
             marker_color=color,
             zorder=2,
+            # Make sure zero values still show as 0 in hover, not 0.01
+            customdata=df[var],
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{customdata:.1f}",
         )
     )
     if clima is not None and show_clima:
