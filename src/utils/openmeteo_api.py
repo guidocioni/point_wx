@@ -1404,7 +1404,7 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
         raise RuntimeError(
             "xarray is not installed; install with `pip install xarray` to use this feature"
         )
-    ds = xr.open_zarr("/media/WD/download/era5/zarr2/")
+    ds = xr.open_zarr("/home/guidocioni/point_wx/data/zarr2")
     ds = (
         ds.sel(latitude=latitude, longitude=longitude, method="nearest")
         .drop_vars(["isobaricInhPa", "latitude", "longitude", "step", "valid_time"])
