@@ -406,6 +406,38 @@ def make_subplot_figure(data, title=None, clima=None):
         col=1,
     )
 
+    # Predictability index icons - positioned to the right of weather icons
+    def get_predictability_icon(category):
+        icons = {
+            'high': '🎯',
+            'medium': '⚠️',
+            'low': '❓'
+        }
+        return icons.get(category, '')
+
+    # Shift right by 5 hours to place icons next to weather icons
+    x_offset = pd.to_timedelta("5h")
+    predictability_y = 1.7
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"] + x_offset,
+            y=[predictability_y] * len(data["time"]),
+            mode="text",
+            text=data["predictability_category"].apply(get_predictability_icon),
+            textposition="middle center",
+            textfont=dict(size=14),
+            name="Predictability",
+            customdata=data[["predictability_score", "predictability_category"]].values,
+            hovertemplate=(
+                "<extra></extra><b>%{x|%a %-d %b}</b>"
+                "<br>Predictability: %{customdata[1]} (%{customdata[0]}/100)"
+            ),
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+
     for _, row in data.iterrows():
         if row["icons"] != "":
             fig.add_layout_image(

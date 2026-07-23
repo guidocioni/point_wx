@@ -1188,20 +1188,25 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     # We use a more relaxed constraint to avoid issues when there are
     # daylight saving time changes
     data = data.groupby(data['time'].dt.date).filter(lambda x: len(x) > 21)
+    # Ensure time column is proper datetime for resampling
+    data['time'] = pd.to_datetime(data['time'])
     # Best match ensemble/deterministic models
     # when the naming is different
+    deterministic_model = model
     if model == "bom_access_global_ensemble":
-        model = "bom_access_global"
+        deterministic_model = "bom_access_global"
     elif model in ["gfs025", "gfs05"]:
-        model = "gfs_seamless"
+        deterministic_model = "gfs_seamless"
     elif model == "ukmo_global_ensemble_20km":
-        model = "ukmo_seamless"
+        deterministic_model = "ukmo_seamless"
     elif model == "ecmwf_aifs025":
-        model = "ecmwf_aifs025_single"
+        deterministic_model = "ecmwf_aifs025_single"
+    elif model == "ncep_aigefs025":
+        deterministic_model = "gfs_seamless"
     data_deterministic = get_forecast_data(
         latitude=latitude,
         longitude=longitude,
-        model=model,
+        model=deterministic_model,
         variables="weather_code",
         from_now=False,
         forecast_days=14
@@ -1209,7 +1214,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     data_deterministic_daily = get_forecast_daily_data(
         latitude=latitude,
         longitude=longitude,
-        model=model,
+        model=deterministic_model,
         variables="sunshine_duration,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max",
         forecast_days=14
     ).dropna(subset=["wind_speed_10m_max","wind_direction_10m_dominant","sunshine_duration","wind_gusts_10m_max"], how='all').set_index('time')
@@ -1269,6 +1274,65 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     daily.attrs = data.attrs
 
     return daily
+
+
+def compute_predictability_index(data):
+    """
+    Compute a predictability index (0-100) based on ensemble spread.
+    Higher values = more predictable (lower spread).
+
+    Uses empirical thresholds for:
+    - Temperature spread (IQR of max temp)
+    - Precipitation spread (relative to mean)
+    - Wind gust spread
+
+    Returns DataFrame with 'predictability_score' and 'predictability_category' columns.
+    """
+    import pandas as pd
+    import numpy as np
+
+    # Temperature spread (IQR of max temperature in °C)
+    temp_spread = data['t_max_q75'] - data['t_max_q25']
+    # Normalize: low spread < 2°C (score=1), high spread > 5°C (score=0)
+    temp_score = np.clip(1 - (temp_spread - 2) / 3, 0, 1)
+
+    # Precipitation spread (relative to mean, to handle scale)
+    precip_spread = (data['daily_prec_max'] - data['daily_prec_min']) / (data['daily_prec_mean'] + 0.1)
+    # Normalize: low spread < 0.5 (score=1), high spread > 2.0 (score=0)
+    precip_score = np.clip(1 - (precip_spread - 0.5) / 1.5, 0, 1)
+
+    # Wind gust spread (km/h)
+    wind_spread = data['wind_gusts_max'] - data['wind_gusts_min']
+    # Normalize: low spread < 15 km/h (score=1), high spread > 30 km/h (score=0)
+    wind_score = np.clip(1 - (wind_spread - 15) / 15, 0, 1)
+
+    # Weighted composite: temp 50%, precip 30%, wind 20%
+    composite_score = 0.5 * temp_score + 0.3 * precip_score + 0.2 * wind_score
+
+    # Scale to 0-100, handle NaN values
+    predictability_score = (composite_score * 100).round(0)
+    # Fill NaN with medium score (50) if any component is missing
+    predictability_score = predictability_score.fillna(50).astype(int)
+
+    # Categorize
+    def categorize(score):
+        if pd.isna(score):
+            return 'medium'
+        elif score >= 70:
+            return 'high'
+        elif score >= 40:
+            return 'medium'
+        else:
+            return 'low'
+
+    predictability_category = predictability_score.apply(categorize)
+
+    result = pd.DataFrame({
+        'predictability_score': predictability_score,
+        'predictability_category': predictability_category
+    }, index=data.index)
+
+    return result
 
 
 @cache.memoize(31536000)
