@@ -7,6 +7,7 @@ from utils.openmeteo_api import (
 )
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
+from utils.settings import ENSEMBLE_MODELS, validate_model_selection
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
@@ -37,6 +38,11 @@ def generate_figure(
     if n_clicks is None:
         return no_update, no_update, no_update
 
+    # Validate model selection against current options
+    is_valid, error_msg = validate_model_selection(model, ENSEMBLE_MODELS, "model")
+    if not is_valid:
+        return no_update, error_msg, True
+
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location[0]["value"]]
@@ -61,7 +67,7 @@ def generate_figure(
                 latitude=loc["latitude"].item(),
                 longitude=loc["longitude"].item(),
                 variables="temperature_2m",
-                model='era5'
+                model='era5_seamless'
             )
             # BETA, load the climatology of 850hPa T from  a zarr
             try:

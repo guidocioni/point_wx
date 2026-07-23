@@ -2,11 +2,11 @@ from dash import callback, Output, Input, State, no_update, clientside_callback,
 import dash_bootstrap_components as dbc
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
+from utils.settings import images_config, REANALYSIS_MODELS, validate_model_selection
 from .figures import make_acc_figure, make_daily_figure
 import pandas as pd
 from io import StringIO
 from datetime import date
-from utils.settings import images_config
 from copy import deepcopy
 
 images_config = deepcopy(images_config)
@@ -33,6 +33,11 @@ images_config.update({'toImageButtonOptions': {'width': 1100, 'height': 500}})
 def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var):
     if n_clicks is None:
         return no_update, no_update, no_update, no_update
+
+    # Validate model selection
+    is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
+    if not is_valid:
+        return no_update, no_update, error_msg, True
 
     if model == "cerra" and ((year > 2021) or (year < 1985)):
         return (

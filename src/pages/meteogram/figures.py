@@ -202,20 +202,29 @@ def make_barplot_timeseries(
         text = df[var_text]
     if outside_on_zero:
         textposition = ["inside" if v > 0 else "outside" for v in df[var]]
+
+    # For bars with zero values, we need to ensure text is visible by setting a minimal y position
+    y_values = df[var].copy()
+    if outside_on_zero:
+        # Set a small positive value for zero bars so the "outside" text has a base to sit on
+        y_values = [v if v > 0 else 0.01 for v in y_values]
+
     traces = []
     traces.append(
         go.Bar(
             x=df["time"] + bar_x_shift,
-            y=df[var],
+            y=y_values,
             width=bar_width,
             text=text,
             name="",
             textposition=textposition,
             texttemplate=text_formatting,
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{y:.1f}",
             showlegend=showlegend,
             marker_color=color,
             zorder=2,
+            # Make sure zero values still show as 0 in hover, not 0.01
+            customdata=df[var],
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b>, " + var + " = %{customdata:.1f}",
         )
     )
     if clima is not None and show_clima:
@@ -399,6 +408,38 @@ def make_subplot_figure(data, title=None, clima=None):
                 "<extra></extra>Dominant wind direction = %{customdata[0]:.0f}°"
                 "<br>Wind speed = %{customdata[1]:.0f}-%{customdata[2]:.0f} km/h"
                 "<br>Wind gusts = %{customdata[3]:.0f}-%{customdata[4]:.0f} km/h"
+            ),
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Predictability index icons - positioned to the right of weather icons
+    def get_predictability_icon(category):
+        icons = {
+            'high': '🎯',
+            'medium': '⚠️',
+            'low': '❓'
+        }
+        return icons.get(category, '')
+
+    # Shift right by 5 hours to place icons next to weather icons
+    x_offset = pd.to_timedelta("5h")
+    predictability_y = 1.7
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"] + x_offset,
+            y=[predictability_y] * len(data["time"]),
+            mode="text",
+            text=data["predictability_category"].apply(get_predictability_icon),
+            textposition="middle center",
+            textfont=dict(size=14),
+            name="Predictability",
+            customdata=data[["predictability_score", "predictability_category"]].values,
+            hovertemplate=(
+                "<extra></extra><b>%{x|%a %-d %b}</b>"
+                "<br>Predictability: %{customdata[1]} (%{customdata[0]}/100)"
             ),
             showlegend=False,
         ),

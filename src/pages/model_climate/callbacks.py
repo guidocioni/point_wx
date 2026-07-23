@@ -9,6 +9,7 @@ from dash import (
 )
 from utils.openmeteo_api import compute_monthly_clima, get_historical_daily_data
 from utils.custom_logger import logging
+from utils.settings import images_config, REANALYSIS_MODELS, validate_model_selection
 from .figures import (
     make_clouds_climate_figure,
     make_precipitation_climate_figure,
@@ -20,7 +21,6 @@ from .figures import (
 import pandas as pd
 from io import StringIO
 from datetime import date, timedelta
-from utils.settings import images_config
 from copy import deepcopy
 
 images_config = deepcopy(images_config)
@@ -57,6 +57,20 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
             no_update,
             no_update,
+        )
+
+    # Validate model selection
+    is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
+    if not is_valid:
+        return (
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            error_msg,
+            True,
         )
 
     # unpack locations data

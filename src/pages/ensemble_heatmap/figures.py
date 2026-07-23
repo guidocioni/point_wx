@@ -33,12 +33,47 @@ def make_heatmap(df, var, title=None):
         cmap = "Hot_r"
     elif var == "sunshine_duration":
         cmap = "solar"
+    elif var == "precipitation_type":
+        # Custom discrete colormap for precipitation types
+        # 1=Rain (blue), 2=Snow (purple), 3=Freezing (red/purple), 4=Hail (orange)
+        cmap = [[0, "rgba(0,0,0,0)"],      # NaN/0 = transparent (no precip)
+                [0.25, "#2E86DE"],          # 1 = Rain (blue)
+                [0.5, "#8B5CF6"],           # 2 = Snow (purple)
+                [0.75, "#C53030"],          # 3 = Freezing (red)
+                [1.0, "#ED8936"]]           # 4 = Hail (orange)
     else:
         cmap = "RdBu_r"
 
     columns_regex = rf"{var}$|{var}_member(0[1-9]|[1-9][0-9])$"
     y_positions = list(range(df.loc[:, df.columns.str.match(columns_regex)].shape[1]))
-    if var != "weather_code":
+
+    if var == "precipitation_type":
+        # Special handling for categorical precipitation type
+        fig = px.imshow(
+            df.loc[:, df.columns.str.match(columns_regex)].T,
+            x=df["time"],
+            y=y_positions,
+            text_auto=False,  # Don't show numbers for categories
+            aspect="auto",
+            color_continuous_scale=cmap,
+            origin="lower",
+            zmin=0,
+            zmax=4,
+        )
+        # Custom hover template with category names
+        hover_text = df.loc[:, df.columns.str.match(columns_regex)].T.map(
+            lambda x: {
+                1: "Rain",
+                2: "Snow",
+                3: "Freezing",
+                4: "Hail"
+            }.get(x, "No precipitation") if not pd.isna(x) else "No precipitation"
+        )
+        fig.update_traces(
+            customdata=hover_text,
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}<br>Type = %{customdata}"
+        )
+    elif var != "weather_code":
         fig = px.imshow(
             df.loc[:, df.columns.str.match(columns_regex)].T,
             x=df["time"],
@@ -177,29 +212,69 @@ def make_lineplot(
     fig = go.Figure()
     traces = []
     columns_regex = rf"{var}$|{var}_member(0[1-9]|[1-9][0-9])$"
-    for col in df.columns[df.columns.str.match(columns_regex)]:
-        traces.append(
-            go.Scatter(
-                x=df.loc[:, "time"],
-                y=df.loc[:, col],
-                mode="lines",
-                name=col,
-                hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
-                + var
-                + " = %{y}",
-                line=dict(width=1),
-                showlegend=False,
-            ),
-        )
+
+    # Special handling for precipitation_type categorical variable
+    if var == "precipitation_type":
+        category_names = {
+            0: "No precip",
+            1: "Rain",
+            2: "Snow",
+            3: "Freezing",
+            4: "Hail"
+        }
+        for col in df.columns[df.columns.str.match(columns_regex)]:
+            # Map numeric values to category names for hover
+            hover_text = df.loc[:, col].map(
+                lambda x: category_names.get(x, "No precip") if not pd.isna(x) else "No precip"
+            )
+            traces.append(
+                go.Scatter(
+                    x=df.loc[:, "time"],
+                    y=df.loc[:, col],
+                    mode="lines",
+                    name=col,
+                    customdata=hover_text,
+                    hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, Type = %{customdata}",
+                    line=dict(width=1),
+                    showlegend=False,
+                ),
+            )
+    else:
+        for col in df.columns[df.columns.str.match(columns_regex)]:
+            traces.append(
+                go.Scatter(
+                    x=df.loc[:, "time"],
+                    y=df.loc[:, col],
+                    mode="lines",
+                    name=col,
+                    hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
+                    + var
+                    + " = %{y}",
+                    line=dict(width=1),
+                    showlegend=False,
+                ),
+            )
 
     for trace in traces:
         fig.add_trace(trace)
+
+    # Special y-axis handling for precipitation_type
+    if var == "precipitation_type":
+        yaxis_config = dict(
+            showgrid=True,
+            fixedrange=True,
+            tickmode="array",
+            tickvals=[0, 1, 2, 3, 4],
+            ticktext=["No precip", "Rain", "Snow", "Freezing", "Hail"]
+        )
+    else:
+        yaxis_config = dict(showgrid=True, fixedrange=True)
 
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
         xaxis=dict(showgrid=True, tickformat="%a %-d %b\n%H:%M"),
-        yaxis=dict(showgrid=True, fixedrange=True),
+        yaxis=yaxis_config,
         margin={"r": 5, "t": 40, "l": 5, "b": 5},
         updatemenus=[
             dict(

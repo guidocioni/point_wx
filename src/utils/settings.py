@@ -27,62 +27,37 @@ DEFAULT_TEMPLATE = "custom"
 pio.templates.default = DEFAULT_TEMPLATE
 
 
-# Set cache directory for flask_caching.
-# Handle different systems
 def get_cache_directory():
-    system = platform.system()
-    if system == "Linux" or system == "Darwin":  # Darwin is MacOS
-        primary_cache_dir = CACHE_DIR
-        fallback_cache_dir = os.path.join(tempfile.gettempdir(), "pointwx")
-    else:
-        # Default case for unknown systems
-        primary_cache_dir = os.path.join(tempfile.gettempdir(), "pointwx")
+    """Get a writable cache directory, trying primary location first, then fallback."""
+    candidates = []
 
-    if os.path.exists(primary_cache_dir):
-        if os.access(primary_cache_dir, os.W_OK):
-            return primary_cache_dir
-        else:
-            logging.warning(
-                f"Primary cache directory {primary_cache_dir} is not writable."
-            )
+    if platform.system() in ("Linux", "Darwin"):  # Darwin is MacOS
+        candidates.append(CACHE_DIR)
+        candidates.append(os.path.join(tempfile.gettempdir(), "pointwx"))
     else:
-        try:
-            os.makedirs(primary_cache_dir, exist_ok=True)
-            if os.access(primary_cache_dir, os.W_OK):
-                return primary_cache_dir
-        except Exception as e:
-            logging.warning(
-                f"Could not create primary cache directory {primary_cache_dir}: {e}. Falling back."
-            )
+        candidates.append(os.path.join(tempfile.gettempdir(), "pointwx"))
 
-    if os.path.exists(fallback_cache_dir):
-        if os.access(fallback_cache_dir, os.W_OK):
-            return fallback_cache_dir
-        else:
-            logging.warning(
-                f"Fallback cache directory {fallback_cache_dir} is not writable."
-            )
-    else:
+    for cache_dir in candidates:
         try:
-            os.makedirs(fallback_cache_dir, exist_ok=True)
-            if os.access(fallback_cache_dir, os.W_OK):
-                return fallback_cache_dir
-        except Exception as e:
-            logging.warning(
-                f"Could not create fallback cache directory {fallback_cache_dir}: {e}"
-            )
+            os.makedirs(cache_dir, exist_ok=True)
+            if os.access(cache_dir, os.W_OK):
+                return cache_dir
+        except OSError:
+            continue
 
     return None
 
 
-cache_dir = get_cache_directory()
-
-if cache_dir and not DISABLE_CACHE:
-    logging.info(f"Using {cache_dir} as cache directory")
-    cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": cache_dir})
-else:
-    logging.warning("Disabling cache!")
+if DISABLE_CACHE:
     cache = Cache(config={"CACHE_TYPE": "null"})
+else:
+    cache_dir = get_cache_directory()
+    if cache_dir:
+        logging.info(f"Using {cache_dir} as cache directory")
+        cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": cache_dir})
+    else:
+        logging.warning("No writable cache directory found, disabling cache")
+        cache = Cache(config={"CACHE_TYPE": "null"})
 
 
 def filter_options(values_to_find, options):
@@ -116,6 +91,30 @@ def filter_options(values_to_find, options):
     ]
 
 
+def get_valid_values(options):
+    """
+    Extract all valid values from a model/variable options list.
+    Used for validating cached selections against current options.
+    """
+    return [item["value"] for group in options for item in group["items"]]
+
+
+def validate_model_selection(model, options, model_type="model"):
+    """
+    Validate that a model selection is still in the current options list.
+    Returns (is_valid, error_message).
+    Use this in callbacks to catch stale cached selections.
+    """
+    if not model:
+        return True, None
+
+    valid_values = get_valid_values(options)
+    if model not in valid_values:
+        return False, f"The selected {model_type} is no longer available. Please select a different one."
+
+    return True, None
+
+
 images_config = {
     "toImageButtonOptions": {
         "format": "png",  # one of png, svg, jpeg, webp
@@ -139,26 +138,27 @@ ENSEMBLE_MODELS = [
     {
         "group": "Seamless",
         "items": [
-            {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
-            {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
+            {"label": "ICON Seamless 🌍", "value": "icon_seamless"},
+            {"label": "GFS Seamless 🌍", "value": "gfs_seamless"},
         ],
     },
     {
         "group": "Global",
         "items": [
-            {"label": "IFS (🌐, 25km, 🎲 51)", "value": "ecmwf_ifs025"},
-            {"label": "AIFS (🌐, 25km, 🎲 51)", "value": "ecmwf_aifs025"},
-            {"label": "GEM (🌐, 25km, 🎲 21)", "value": "gem_global"},
-            {"label": "ICON-EPS (🌐, 26km, 🎲 40)", "value": "icon_global"},
-            {"label": "GFS ENS (🌐, 25km, 🎲 31)", "value": "gfs025"},
-            {"label": "GFS ENS (🌐, 50km, 🎲 31)", "value": "gfs05"},
-            {"label": "AIGFS (🌐, 25km, 🎲 31)", "value": "ncep_aigefs025"},
+            {"label": "IFS (🌍, 25km, 🎲 51)", "value": "ecmwf_ifs025"},
+            {"label": "AIFS (🌍, 25km, 🎲 51)", "value": "ecmwf_aifs025"},
+            {"label": "GEM (🌍, 25km, 🎲 21)", "value": "gem_global"},
+            {"label": "ICON-EPS (🌍, 26km, 🎲 40)", "value": "icon_global"},
+            {"label": "GFS ENS (🌍, 25km, 🎲 31)", "value": "gfs025"},
+            {"label": "GFS ENS (🌍, 50km, 🎲 31)", "value": "gfs05"},
+            {"label": "AIGFS (🌍, 25km, 🎲 31)", "value": "ncep_aigefs025"},
+            {"label": "Google WeatherNext2 (🌍, 25km, 🎲 64)", "value": "google_weathernext2_ensemble"},
             {
-                "label": "MOGREPS-G (🌐, 20km, 🎲 18)",
+                "label": "MOGREPS-G (🌍, 20km, 🎲 18)",
                 "value": "ukmo_global_ensemble_20km",
             },
             {
-                "label": "ACCESS-GE (🌐, 40km, 🎲 18)",
+                "label": "ACCESS-GE (🌍, 40km, 🎲 18)",
                 "value": "bom_access_global_ensemble",
             },
         ],
@@ -170,7 +170,7 @@ ENSEMBLE_MODELS = [
             {"label": "ICON-CH1-EPS (🇨🇭, 1km, 🎲 11)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2-EPS (🇨🇭, 2km, 🎲 21)", "value": "meteoswiss_icon_ch2"},
             {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "icon_d2"},
-            {"label": "MOGREPS-UK (🌐, 2km, 🎲 3)", "value": "ukmo_uk_ensemble_2km"},
+            {"label": "MOGREPS-UK (🌍, 2km, 🎲 3)", "value": "ukmo_uk_ensemble_2km"},
         ],
     },
 ]
@@ -228,6 +228,7 @@ ENSEMBLE_VARS = [
             {"label": "Visibility", "value": "visibility"},
             {"label": "Surface Temperature", "value": "surface_temperature"},
             {"label": "Weather", "value": "weather_code"},
+            {"label": "Precipitation Type", "value": "precipitation_type"},
             {
                 "label": "850hPa Geopotential Height",
                 "value": "geopotential_height_850hPa",
@@ -277,40 +278,33 @@ DETERMINISTIC_MODELS = [
     {
         "group": "Seamless",
         "items": [
-            {"label": "Best Match 🌐", "value": "best_match"},
-            {"label": "ICON Seamless 🌐", "value": "icon_seamless"},
-            {"label": "GFS Seamless 🌐", "value": "gfs_seamless"},
-            {"label": "MeteoFrance Seamless 🌐", "value": "meteofrance_seamless"},
+            {"label": "Best Match 🌍", "value": "best_match"},
+            {"label": "ICON Seamless 🌍", "value": "icon_seamless"},
+            {"label": "GFS Seamless 🌍", "value": "gfs_seamless"},
+            {"label": "MeteoFrance Seamless 🌍", "value": "meteofrance_seamless"},
             {"label": "ICON-CH Seamless 🇨🇭", "value": "meteoswiss_icon_seamless"},
-            {"label": "JMA Seamless 🌐", "value": "jma_seamless"},
-            {"label": "GEM Seamless 🌐", "value": "gem_seamless"},
-            # These seamless do not make any sense to me
-            # {"label": "KNMI Seamless 🇪🇺", "value": "knmi_seamless"},
-            # {"label": "DMI Seamless 🇪🇺", "value": "dmi_seamless"},
-            #
-            {"label": "UKMO Seamless 🌐", "value": "ukmo_seamless"},
-            {"label": "KMA Seamless 🌐", "value": "kma_seamless"},
+            {"label": "JMA Seamless 🌍", "value": "jma_seamless"},
+            {"label": "GEM Seamless 🌍", "value": "gem_seamless"},
+            {"label": "UKMO Seamless 🌍", "value": "ukmo_seamless"},
+            {"label": "KMA Seamless 🌍", "value": "kma_seamless"},
         ],
     },
     {
         "group": "Global",
         "items": [
-            {"label": "ICON Global (🌐, 11km)", "value": "icon_global"},
-            {"label": "IFS (🌐, 9km)", "value": "ecmwf_ifs"},
-            {"label": "IFS (🌐, 25km)", "value": "ecmwf_ifs025"},
-            {"label": "AIFS (🌐, 25km)", "value": "ecmwf_aifs025"},
-            {"label": "AIFS single (🌐, 25km)", "value": "ecmwf_aifs025_single"},
-            {"label": "GFS (🌐, 25/13km)", "value": "gfs_global"},
-            {"label": "GFS Graphcast (🌐, 25km)", "value": "gfs_graphcast025"},
-            {"label": "AIGFS (🌐, 25km)", "value": "ncep_aigfs025"},
-            {"label": "HGEFS (🌐, 25km)", "value": "ncep_hgefs025_ensemble_mean"},
-            {"label": "Arpege (🌐, 55km)", "value": "meteofrance_arpege_world"},
-            {"label": "UKMO (🌐, 10km)", "value": "ukmo_global_deterministic_10km"},
-            {"label": "GSM (🌐, 55km)", "value": "jma_gsm"},
-            {"label": "CMA GRAPES (🌐, 15km)", "value": "cma_grapes_global"},
-            {"label": "GEM Global (🌐, 15km)", "value": "gem_global"},
-            {"label": "ACCESS-G (🌐, 15km)", "value": "bom_access_global"},
-            {"label": "GDPS (🌐, 12km)", "value": "kma_gdps"},
+            {"label": "ICON Global (🌍, 11km)", "value": "icon_global"},
+            {"label": "IFS (🌍, 9km)", "value": "ecmwf_ifs"},
+            {"label": "AIFS single (🌍, 25km)", "value": "ecmwf_aifs025_single"},
+            {"label": "GFS (🌍, 25/13km)", "value": "gfs_global"},
+            {"label": "AIGFS (🌍, 25km)", "value": "ncep_aigfs025"},
+            {"label": "HGEFS (🌍, 25km)", "value": "ncep_hgefs025_ensemble_mean"},
+            {"label": "Arpege (🌍, 55km)", "value": "meteofrance_arpege_world"},
+            {"label": "UKMO (🌍, 10km)", "value": "ukmo_global_deterministic_10km"},
+            {"label": "GSM (🌍, 55km)", "value": "jma_gsm"},
+            {"label": "CMA GRAPES (🌍, 15km)", "value": "cma_grapes_global"},
+            {"label": "GEM Global (🌍, 15km)", "value": "gem_global"},
+            {"label": "ACCESS-G (🌍, 15km)", "value": "bom_access_global"},
+            {"label": "GDPS (🌍, 12km)", "value": "kma_gdps"},
         ],
     },
     {
@@ -323,6 +317,7 @@ DETERMINISTIC_MODELS = [
                 "label": "KNMI Harmonie (🇪🇺, 5.5km)",
                 "value": "knmi_harmonie_arome_europe",
             },
+            {"label": "CHMI Aladin (🇪🇺, 2km)", "value": "chmi_aladin_central_europe_2km"},
             {"label": "ICON-D2 (🇩🇪, 2km)", "value": "icon_d2"},
             {"label": "Geosphere AROME (🇦🇹, 2.5km)", "value": "geosphere_arome_austria"},
             {"label": "ICON-CH1 (🇨🇭, 1km)", "value": "meteoswiss_icon_ch1"},
@@ -336,6 +331,7 @@ DETERMINISTIC_MODELS = [
             {"label": "Arpege HD (🇫🇷, 1.5km)", "value": "meteofrance_arome_france_hd"},
             {"label": "ICON-2I (🇮🇹, 2km)", "value": "italia_meteo_arpae_icon_2i"},
             {"label": "UKMO (🇬🇧, 2km)", "value": "ukmo_uk_deterministic_2km"},
+            {"label": "CHMI Aladin (🇨🇿, 1km)", "value": "chmi_aladin_cz_1km"},
         ],
     },
     {
@@ -444,13 +440,13 @@ DETERMINISTIC_VARS = [
 # All the models available in the APIs for Historical
 # No need for groups here
 REANALYSIS_MODELS = [
-    {"label": "Best Match (🌐, IFS+ERA5)", "value": "best_match"},
-    {"label": "ERA5 seamless (🌐, ERA5+ERA5-Land)", "value": "era5_seamless"},
-    {"label": "ERA5 (🌐, 25km)", "value": "era5"},
-    {"label": "ERA5-Land (🌐, 10km)", "value": "era5_land"},
-    {"label": "ECMWF-IFS (🌐, 9km, 2017-)", "value": "ecmwf_ifs"},
+    {"label": "Best Match (🌍, IFS+ERA5)", "value": "best_match"},
+    {"label": "ERA5 seamless (🌍, ERA5+ERA5-Land)", "value": "era5_seamless"},
+    {"label": "ERA5 (🌍, 25km)", "value": "era5"},
+    {"label": "ERA5-Land (🌍, 10km)", "value": "era5_land"},
+    {"label": "ECMWF-IFS (🌍, 9km, 2017-)", "value": "ecmwf_ifs"},
     {
-        "label": "ECMWF-IFS (🌐, 9km, 2024-, 6-hourly measurements)",
+        "label": "ECMWF-IFS (🌍, 9km, 2024-, 6-hourly measurements)",
         "value": "ecmwf_ifs_analysis_long_window",
     },
     {"label": "CERRA (🇪🇺, 5km, 1985-2021)", "value": "cerra"},

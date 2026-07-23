@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_ensemble_data
+from utils.openmeteo_api import get_ensemble_data, weather_code_to_precip_type
 from utils.custom_logger import logging
+from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS, validate_model_selection
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -28,19 +29,46 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
     if n_clicks is None:
         return no_update, no_update, no_update
 
+    # Validate model and variable selections
+    is_valid, error_msg = validate_model_selection(model, ENSEMBLE_MODELS, "model")
+    if not is_valid:
+        return no_update, error_msg, True
+
+    is_valid, error_msg = validate_model_selection(variable, ENSEMBLE_VARS, "variable")
+    if not is_valid:
+        return no_update, error_msg, True
+
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location[0]["value"]]
 
     try:
+        # Handle special case: precipitation_type requires fetching weather_code
+        actual_variable = variable
+        if variable == "precipitation_type":
+            actual_variable = "weather_code"
+
         data = get_ensemble_data(
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             model=model,
-            variables=variable,
+            variables=actual_variable,
             decimate=decimate_,
             from_now=from_now_,
         )
+
+        # Convert weather_code to precipitation_type if needed
+        if variable == "precipitation_type":
+            # Find all weather_code columns (including ensemble members)
+            weather_cols = [col for col in data.columns if col.startswith("weather_code")]
+
+            # Convert each weather_code column to precipitation_type
+            for col in weather_cols:
+                new_col = col.replace("weather_code", "precipitation_type")
+                data[new_col] = data[col].apply(weather_code_to_precip_type)
+
+            # Drop the weather_code columns to avoid confusion
+            data = data.drop(columns=weather_cols)
 
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"

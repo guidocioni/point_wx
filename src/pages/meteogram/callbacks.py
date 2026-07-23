@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology
+from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology, compute_predictability_index
 from utils.figures_utils import get_weather_icons
-from utils.settings import ASSETS_DIR
+from utils.settings import ASSETS_DIR, ENSEMBLE_MODELS, filter_options, validate_model_selection
 from utils.custom_logger import logging
 from .figures import make_subplot_figure
 import pandas as pd
@@ -26,6 +26,24 @@ def generate_figure(n_clicks, locations, location, model):
     if n_clicks is None:
         return no_update, no_update, no_update
 
+    # Validate model selection (meteogram uses a filtered subset of ENSEMBLE_MODELS)
+    meteogram_models = filter_options(
+        [
+            "icon_seamless",
+            "gfs_seamless",
+            "ecmwf_ifs025",
+            "ecmwf_aifs025",
+            "ncep_aigefs025",
+            "icon_global",
+            "icon_eu",
+            "ukmo_global_ensemble_20km",
+        ],
+        ENSEMBLE_MODELS,
+    )
+    is_valid, error_msg = validate_model_selection(model, meteogram_models, "model")
+    if not is_valid:
+        return no_update, error_msg, True
+
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
     loc = locations[locations["id"] == location[0]["value"]]
@@ -39,12 +57,20 @@ def generate_figure(n_clicks, locations, location, model):
         data = get_weather_icons(
             data,
         )
+        # Add predictability index
+        # Preserve attrs before merge
+        data_attrs = data.attrs.copy()
+        predictability = compute_predictability_index(data)
+        # Merge on index (both have same integer index after reset_index)
+        data = data.join(predictability)
+        data.attrs = data_attrs
+
         # Add daily climatology (quite fast)
         clima = compute_climatology(
             latitude=loc["latitude"].item(),
             longitude=loc["longitude"].item(),
             daily=True,
-            model="era5",
+            model="era5_seamless",
             variables="temperature_2m_max,temperature_2m_min,sunshine_duration",
         )
         clima = clima.rename(

@@ -6,6 +6,45 @@ from functools import reduce
 from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP
 from .custom_logger import logging, time_this_func
 
+
+def weather_code_to_precip_type(weather_code):
+    """
+    Convert WMO weather code to precipitation type category.
+
+    Categories:
+    0 = No precipitation (empty/NaN for heatmap display)
+    1 = Rain (blue)
+    2 = Snow (purple)
+    3 = Freezing rain/drizzle (red/purple)
+    4 = Hail (distinct color)
+
+    Returns NaN for no precipitation to create empty cells in heatmap.
+    """
+    if pd.isna(weather_code):
+        return np.nan
+
+    code = int(weather_code)
+
+    # Rain: drizzle, rain, rain showers
+    if code in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
+        return 1
+
+    # Snow: snow fall, snow grains, snow showers
+    elif code in [71, 73, 75, 77, 85, 86]:
+        return 2
+
+    # Freezing: freezing drizzle, freezing rain
+    elif code in [56, 57, 66, 67]:
+        return 3
+
+    # Hail: thunderstorm with hail (only Central Europe)
+    elif code in [96, 99]:
+        return 4
+
+    # All other codes (clear, cloudy, fog, thunderstorm without hail, etc.)
+    else:
+        return np.nan
+
 def make_request(url, payload):
     if OPENMETEO_KEY:
         # In this case we have to prepend the 'customer-' string to the url
@@ -1188,20 +1227,25 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     # We use a more relaxed constraint to avoid issues when there are
     # daylight saving time changes
     data = data.groupby(data['time'].dt.date).filter(lambda x: len(x) > 21)
+    # Ensure time column is proper datetime for resampling
+    data['time'] = pd.to_datetime(data['time'])
     # Best match ensemble/deterministic models
     # when the naming is different
+    deterministic_model = model
     if model == "bom_access_global_ensemble":
-        model = "bom_access_global"
+        deterministic_model = "bom_access_global"
     elif model in ["gfs025", "gfs05"]:
-        model = "gfs_seamless"
+        deterministic_model = "gfs_seamless"
     elif model == "ukmo_global_ensemble_20km":
-        model = "ukmo_seamless"
+        deterministic_model = "ukmo_seamless"
     elif model == "ecmwf_aifs025":
-        model = "ecmwf_aifs025_single"
+        deterministic_model = "ecmwf_aifs025_single"
+    elif model == "ncep_aigefs025":
+        deterministic_model = "gfs_seamless"
     data_deterministic = get_forecast_data(
         latitude=latitude,
         longitude=longitude,
-        model=model,
+        model=deterministic_model,
         variables="weather_code",
         from_now=False,
         forecast_days=14
@@ -1209,7 +1253,7 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     data_deterministic_daily = get_forecast_daily_data(
         latitude=latitude,
         longitude=longitude,
-        model=model,
+        model=deterministic_model,
         variables="sunshine_duration,wind_speed_10m_max,wind_direction_10m_dominant,wind_gusts_10m_max",
         forecast_days=14
     ).dropna(subset=["wind_speed_10m_max","wind_direction_10m_dominant","sunshine_duration","wind_gusts_10m_max"], how='all').set_index('time')
@@ -1227,14 +1271,24 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         'wind_speed_10m|time')].resample('1D', on='time').max()
     daily_wind_gusts = data.loc[:, data.columns.str.contains(
         'wind_gusts_10m|time')].resample('1D', on='time').max()
+
+    # Compute daily weather code using mode (most frequent) instead of median
+    # First, use resample to get mode for each day
     daily_wcode_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
-        'weather_code|time')].resample('1D', on='time').median()
-    # On days with at least 2 hrs of thunderstorms/showers we use the thunderstorms/showers weather code
-    for code in [95, 96, 99, 61, 66, 51]:
-        thunderstorm_days = data_deterministic[data_deterministic['weather_code'] == code]
-        thunderstorm_days = thunderstorm_days.groupby(thunderstorm_days.time.dt.date).weather_code.count()
-        thunderstorm_days = thunderstorm_days[thunderstorm_days >= 2].index
-        daily_wcode_deterministic.loc[thunderstorm_days.astype(str).to_list(), 'weather_code'] = code
+        'weather_code|time')].resample('1D', on='time').apply(
+            lambda x: x.mode()[0] if len(x.mode()) > 0 else np.nan
+        )
+
+    # Severity-based override: if severe weather appears for ≥2 hours, prioritize it
+    # Ordered by severity (most severe first)
+    severe_codes = [99, 95, 96, 82, 67, 65, 81, 63, 80, 75, 73, 71, 66, 61, 56, 53, 51]
+
+    for code in severe_codes:
+        severe_days = data_deterministic[data_deterministic['weather_code'] == code]
+        severe_days = severe_days.groupby(severe_days.time.dt.date).weather_code.count()
+        severe_days = severe_days[severe_days >= 2].index
+        if len(severe_days) > 0:
+            daily_wcode_deterministic.loc[severe_days.astype(str).to_list(), 'weather_code'] = code
 
     daily = daily_tmin.mean(axis=1).to_frame(name='t_min_mean')\
     .merge(daily_tmax.mean(axis=1).to_frame(name='t_max_mean'), left_index=True, right_index=True)\
@@ -1271,6 +1325,65 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     return daily
 
 
+def compute_predictability_index(data):
+    """
+    Compute a predictability index (0-100) based on ensemble spread.
+    Higher values = more predictable (lower spread).
+
+    Uses empirical thresholds for:
+    - Temperature spread (IQR of max temp)
+    - Precipitation spread (relative to mean)
+    - Wind gust spread
+
+    Returns DataFrame with 'predictability_score' and 'predictability_category' columns.
+    """
+    import pandas as pd
+    import numpy as np
+
+    # Temperature spread (IQR of max temperature in °C)
+    temp_spread = data['t_max_q75'] - data['t_max_q25']
+    # Normalize: low spread < 2°C (score=1), high spread > 5°C (score=0)
+    temp_score = np.clip(1 - (temp_spread - 2) / 3, 0, 1)
+
+    # Precipitation spread (relative to mean, to handle scale)
+    precip_spread = (data['daily_prec_max'] - data['daily_prec_min']) / (data['daily_prec_mean'] + 0.1)
+    # Normalize: low spread < 0.5 (score=1), high spread > 2.0 (score=0)
+    precip_score = np.clip(1 - (precip_spread - 0.5) / 1.5, 0, 1)
+
+    # Wind gust spread (km/h)
+    wind_spread = data['wind_gusts_max'] - data['wind_gusts_min']
+    # Normalize: low spread < 15 km/h (score=1), high spread > 30 km/h (score=0)
+    wind_score = np.clip(1 - (wind_spread - 15) / 15, 0, 1)
+
+    # Weighted composite: temp 50%, precip 30%, wind 20%
+    composite_score = 0.5 * temp_score + 0.3 * precip_score + 0.2 * wind_score
+
+    # Scale to 0-100, handle NaN values
+    predictability_score = (composite_score * 100).round(0)
+    # Fill NaN with medium score (50) if any component is missing
+    predictability_score = predictability_score.fillna(50).astype(int)
+
+    # Categorize
+    def categorize(score):
+        if pd.isna(score):
+            return 'medium'
+        elif score >= 70:
+            return 'high'
+        elif score >= 40:
+            return 'medium'
+        else:
+            return 'low'
+
+    predictability_category = predictability_score.apply(categorize)
+
+    result = pd.DataFrame({
+        'predictability_score': predictability_score,
+        'predictability_category': predictability_category
+    }, index=data.index)
+
+    return result
+
+
 @cache.memoize(31536000)
 @time_this_func
 def compute_climatology_zarr(latitude=53.55, longitude=9.99):
@@ -1283,7 +1396,6 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     except ImportError:
         logging.warning(
             "xarray is not installed; compute_climatology_zarr is unavailable. "
-            "Install with `pip install xarray` to enable it."
         )
         raise RuntimeError(
             "xarray is not installed; install with `pip install xarray` to use this feature"

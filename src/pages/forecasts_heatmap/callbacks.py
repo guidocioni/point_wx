@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import get_forecast_data
 from utils.custom_logger import logging
+from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, get_valid_values
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -32,6 +33,25 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
         return (
             no_update,
             "You need to select a least one model!",
+            True,
+        )
+
+    # Validate model selections
+    valid_models = get_valid_values(DETERMINISTIC_MODELS)
+    invalid_models = [m for m in model if m not in valid_models]
+    if invalid_models:
+        return (
+            no_update,
+            f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
+            True,
+        )
+
+    # Validate variable selection
+    valid_vars = get_valid_values(DETERMINISTIC_VARS)
+    if variable not in valid_vars:
+        return (
+            no_update,
+            "The selected variable is no longer available. Please select a different one.",
             True,
         )
 
