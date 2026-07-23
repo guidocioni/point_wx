@@ -1232,14 +1232,24 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         'wind_speed_10m|time')].resample('1D', on='time').max()
     daily_wind_gusts = data.loc[:, data.columns.str.contains(
         'wind_gusts_10m|time')].resample('1D', on='time').max()
+
+    # Compute daily weather code using mode (most frequent) instead of median
+    # First, use resample to get mode for each day
     daily_wcode_deterministic = data_deterministic.loc[:, data_deterministic.columns.str.contains(
-        'weather_code|time')].resample('1D', on='time').median()
-    # On days with at least 2 hrs of thunderstorms/showers we use the thunderstorms/showers weather code
-    for code in [95, 96, 99, 61, 66, 51]:
-        thunderstorm_days = data_deterministic[data_deterministic['weather_code'] == code]
-        thunderstorm_days = thunderstorm_days.groupby(thunderstorm_days.time.dt.date).weather_code.count()
-        thunderstorm_days = thunderstorm_days[thunderstorm_days >= 2].index
-        daily_wcode_deterministic.loc[thunderstorm_days.astype(str).to_list(), 'weather_code'] = code
+        'weather_code|time')].resample('1D', on='time').apply(
+            lambda x: x.mode()[0] if len(x.mode()) > 0 else np.nan
+        )
+
+    # Severity-based override: if severe weather appears for ≥2 hours, prioritize it
+    # Ordered by severity (most severe first)
+    severe_codes = [99, 95, 96, 82, 67, 65, 81, 63, 80, 75, 73, 71, 66, 61, 56, 53, 51]
+
+    for code in severe_codes:
+        severe_days = data_deterministic[data_deterministic['weather_code'] == code]
+        severe_days = severe_days.groupby(severe_days.time.dt.date).weather_code.count()
+        severe_days = severe_days[severe_days >= 2].index
+        if len(severe_days) > 0:
+            daily_wcode_deterministic.loc[severe_days.astype(str).to_list(), 'weather_code'] = code
 
     daily = daily_tmin.mean(axis=1).to_frame(name='t_min_mean')\
     .merge(daily_tmax.mean(axis=1).to_frame(name='t_max_mean'), left_index=True, right_index=True)\

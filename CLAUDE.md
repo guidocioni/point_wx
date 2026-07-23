@@ -65,4 +65,4 @@ A custom template named `"custom"` is defined in `src/utils/custom_theme.py` and
 
 - DataFrames are passed between callbacks as JSON through `dcc.Store` and re-read with `pd.read_json(StringIO(...), orient="split")`.
 - Errors surface through the shared `error-modal` / `error-message` outputs (using `allow_duplicate=True`), not raised exceptions.
-- No need to test the modifications made, just implement them. They will be verified manually by a human while running a live webserver. No need to run compile to check the syntax as well.
+- Whenever a modification to the code needs to be implemented, isolate the function/code in a test script and perform all tests there before implementing in the main code. Remember to import the app cache so that the data fetching functions work flawlessly.
