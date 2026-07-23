@@ -293,7 +293,6 @@ DETERMINISTIC_MODELS = [
         "items": [
             {"label": "ICON Global (🌍, 11km)", "value": "icon_global"},
             {"label": "IFS (🌍, 9km)", "value": "ecmwf_ifs"},
-            {"label": "IFS (🌍, 25km)", "value": "ecmwf_ifs025"},
             {"label": "AIFS single (🌍, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌍, 25/13km)", "value": "gfs_global"},
             {"label": "AIGFS (🌍, 25km)", "value": "ncep_aigfs025"},
