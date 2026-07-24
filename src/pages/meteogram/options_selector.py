@@ -14,10 +14,10 @@ opts_selector = dbc.Card(
                     "ecmwf_ifs025",
                     "ecmwf_aifs025",
                     "ncep_aigefs025",
+                    "google_weathernext2_ensemble",
                     "icon_global",
                     "icon_eu",
                     "ukmo_global_ensemble_20km",
-                    
                 ],
                 ENSEMBLE_MODELS,
             ),
