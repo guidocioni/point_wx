@@ -59,19 +59,19 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
         )
 
-    # Validate model selection
-    is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
-    if not is_valid:
-        return (
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            error_msg,
-            True,
-        )
+    # # Validate model selection
+    # is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
+    # if not is_valid:
+    #     return (
+    #         no_update,
+    #         no_update,
+    #         no_update,
+    #         no_update,
+    #         no_update,
+    #         no_update,
+    #         error_msg,
+    #         True,
+    #     )
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})

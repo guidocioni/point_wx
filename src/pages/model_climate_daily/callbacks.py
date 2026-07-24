@@ -34,10 +34,12 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
     if n_clicks is None:
         return no_update, no_update, no_update, no_update
 
+    # No need to validate models for the moment (as it is fixed)
+    # TODO But there is a bug in this function to be fixed
     # Validate model selection
-    is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
-    if not is_valid:
-        return no_update, no_update, error_msg, True
+    # is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
+    # if not is_valid:
+    #     return no_update, no_update, error_msg, True
 
     if model == "cerra" and ((year > 2021) or (year < 1985)):
         return (
