@@ -623,10 +623,12 @@ def get_ensemble_data(
         "models": model,
         "forecast_days": forecast_days,
         "cell_selection": cell_selection,
-        "temporal_resolution": "native",
         "start_date": start_date,
         "end_date": end_date
     }
+
+    if decimate:
+        payload["temporal_resolution"] = "native"
 
     if elevation:
         payload["elevation"] = elevation
