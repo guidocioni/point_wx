@@ -28,8 +28,14 @@ def create_options(locations):
     )
 
     def formatter(x):
+        # Add English transliteration if different from native name
+        matching = x.get('matching_name', '')
+        name_display = x['name']
+        if matching and not pd.isna(matching) and matching != x['name']:
+            name_display = f"{x['name']} ({matching})"
+
         return (
-            f"{x['name']}"
+            f"{name_display}"
             f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region'] and 'admin1' in x and not pd.isna(x['admin1']) else ''}"
             f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and 'admin2' in x and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
             f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and 'admin2' in x and 'admin3' in x and pd.isna(x['admin2']) and not pd.isna(x['admin3']) else ''}"
@@ -40,14 +46,23 @@ def create_options(locations):
     locations["label"] = locations.apply(formatter, axis=1)
     locations["id"] = locations["id"].astype(str)
 
-    # Create options with accent-stripped search field for better dropdown search
-    # The 'search' property is used by Dash dropdown for filtering
+    # Create options with search field for better dropdown filtering
+    # The 'search' property is used by Dash dropdown for matching user input
     options = []
     for _, row in locations.iterrows():
+        # Use matching_name if available (Latin transliteration for CJK/Cyrillic)
+        # Otherwise strip accents from the name
+        matching = row.get("matching_name", "")
+        # Handle NaN/None/empty cases - pandas can convert empty strings to NaN
+        if pd.isna(matching) or not matching:
+            search_text = str(row["name"])
+        else:
+            search_text = str(matching)
+
         option = {
             "value": row["id"],
             "label": row["label"],
-            "search": unidecode(row["name"])  # Strip accents from city name for search
+            "search": unidecode(search_text)  # Strip accents for search
         }
         options.append(option)
 

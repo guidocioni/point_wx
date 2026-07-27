@@ -190,9 +190,14 @@ def get_locations_mapbox(name, count=10, proximity=None):
             lats.append(latitude)
             lons.append(longitude)
 
+            # Store matching_text for search purposes (Latin transliteration)
+            # Keeps native name for display, but allows "Sapporo" to find "札幌市"
+            matching_name = feature.get('matching_text', '')
+
             loc = {
                 'id': feature['id'],
                 'name': feature['text'],
+                'matching_name': matching_name,  # For dropdown search field
                 'longitude': longitude,
                 'latitude': latitude,
                 'elevation': 0,  # Will be filled in batch below
