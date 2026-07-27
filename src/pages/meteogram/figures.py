@@ -254,6 +254,17 @@ def make_barplot_timeseries(
 
 
 def make_subplot_figure(data, title=None, clima=None):
+    # For very dry locations, filter out negligible precipitation to avoid clutter
+    PRECIP_DISPLAY_THRESHOLD = 0.5  # mm
+    if data['daily_prec_max'].max() < PRECIP_DISPLAY_THRESHOLD:
+        # Set all precipitation to 0 for very dry locations
+        data = data.copy()
+        data['daily_prec_mean'] = 0
+        data['daily_prec_min'] = 0
+        data['daily_prec_max'] = 0
+        data['prec_prob'] = 0
+        data['snow_prob'] = 0
+
     traces_temp = make_temp_timeseries(data, clima=clima)
     traces_prec = make_barplot_timeseries(
         data,
@@ -415,37 +426,8 @@ def make_subplot_figure(data, title=None, clima=None):
         col=1,
     )
 
-    # Predictability index icons - positioned to the right of weather icons
-    def get_predictability_icon(category):
-        icons = {
-            'high': '🎯',
-            'medium': '⚠️',
-            'low': '❓'
-        }
-        return icons.get(category, '')
-
-    # Shift right by 5 hours to place icons next to weather icons
-    x_offset = pd.to_timedelta("5h")
-    predictability_y = 1.7
-    fig.add_trace(
-        go.Scatter(
-            x=data["time"] + x_offset,
-            y=[predictability_y] * len(data["time"]),
-            mode="text",
-            text=data["predictability_category"].apply(get_predictability_icon),
-            textposition="middle center",
-            textfont=dict(size=14),
-            name="Predictability",
-            customdata=data[["predictability_score", "predictability_category"]].values,
-            hovertemplate=(
-                "<extra></extra><b>%{x|%a %-d %b}</b>"
-                "<br>Predictability: %{customdata[1]} (%{customdata[0]}/100)"
-            ),
-            showlegend=False,
-        ),
-        row=1,
-        col=1,
-    )
+    # Note: Predictability index computation remains in callbacks.py for future use,
+    # but icons are not displayed in the figure at this time
 
     for _, row in data.iterrows():
         if row["icons"] != "":
@@ -496,6 +478,22 @@ def make_subplot_figure(data, title=None, clima=None):
         zeroline=False
     )
     fig.update_xaxes(showgrid=False, row=1, col=1, minor=dict(showgrid=False))
+
+    # Primary y-axis for precipitation (row 3) - force range to start at 0
+    # When precipitation is filtered to 0, only show the 0 tick label
+    max_precip = data['daily_prec_max'].max()
+    if max_precip < PRECIP_DISPLAY_THRESHOLD:
+        # Very dry: minimal range, only show 0
+        fig.update_yaxes(
+            row=3,
+            col=1,
+            range=[0, 1],
+            tickmode='array',
+            tickvals=[0],
+            ticktext=['0'],
+        )
+
+    # Secondary y-axis for sunshine (row 3)
     fig.update_yaxes(
         row=3,
         col=1,
