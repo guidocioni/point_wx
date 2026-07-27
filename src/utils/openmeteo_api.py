@@ -96,7 +96,23 @@ def get_locations(name, count=10, language='en'):
 @cache.memoize(86400)
 def get_elevation(latitude=53.55, longitude=9.99):
     """
-    Get the elevation of a certain point using the API
+    Get the elevation of a certain point or multiple points using the API.
+
+    Parameters:
+    -----------
+    latitude : float or str
+        Single latitude (float) or comma-separated latitudes (str)
+        e.g., 53.55 or "53.55,48.85,51.51"
+    longitude : float or str
+        Single longitude (float) or comma-separated longitudes (str)
+        e.g., 9.99 or "9.99,2.35,-0.13"
+
+    Returns:
+    --------
+    float or list
+        Single elevation value (float) for single input
+        List of elevation values for batch input
+        None if error or no elevation data
     """
     # Now submit the payload
     payload = {
@@ -109,7 +125,14 @@ def get_elevation(latitude=53.55, longitude=9.99):
         payload).json()
 
     if 'elevation' in resp:
-        return resp['elevation'][0]
+        elevations = resp['elevation']
+        # Return single value if single input, list if batch
+        if isinstance(latitude, str) and ',' in str(latitude):
+            # Batch request - return list
+            return elevations
+        else:
+            # Single request - return first element
+            return elevations[0] if elevations else None
     else:
         return None
 

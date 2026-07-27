@@ -1,12 +1,13 @@
 from dash import callback, Output, Input, State, no_update, html, dcc, clientside_callback
-from utils.openmeteo_api import get_locations, get_elevation
-from utils.mapbox_api import get_place_address_reverse, create_unique_id
+from utils.mapbox_api import get_locations_mapbox, get_place_address_reverse, create_unique_id
+from utils.openmeteo_api import get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 from utils.flags import flags_df
 import pandas as pd
 import dash_leaflet as dl
 from io import StringIO
+from unidecode import unidecode
 
 
 def create_options(locations):
@@ -38,11 +39,17 @@ def create_options(locations):
 
     locations["label"] = locations.apply(formatter, axis=1)
     locations["id"] = locations["id"].astype(str)
-    options = (
-        locations[["id", "label"]]
-        .rename(columns={"id": "value"})
-        .to_dict(orient="records")
-    )
+
+    # Create options with accent-stripped search field for better dropdown search
+    # The 'search' property is used by Dash dropdown for filtering
+    options = []
+    for _, row in locations.iterrows():
+        option = {
+            "value": row["id"],
+            "label": row["label"],
+            "search": unidecode(row["name"])  # Strip accents from city name for search
+        }
+        options.append(option)
 
     return options
 
@@ -92,7 +99,7 @@ def suggest_locs_dropdown(value, locations_favorites):
     """
     if value is None or len(value) < 4:
         raise PreventUpdate
-    locations = get_locations(value, count=5) # Get up to a maximum of 5 options
+    locations = get_locations_mapbox(value, count=5)
     if locations_favorites:
         locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
         locations = pd.concat([locations, locations_favorites])
