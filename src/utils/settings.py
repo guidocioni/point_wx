@@ -94,9 +94,15 @@ def filter_options(values_to_find, options):
 def get_valid_values(options):
     """
     Extract all valid values from a model/variable options list.
-    Used for validating cached selections against current options.
+    Options may be a flat list of {"label", "value"} dicts, or a grouped
+    list of {"group", "items"} dicts. Used for validating cached selections
+    against current options.
     """
-    return [item["value"] for group in options for item in group["items"]]
+    return [
+        item["value"]
+        for group_or_item in options
+        for item in (group_or_item["items"] if "items" in group_or_item else [group_or_item])
+    ]
 
 
 def validate_model_selection(model, options, model_type="model"):
