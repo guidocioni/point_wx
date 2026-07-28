@@ -1,12 +1,13 @@
 from dash import callback, Output, Input, State, no_update, html, dcc, clientside_callback
-from utils.openmeteo_api import get_locations, get_elevation
-from utils.mapbox_api import get_place_address_reverse, create_unique_id
+from utils.mapbox_api import get_locations_mapbox, get_place_address_reverse, create_unique_id
+from utils.openmeteo_api import get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 from utils.flags import flags_df
 import pandas as pd
 import dash_leaflet as dl
 from io import StringIO
+from unidecode import unidecode
 
 
 def create_options(locations):
@@ -27,8 +28,14 @@ def create_options(locations):
     )
 
     def formatter(x):
+        # Add English transliteration if different from native name
+        matching = x.get('matching_name', '')
+        name_display = x['name']
+        if matching and not pd.isna(matching) and matching != x['name']:
+            name_display = f"{x['name']} ({matching})"
+
         return (
-            f"{x['name']}"
+            f"{name_display}"
             f"{', '+ x['admin1'] if x['duplicated_name'] and not x['duplicated_name_and_region'] and 'admin1' in x and not pd.isna(x['admin1']) else ''}"
             f"{', '+ x['admin2'] if x['duplicated_name_and_region'] and 'admin2' in x and not pd.isna(x['admin2']) and x['name'] != x['admin2'] else ''}"
             f"{', '+ x['admin3'] if x['duplicated_name_and_region'] and 'admin2' in x and 'admin3' in x and pd.isna(x['admin2']) and not pd.isna(x['admin3']) else ''}"
@@ -38,11 +45,26 @@ def create_options(locations):
 
     locations["label"] = locations.apply(formatter, axis=1)
     locations["id"] = locations["id"].astype(str)
-    options = (
-        locations[["id", "label"]]
-        .rename(columns={"id": "value"})
-        .to_dict(orient="records")
-    )
+
+    # Create options with search field for better dropdown filtering
+    # The 'search' property is used by Dash dropdown for matching user input
+    options = []
+    for _, row in locations.iterrows():
+        # Use matching_name if available (Latin transliteration for CJK/Cyrillic)
+        # Otherwise strip accents from the name
+        matching = row.get("matching_name", "")
+        # Handle NaN/None/empty cases - pandas can convert empty strings to NaN
+        if pd.isna(matching) or not matching:
+            search_text = str(row["name"])
+        else:
+            search_text = str(matching)
+
+        option = {
+            "value": row["id"],
+            "label": row["label"],
+            "search": unidecode(search_text)  # Strip accents for search
+        }
+        options.append(option)
 
     return options
 
@@ -92,7 +114,7 @@ def suggest_locs_dropdown(value, locations_favorites):
     """
     if value is None or len(value) < 4:
         raise PreventUpdate
-    locations = get_locations(value, count=5) # Get up to a maximum of 5 options
+    locations = get_locations_mapbox(value, count=5)
     if locations_favorites:
         locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
         locations = pd.concat([locations, locations_favorites])

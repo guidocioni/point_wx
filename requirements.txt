@@ -13,3 +13,4 @@ plotly
 pytz
 requests
 Pillow
+unidecode
