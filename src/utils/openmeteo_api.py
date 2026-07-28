@@ -1192,6 +1192,8 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
         deterministic_model = "ecmwf_aifs025_single"
     elif model == "ncep_aigefs025":
         deterministic_model = "gfs_seamless"
+    elif model == "google_weathernext2_ensemble":
+        deterministic_model = "gfs_seamless"
     data_deterministic = get_forecast_data(
         latitude=latitude,
         longitude=longitude,
