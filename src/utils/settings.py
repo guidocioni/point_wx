@@ -172,10 +172,13 @@ ENSEMBLE_MODELS = [
     {
         "group": "Regional",
         "items": [
+
             {"label": "ICON-EU-EPS (🇪🇺, 13km, 🎲 40)", "value": "icon_eu"},
+            {"label": "IFS Europe (🇪🇺, 9km, 🎲 51)", "value": "ecmwf_ifs_europe_ensemble"},
+            {"label": "AIFS Europe (🇪🇺, 31km, 🎲 51)", "value": "ecmwf_aifs_europe_ensemble"},
+            {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "icon_d2"},
             {"label": "ICON-CH1-EPS (🇨🇭, 1km, 🎲 11)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2-EPS (🇨🇭, 2km, 🎲 21)", "value": "meteoswiss_icon_ch2"},
-            {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "icon_d2"},
             {"label": "MOGREPS-UK (🌍, 2km, 🎲 3)", "value": "ukmo_uk_ensemble_2km"},
         ],
     },
@@ -191,6 +194,8 @@ ENSEMBLE_MODELS = [
 MODEL_META_MAP = {
     "ecmwf_ifs025": "ecmwf_ifs025_ensemble",
     "ecmwf_aifs025": "ecmwf_aifs025_ensemble",
+    "ecmwf_ifs_europe_ensemble": "ecmwf_ifs_europe_ensemble",
+    "ecmwf_aifs_europe_ensemble": "ecmwf_aifs_europe_ensemble",
     "gem_global": "cmc_gem_geps",
     "icon_global": "dwd_icon_eps",
     "gfs025": "ncep_gefs025",
@@ -479,6 +484,18 @@ TEMPORAL_RESOLUTION_SPEC = {
     "ecmwf_ifs025": [
         (0, 144, "3h"),    # 3-hourly 0-144h
         (144, 360, "6h"),  # 6-hourly 144-360h
+    ],
+
+    # ECMWF IFS Europe - 1-hourly to 90h, 3-hourly to 144h, 6-hourly to 360h
+    "ecmwf_ifs_europe_ensemble": [
+        (0, 90, "1h"),     # Hourly 0-90h
+        (90, 144, "3h"),   # 3-hourly 90-144h
+        (144, 360, "6h"),  # 6-hourly 144-360h
+    ],
+
+    # ECMWF AIFS Europe - 6-hourly throughout (constant, could be omitted but included for clarity)
+    "ecmwf_aifs_europe_ensemble": [
+        (0, 360, "6h"),    # 6-hourly 0-360h
     ],
 
     # GFS 0.5 - transitions to 6-hourly

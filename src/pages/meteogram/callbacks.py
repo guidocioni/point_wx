@@ -33,6 +33,8 @@ def generate_figure(n_clicks, locations, location, model):
             "gfs_seamless",
             "ecmwf_ifs025",
             "ecmwf_aifs025",
+            "ecmwf_ifs_europe_ensemble",
+            "ecmwf_aifs_europe_ensemble",
             "ncep_aigefs025",
             "google_weathernext2_ensemble",
             "icon_global",

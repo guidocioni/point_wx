@@ -358,7 +358,7 @@ def get_ensemble_daily_data(latitude=53.55,
             forecast_days = 6
         elif model == "icon_d2":
             forecast_days = 3
-        elif model in ["gfs_seamless", "gfs05", "gem_global"]:
+        elif model in ["gfs_seamless", "gfs05", "gem_global", "ecmwf_ifs_europe_ensemble", "ecmwf_aifs_europe_ensemble"]:
             forecast_days = 16
         elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
             forecast_days = 11
@@ -620,7 +620,7 @@ def get_ensemble_data(
             forecast_days = 3
         elif model == "gfs05":
             forecast_days = 35
-        elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025", "google_weathernext2_ensemble", "ecmwf_ifs025", "ecmwf_aifs025"]:
+        elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025", "google_weathernext2_ensemble", "ecmwf_ifs025", "ecmwf_aifs025", "ecmwf_ifs_europe_ensemble", "ecmwf_aifs_europe_ensemble"]:
             forecast_days = 16
         elif model in ["gfs025", "bom_access_global_ensemble"]:
             forecast_days = 11
@@ -1212,6 +1212,10 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     elif model == "ukmo_global_ensemble_20km":
         deterministic_model = "ukmo_seamless"
     elif model == "ecmwf_aifs025":
+        deterministic_model = "ecmwf_aifs025_single"
+    elif model == "ecmwf_ifs_europe_ensemble":
+        deterministic_model = "ecmwf_ifs"
+    elif model == "ecmwf_aifs_europe_ensemble":
         deterministic_model = "ecmwf_aifs025_single"
     elif model == "ncep_aigefs025":
         deterministic_model = "gfs_seamless"
