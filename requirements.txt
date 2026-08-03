@@ -12,5 +12,4 @@ pandas
 plotly
 pytz
 requests
-Pillow
 unidecode

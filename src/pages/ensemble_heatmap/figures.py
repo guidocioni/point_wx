@@ -3,10 +3,13 @@ import plotly.express as px
 import pandas as pd
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
+from utils.weather_emoji import get_weather_emoji_series
 import plotly.graph_objects as go
 from copy import deepcopy
 
 def make_heatmap(df, var, title=None):
+    # Create readable variable name for hover
+    var_display = var.replace("_", " ").title()
     if var in [
         "temperature_2m",
         "temperature_850hPa",
@@ -71,7 +74,7 @@ def make_heatmap(df, var, title=None):
         )
         fig.update_traces(
             customdata=hover_text,
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}<br>Type = %{customdata}"
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>Member %{y}<br>Type = %{customdata}"
         )
     elif var != "weather_code":
         fig = px.imshow(
@@ -84,56 +87,64 @@ def make_heatmap(df, var, title=None):
             origin="lower",
         )
         fig.update_traces(
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}<br>Value = %{z}"
+            hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Member %{{y}}<br>{var_display} = %{{z}}"
         )
     else:
-        from PIL import Image
+        # Weather code heatmap with unicode emoji (much faster than PNG loop)
         from utils.figures_utils import get_weather_icons
-        import plotly.graph_objects as go
 
         fig = go.Figure()
+
+        # Get weather code columns for all members
+        members_vars = df.loc[:, df.columns.str.match(columns_regex)].columns.to_list()
+        n_members = len(members_vars)
+
+        # Adaptive resampling based on data size and number of members
         if df.attrs["request"]["models"] == "icon_d2":
             freq = "2h"
         elif (df.shape[0] > 47) & (df.shape[0] <= 100):
             freq = "6h"
         else:
             freq = "12h"
+
+        # Further decimation for many members to prevent overlap
+        if n_members > 30:
+            freq = "12h"  # More aggressive for large ensembles
+
         df = df.resample(freq, on="time").max().reset_index()
         times = df["time"]
-        # Loop through members and times to add images dynamically
-        members_vars = df.loc[:, df.columns.str.match(columns_regex)].columns.to_list()
+
+        # Adaptive emoji size based on number of members
+        if n_members <= 10:
+            emoji_size = 24
+        elif n_members <= 30:
+            emoji_size = 18
+        elif n_members <= 50:
+            emoji_size = 14
+        else:
+            emoji_size = 12
+
+        # Add one scatter trace per member row with emoji text
         for i, var in enumerate(members_vars):
-            # Extract icons for the current model
-            df = get_weather_icons(
-                df,
-                var=var,
-            )
+            # Get weather descriptions for hover
+            df_with_descriptions = get_weather_icons(df.copy(), var=var)
+
+            # Convert weather codes to emoji
+            weather_emoji = get_weather_emoji_series(df[var])
+
             fig.add_trace(
                 go.Scatter(
                     x=times,
                     y=[y_positions[i]] * len(times),
                     mode="text",
-                    text="",
+                    text=weather_emoji,
+                    textfont=dict(size=emoji_size),
+                    customdata=df_with_descriptions["weather_descriptions"],
                     name="",
                     showlegend=False,
+                    hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>Member %{y}<br>%{customdata}",
                 ),
             )
-            for _, row in df.iterrows():
-                if row["icons"] != "":
-                    fig.add_layout_image(
-                        dict(
-                            source=Image.open(row["icons"]),
-                            x=row["time"],
-                            y=y_positions[i],
-                            sizex=12 * 24 * 10 * 60 * 100,
-                            sizey=0.5,
-                            xref="x",
-                            yref="y",
-                            xanchor="center",
-                            yanchor="middle",
-                            layer="above",
-                        ),
-                    )
 
         fig.update_yaxes(range=[y_positions[0] - 0.5, y_positions[-1] + 0.2])
 

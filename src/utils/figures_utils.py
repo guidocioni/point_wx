@@ -66,19 +66,19 @@ def add_attribution(fig, text="Created with PointWx - hh.guidocioni.it/pointwx")
 
 def get_weather_icons(
     df,
-    icons_path=f"{ASSETS_DIR}/yrno_png_reduced/",
     mapping_path=f"{ASSETS_DIR}/weather_codes.json",
     var="weather_code",
 ):
     """
-    Given an input dataframe with columns 'weather_code' and 'is_day'
-    creates two new columns containing the path to the image describing
-    that condition.
+    Given an input dataframe with a weather_code column,
+    adds a 'weather_descriptions' column with human-readable descriptions.
+
+    Note: This function is kept for backward compatibility but no longer
+    creates 'icons' column (now using unicode emoji via weather_emoji.py).
     """
     with open(mapping_path) as f:
         j = json.load(f)
 
-    icons = []
     descriptions = []
     for _, row in df.iterrows():
         time_day = "day"
@@ -88,13 +88,10 @@ def get_weather_icons(
             else:
                 time_day = "night"
         if not np.isnan(row[var]) and str(int(row[var])) in j.keys():
-            icons.append(icons_path + j[str(int(row[var]))][time_day]["image"])
             descriptions.append(j[str(int(row[var]))][time_day]["description"])
         else:
-            icons.append("")
             descriptions.append("")
 
-    df["icons"] = icons
     df["weather_descriptions"] = descriptions
 
     return df

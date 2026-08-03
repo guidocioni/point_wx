@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.settings import images_config
 from utils.figures_utils import add_attribution
-from PIL import Image
+from utils.weather_emoji import get_weather_emoji_series
 import pandas as pd
 
 # Beaufort-style wind speed/gust color scale (km/h), mapped over cmin=0/cmax=100
@@ -375,12 +375,28 @@ def make_subplot_figure(data, title=None, clima=None):
             y=[2.5] * len(data["time"]),
             mode="lines+text",
             text=data["time"].dt.strftime("<b>%a</b><br>%-d-%-m"),
-            customdata=data["weather_descriptions"],
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b><br>%{customdata}",
             textposition="top center",
             textfont=dict(color="rgba(1, 1, 1, 1)", size=12),
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
+            hoverinfo='skip',
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Weather icons as unicode emoji (single scatter trace, much faster than PNG loop)
+    weather_emoji = get_weather_emoji_series(data["weather_code"])
+    fig.add_trace(
+        go.Scatter(
+            x=data["time"],
+            y=[1] * len(data["time"]),
+            mode="text",
+            text=weather_emoji,
+            textfont=dict(size=28),
+            customdata=data["weather_descriptions"],
+            hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b><br>%{customdata}",
             showlegend=False,
         ),
         row=1,
@@ -425,27 +441,6 @@ def make_subplot_figure(data, title=None, clima=None):
         row=1,
         col=1,
     )
-
-    # Note: Predictability index computation remains in callbacks.py for future use,
-    # but icons are not displayed in the figure at this time
-
-    for _, row in data.iterrows():
-        if row["icons"] != "":
-            fig.add_layout_image(
-                dict(
-                    source=Image.open(row["icons"]),
-                    xref="x",
-                    x=row["time"],
-                    yref="y",
-                    y=1,
-                    sizex=12 * 24 * 10 * 60 * 1000,
-                    sizey=1.5,
-                    xanchor="center",
-                    yanchor="bottom",
-                ),
-                row=1,
-                col=1,
-            )
 
     fig.update_layout(
         modebar=dict(orientation="v"),

@@ -5,12 +5,15 @@ from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, wrap_comma_separated,
     estimate_legend_rows,
 )
+from utils.weather_emoji import get_weather_emoji_series
 import plotly.graph_objects as go
 import plotly.express as px
 import plotly.io as pio
 
 
 def make_heatmap(df, var, models, title=None):
+    # Create readable variable name for hover
+    var_display = var.replace("_", " ").title()
     if var in ['temperature_2m', 'temperature_850hPa', 'dew_point_2m', 'apparent_temperature', 'surface_temperature', 'temperature_500hPa', 'soil_temperature_0cm', 'soil_temperature_6cm', 'soil_temperature_18cm', 'soil_temperature_54cm']:
         cmap = 'RdBu_r'
     elif var in ['cloudcover', 'cloud_cover_low', 'cloud_cover_mid', 'cloud_cover_high']:
@@ -54,54 +57,62 @@ def make_heatmap(df, var, models, title=None):
             color_continuous_scale=cmap,
             origin='lower')
         fig.update_traces(
-            hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b><br>%{y}<br>Value = %{z}")
+            hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Model: %{{y}}<br>{var_display} = %{{z}}")
         height=600
         showgrid=True
     else:
-        from PIL import Image
+        # Weather code heatmap with unicode emoji (much faster than PNG loop)
         from utils.figures_utils import get_weather_icons
+
         fig = go.Figure()
-        # TODO, adjust the interval here so that it uses the best option for the range of time!
-        df = df.resample("6h", on="time").max().reset_index()
+
+        n_models = len(models)
+
+        # Adaptive resampling - more aggressive for many models
+        if n_models > 10:
+            df = df.resample("12h", on="time").max().reset_index()
+        else:
+            df = df.resample("6h", on="time").max().reset_index()
+
         times = df['time']
-        # Loop through models and times to add images dynamically
+
+        # Adaptive emoji size based on number of models
+        if n_models <= 5:
+            emoji_size = 24
+        elif n_models <= 10:
+            emoji_size = 20
+        elif n_models <= 15:
+            emoji_size = 16
+        else:
+            emoji_size = 14
+
+        # Add one scatter trace per model row with emoji text
         for i, model in enumerate(models):
             if len(models) > 1:
                 var_weather_model = "weather_code_" + model
             else:
                 var_weather_model = "weather_code"
-            # Extract icons for the current model
-            df = get_weather_icons(
-                df,
-                var=var_weather_model
-            )
+
+            # Get weather descriptions for hover
+            df_with_descriptions = get_weather_icons(df.copy(), var=var_weather_model)
+
+            # Convert weather codes to emoji
+            weather_emoji = get_weather_emoji_series(df[var_weather_model])
+
             fig.add_trace(
                 go.Scatter(
                     x=times,
                     y=[y_positions[i]] * len(times),
                     mode="text",
-                    text="",
+                    text=weather_emoji,
+                    textfont=dict(size=emoji_size),
+                    customdata=df_with_descriptions["weather_descriptions"],
                     name="",
                     showlegend=False,
+                    hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Model: {model}<br>%{{customdata}}",
                 ),
             )
-            for _, row in df.iterrows():
-                if row["icons"] != "":
-                    fig.add_layout_image(
-                        dict(
-                            source=Image.open(row["icons"]),
-                            x=row["time"],
-                            y=y_positions[i],
-                            sizex=12 * 24 * 10 * 60 * 100,
-                            sizey=.5,
-                            xref="x",
-                            yref="y",
-                            xanchor="center",
-                            yanchor="middle",
-                            layer='above'
-                        ),
-                    )
-                    
+
         height=len(y_positions) * 120
         showgrid=False
         fig.update_yaxes(
