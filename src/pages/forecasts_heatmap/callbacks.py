@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_forecast_data
 from utils.custom_logger import logging
 from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, get_valid_values
@@ -9,6 +10,7 @@ from io import StringIO
 @callback(
     [
         Output(dict(type="figure", id="deterministic-heatmap"), "figure"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -22,15 +24,17 @@ from io import StringIO
         State("forecast-days", "value"),
         State("heatmap-line-plot-switch", "checked"),
         State("minutely-15-switch", "checked"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, _is_heatmap, minutes_15_):
+def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, _is_heatmap, minutes_15_, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        raise PreventUpdate
 
     if len(model) == 0:
         return (
+            no_update,
             no_update,
             "You need to select a least one model!",
             True,
@@ -42,6 +46,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
     if invalid_models:
         return (
             no_update,
+            no_update,
             f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
             True,
         )
@@ -50,6 +55,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
     valid_vars = get_valid_values(DETERMINISTIC_VARS)
     if variable not in valid_vars:
         return (
+            no_update,
             no_update,
             "The selected variable is no longer available. Please select a different one.",
             True,
@@ -74,10 +80,15 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)"
         )
+
         if _is_heatmap:
-            return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
+            figure = make_heatmap(data, var=variable, title=loc_label, models=model)
         else:
-            return make_lineplot(data, var=variable, models=model, title=loc_label), None, False
+            figure = make_lineplot(data, var=variable, models=model, title=loc_label)
+
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["deterministic-heatmap"] = figure
+        return figure, figures_data, None, False
 
     except Exception as e:
         logging.error(
@@ -85,9 +96,27 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
         )
         return (
             no_update,
+            no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
         )
+
+
+@callback(
+    [
+        Output(dict(type="figure", id="deterministic-heatmap"), "figure", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'deterministic-heatmap'}, "is_open", allow_duplicate=True),
+    ],
+    Input("variable-selection-deterministic-heatmap", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figure and open collapse when returning to this page"""
+    if not figures_store or "deterministic-heatmap" not in figures_store:
+        raise PreventUpdate
+
+    return figures_store["deterministic-heatmap"], True
 
 
 # Remove focus from dropdown once an element has been selected

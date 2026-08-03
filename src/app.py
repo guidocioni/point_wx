@@ -91,6 +91,8 @@ def serve_layout():
                 dcc.Store(id="locations-favorites", storage_type="local"),
                 dcc.Store(id="client-details", data={}, storage_type="session"),
                 dcc.Store(id="client-first-visit", storage_type="local"),
+                dcc.Store(id="figures-store", data={}),  # memory storage (default) - clears on page refresh
+                dcc.Store(id="should-scroll", data=False),  # track whether to scroll on figure update
                 dcc.Store(id='dummy-data'),
                 dbc.Modal(
                     [
@@ -282,10 +284,7 @@ def activate_submit_button(location):
 
 
 @callback(
-    Output(
-        {"type": "fade", "index": MATCH},
-        "is_open",
-    ),
+    Output({"type": "fade", "index": MATCH}, "is_open"),
     Input({"type": "submit-button", "index": MATCH}, "n_clicks"),
     State({"type": "fade", "index": MATCH}, "is_open"),
     prevent_initial_call=True,
@@ -304,6 +303,18 @@ def toggle_fade(n, is_open):
     if n:
         return True
     return False
+
+
+@callback(
+    Output("should-scroll", "data", allow_duplicate=True),
+    Input({"type": "submit-button", "index": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def enable_scroll_on_submit(n_clicks):
+    """Set scroll flag to True when any submit button is clicked"""
+    if any(n_clicks):
+        return True
+    raise PreventUpdate
 
 
 '''
@@ -330,17 +341,21 @@ clientside_callback(
 
 
 '''
-Every time the figure is ready, scroll to it.
+Every time the figure is ready, scroll to it - but only if triggered by Submit button,
+not when restoring from cache.
 This involved some trickery because pattern matching callback does not
 really play well with JS, so we needed to extract the right id of the element
 for the scrollIntoView function to work.
 '''
 clientside_callback(
     """
-    function(figure_data, element_id) {
-        // console.log("Triggered clientside callback");
+    function(figure_data, element_id, should_scroll) {
+        // console.log("Triggered clientside callback, should_scroll:", should_scroll);
+        if (!should_scroll) {
+            return [window.dash_clientside.no_update, false];
+        }
         if (!figure_data || figure_data[0] === undefined || figure_data[0] === null) {
-            return window.dash_clientside.no_update;
+            return [window.dash_clientside.no_update, false];
         }
         // console.log(figure_data);
         element_id = element_id[0];
@@ -358,14 +373,20 @@ clientside_callback(
                     targetElement.scrollIntoView({ behavior: 'smooth' });
                 }, 200);
             }
-        }, 500); // Wait 1 second before retrieving the element
+        }, 500); // Wait 0.5 second before retrieving the element
 
-        return null;
+        return [null, false];  // Reset scroll flag after scrolling
     }
     """,
-    Output("dummy-data", "data"),
+    [
+        Output("dummy-data", "data"),
+        Output("should-scroll", "data", allow_duplicate=True),
+    ],
     Input(dict(type="figure", id=ALL), "figure"),
-    State(dict(type="figure", id=ALL), "id"),
+    [
+        State(dict(type="figure", id=ALL), "id"),
+        State("should-scroll", "data"),
+    ],
     prevent_initial_call=True,
 )
 

@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_vertical_data
 from utils.custom_logger import logging
 from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
@@ -19,6 +20,7 @@ except ImportError:
 @callback(
     [
         Output(dict(type="figure", id="vertical"), "figure"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -30,17 +32,18 @@ except ImportError:
         State("from-now-switch", "checked"),
         State("heatmap-skewt-plot-switch", "checked"),
         State("forecast-days", "value"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, days_):
+def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, days_, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        raise PreventUpdate
 
     # Validate model selection
     is_valid, error_msg = validate_model_selection(model, DETERMINISTIC_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True
+        return no_update, no_update, error_msg, True
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -103,17 +106,13 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
         )
 
         if heatmap_:
-            return (
-                make_figure_vertical(time_axis, vertical_levels, arrs, title=loc_label),
-                None,
-                False,
-            )
+            figure = make_figure_vertical(time_axis, vertical_levels, arrs, title=loc_label)
         else:
-            return (
-                make_figure_skewt(df_merged, title=loc_label),
-                None,
-                False,
-            )
+            figure = make_figure_skewt(df_merged, title=loc_label)
+
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["vertical"] = figure
+        return figure, figures_data, None, False
 
     except Exception as e:
         logging.error(
@@ -121,9 +120,27 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
         )
         return (
             no_update,
+            no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
         )
+
+
+@callback(
+    [
+        Output(dict(type="figure", id="vertical"), "figure", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'vertical'}, "is_open", allow_duplicate=True),
+    ],
+    Input("models-selection-vertical", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figure and open collapse when returning to this page"""
+    if not figures_store or "vertical" not in figures_store:
+        raise PreventUpdate
+
+    return figures_store["vertical"], True
 
 
 clientside_callback(

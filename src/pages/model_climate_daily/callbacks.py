@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback, dcc
+from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
@@ -16,6 +17,7 @@ images_config.update({'toImageButtonOptions': {'width': 950, 'height': 500}})
     [
         Output("prec-climate-daily-container", "children"),
         Output("temp-climate-daily-container", "children"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
     ],
@@ -27,12 +29,13 @@ images_config.update({'toImageButtonOptions': {'width': 950, 'height': 500}})
         State("year-selection-climate", "value"),
         State("acc-variable-selection-daily", "value"),
         State("inst-variable-selection-daily", "value"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var):
+def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update, no_update
+        raise PreventUpdate
 
     # No need to validate models for the moment (as it is fixed)
     # TODO But there is a bug in this function to be fixed
@@ -43,6 +46,7 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
 
     if model == "cerra" and ((year > 2021) or (year < 1985)):
         return (
+            no_update,
             no_update,
             no_update,
             "The reanalysis model CERRA only covers dates up to 2021!",
@@ -95,14 +99,34 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
                             style={'height':'45vh', 'minHeight':'300px'}
                         )
 
-
-        return graph_prec, graph_temp, None, False
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["daily"] = {"prec": graph_prec, "temp": graph_temp}
+        return graph_prec, graph_temp, figures_data, None, False
 
     except Exception as e:
         logging.error(
             f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}. Parameters used model={model}, year={year}"
         )
-        return no_update, no_update, "An error occurred when processing the data", True
+        return no_update, no_update, no_update, "An error occurred when processing the data", True
+
+
+@callback(
+    [
+        Output("prec-climate-daily-container", "children", allow_duplicate=True),
+        Output("temp-climate-daily-container", "children", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'daily'}, "is_open", allow_duplicate=True),
+    ],
+    Input("acc-variable-selection-daily", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figures and open collapse when returning to this page"""
+    if not figures_store or "daily" not in figures_store:
+        raise PreventUpdate
+
+    daily_figs = figures_store["daily"]
+    return daily_figs["prec"], daily_figs["temp"], True
 
 
 @callback(
