@@ -32,16 +32,10 @@ def make_heatmap(df, var, models, title=None):
     else:
         cmap = 'RdBu_r'
 
-    # Wrap the model list so a long selection doesn't overflow the subtitle;
-    # no legend needed here since models are already the y-axis categories.
+    # Models are shown as y-axis labels, no need to duplicate in subtitle
     if title is not None:
-        models_line = wrap_comma_separated(models, max_chars=90)
-        n_extra_lines = models_line.count("<br>")
-        margin_t = 40 + n_extra_lines * 14
-        title_text = (
-            f"{title}<br><sup>Variable = <b>{var}</b> | "
-            f"Models = <b>{models_line}</b></sup>"
-        )
+        title_text = f"{title}<br><sup>Variable = <b>{var}</b></sup>"
+        margin_t = 40
     else:
         margin_t = 40
         title_text = None
@@ -53,12 +47,14 @@ def make_heatmap(df, var, models, title=None):
             x=df['time'],
             y=y_positions,
             text_auto=True,
-            aspect='equal',
+            aspect='auto',  # Use auto to allow dynamic height based on number of models
             color_continuous_scale=cmap,
             origin='lower')
         fig.update_traces(
             hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Model: %{{y}}<br>{var_display} = %{{z}}")
-        height=600
+        # Dynamic height based on number of models
+        # Compact rows since model info is shown in hover, not y-axis labels
+        height = 300 + len(models) * 35
         showgrid=True
     else:
         # Weather code heatmap with unicode emoji (much faster than PNG loop)
@@ -123,10 +119,8 @@ def make_heatmap(df, var, models, title=None):
         modebar=dict(orientation='v'),
         dragmode=False,
         xaxis=dict(showgrid=showgrid, tickformat='%a %-d %b\n%H:%M'),
-        yaxis=dict(showgrid=showgrid, fixedrange=True, showticklabels=True,
-                   zeroline=False, ticktext=models, tickmode='array',
-                   tickfont=dict(size=8),
-                   tickvals=y_positions, tickangle=-90),
+        yaxis=dict(showgrid=showgrid, fixedrange=True, showticklabels=False,
+                   zeroline=False, title_text=f"{len(models)} models"),
         height=height,
         margin={"r": 5, "t": margin_t, "l": 5, "b": 5},
         updatemenus=[
