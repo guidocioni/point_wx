@@ -19,6 +19,11 @@ OPENWEATHERMAP_KEY = os.getenv("OPENWEATHERMAP_KEY", None)
 MAPBOX_API_PLACES_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places"
 CACHE_DIR = os.getenv("CACHE_DIR", "/var/cache/pointwx/")
 DISABLE_CACHE = os.getenv("DISABLE_CACHE", "false").lower() == "true"
+# cachelib.FileSystemCache defaults to 500 files, silently evicting the
+# oldest entries once exceeded regardless of their TTL. Override with a
+# much larger cap sized to this app's actual key volume (many
+# locations x models x variables x pages).
+CACHE_THRESHOLD = int(os.getenv("CACHE_THRESHOLD", "10000"))
 
 # This is imported from utils.custom_theme
 # You have to change the theme settings there
@@ -54,7 +59,11 @@ else:
     cache_dir = get_cache_directory()
     if cache_dir:
         logging.info(f"Using {cache_dir} as cache directory")
-        cache = Cache(config={"CACHE_TYPE": "filesystem", "CACHE_DIR": cache_dir})
+        cache = Cache(config={
+            "CACHE_TYPE": "filesystem",
+            "CACHE_DIR": cache_dir,
+            "CACHE_THRESHOLD": CACHE_THRESHOLD,
+        })
     else:
         logging.warning("No writable cache directory found, disabling cache")
         cache = Cache(config={"CACHE_TYPE": "null"})
