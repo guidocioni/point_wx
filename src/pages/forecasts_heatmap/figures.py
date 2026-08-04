@@ -42,16 +42,19 @@ def make_heatmap(df, var, models, title=None):
 
     y_positions = list(range(len(models)))
     if var!='weather_code':
+        z = df.loc[:, df.columns.str.contains(var)].T
         fig = px.imshow(
-            df.loc[:, df.columns.str.contains(var)].T,
+            z,
             x=df['time'],
             y=y_positions,
             text_auto=True,
             aspect='auto',  # Use auto to allow dynamic height based on number of models
             color_continuous_scale=cmap,
             origin='lower')
+        # customdata carries the model name per row since y is numeric (row index), not the label
         fig.update_traces(
-            hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Model: %{{y}}<br>{var_display} = %{{z}}")
+            customdata=[[model] * z.shape[1] for model in models],
+            hovertemplate=f"<extra></extra><b>%{{x|%a %-d %b %H:%M}}</b><br>Model: %{{customdata}}<br>{var_display} = %{{z}}")
         # Dynamic height based on number of models
         # Compact rows since model info is shown in hover, not y-axis labels
         height = 300 + len(models) * 35
