@@ -19,10 +19,11 @@ from io import StringIO
         State("locations-list", "data"),
         State("location-selected", "data"),
         State("models-selection-meteogram", "value"),
+        State("meteogram-viewport-width", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model):
+def generate_figure(n_clicks, locations, location, model, viewport_width):
     if n_clicks is None:
         return no_update, no_update, no_update
 
@@ -90,7 +91,7 @@ def generate_figure(n_clicks, locations, location, model):
             f"<sup>Ens = <b>{model.upper()}</b></sup>"
         )
 
-        return make_subplot_figure(data, title=loc_label, clima=clima), None, False
+        return make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width), None, False
 
     except Exception as e:
         logging.error(
@@ -112,4 +113,15 @@ clientside_callback(
     """,
     Input('models-selection-meteogram', 'value'),
     prevent_initial_call=True
+)
+
+
+clientside_callback(
+    """
+    function(id) {
+        return window.innerWidth;
+    }
+    """,
+    Output('meteogram-viewport-width', 'data'),
+    Input('meteogram-page-div', 'id'),
 )

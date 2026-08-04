@@ -253,7 +253,16 @@ def make_barplot_timeseries(
     return traces
 
 
-def make_subplot_figure(data, title=None, clima=None):
+def make_subplot_figure(data, title=None, clima=None, viewport_width=None):
+    # Scale day-label/weather-icon text down on narrow (mobile) viewports so the
+    # fixed pixel font sizes don't overflow/crowd the day columns.
+    if viewport_width is not None and viewport_width < 576:
+        label_size, emoji_size, wind_size = 8, 14, 10
+    elif viewport_width is not None and viewport_width < 768:
+        label_size, emoji_size, wind_size = 10, 18, 14
+    else:
+        label_size, emoji_size, wind_size = 12, 28, 18
+
     # For very dry locations, filter out negligible precipitation to avoid clutter
     PRECIP_DISPLAY_THRESHOLD = 0.5  # mm
     if data['daily_prec_max'].max() < PRECIP_DISPLAY_THRESHOLD:
@@ -376,7 +385,7 @@ def make_subplot_figure(data, title=None, clima=None):
             mode="lines+text",
             text=data["time"].dt.strftime("<b>%a</b><br>%-d-%-m"),
             textposition="top center",
-            textfont=dict(color="rgba(1, 1, 1, 1)", size=12),
+            textfont=dict(color="rgba(1, 1, 1, 1)", size=label_size),
             line=dict(color="rgba(0, 0, 0, 0)"),
             name="",
             hoverinfo='skip',
@@ -394,7 +403,7 @@ def make_subplot_figure(data, title=None, clima=None):
             y=[1] * len(data["time"]),
             mode="text",
             text=weather_emoji,
-            textfont=dict(size=28),
+            textfont=dict(size=emoji_size),
             customdata=data["weather_descriptions"],
             hovertemplate="<extra></extra><b>%{x|%a %-d %b}</b><br>%{customdata}",
             showlegend=False,
@@ -412,7 +421,7 @@ def make_subplot_figure(data, title=None, clima=None):
             mode="markers",
             name="Dominant direction",
             marker=dict(
-                size=18,
+                size=wind_size,
                 symbol="arrow-wide",
                 angle=data["wind_direction_10m_dominant"] - 180.0,
                 color=data["wind_gusts_10m_max"],

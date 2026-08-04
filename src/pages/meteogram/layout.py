@@ -1,5 +1,5 @@
 import dash
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
@@ -15,7 +15,9 @@ dash.register_page(
 )
 
 layout = html.Div(
-    [
+    id="meteogram-page-div",
+    children=[
+        dcc.Store(id="meteogram-viewport-width"),
         dbc.Row(
             dmc.Accordion(
                 children=[
