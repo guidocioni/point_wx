@@ -219,6 +219,7 @@ def make_lineplot(
     df,
     var,
     title=None,
+    clima=None,
 ):
     fig = go.Figure()
     traces = []
@@ -268,6 +269,43 @@ def make_lineplot(
 
     for trace in traces:
         fig.add_trace(trace)
+
+    if clima is not None and var in clima.columns:
+        # Match climatology's (doy, hour) rows onto an hourly time axis
+        # spanning the actual data's bounds, then add a single overlay trace
+        time_sel = pd.DataFrame(
+            {
+                "time_selection": pd.date_range(
+                    df["time"].min(), df["time"].max(), freq="1h", tz=df.attrs["timezone"]
+                )
+            }
+        )
+        time_sel["time_selection_str"] = time_sel["time_selection"].dt.strftime(
+            "%m%d"
+        ) + time_sel["time_selection"].dt.strftime("%H")
+
+        clima = clima.copy()
+        clima["doy_hour"] = clima["doy"] + clima["hour"].astype(str).str.zfill(2)
+        clima = clima.merge(time_sel, left_on="doy_hour", right_on="time_selection_str")
+        clima = (
+            clima.drop(columns=["doy_hour", "doy", "hour", "time_selection_str"])
+            .sort_values(by="time_selection")
+            .rename(columns={"time_selection": "time"})
+            .interpolate()
+            .round(1)
+        )
+
+        fig.add_trace(
+            go.Scatter(
+                x=clima["time"],
+                y=clima[var],
+                mode="lines",
+                name="ERA5 Climatology",
+                line=dict(width=4, color="rgba(0, 0, 0, 0.3)"),
+                hovertemplate="<b>%{x|%a %-d %b %H:%M}</b>, " + var + " = %{y}",
+                showlegend=False,
+            )
+        )
 
     # Special y-axis handling for precipitation_type
     if var == "precipitation_type":

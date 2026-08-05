@@ -1,7 +1,11 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_forecast_data
+from utils.openmeteo_api import (
+    get_forecast_data,
+    compute_climatology,
+    compute_climatology_zarr,
+)
 from utils.custom_logger import logging
-from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, get_valid_values
+from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, CLIMATOLOGY_VARS, get_valid_values
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -70,6 +74,38 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             minutes_15=minutes_15_
         )
 
+        clima = None
+        if not _is_heatmap:
+            if variable in CLIMATOLOGY_VARS:
+                try:
+                    clima = compute_climatology(
+                        latitude=loc["latitude"].item(),
+                        longitude=loc["longitude"].item(),
+                        variables=variable,
+                        model="era5_seamless",
+                    )
+                except Exception as e:
+                    logging.error(f"Could not fetch climatology for variable={variable}: {e}")
+                    clima = None
+            elif variable == "temperature_850hPa":
+                # BETA, load the climatology of 850hPa T from a zarr, same as the ensemble page
+                try:
+                    clima = compute_climatology_zarr(
+                        latitude=loc["latitude"].item(),
+                        longitude=loc["longitude"].item(),
+                    )
+                    clima["time"] = (
+                        clima["time"]
+                        .dt.tz_localize("UTC")
+                        .dt.tz_convert(data.attrs["timezone"])
+                    )
+                    clima["doy"] = clima["time"].dt.strftime("%m%d")
+                    clima["hour"] = clima["time"].dt.hour
+                    clima = clima.drop(columns=["time"])
+                except Exception as e:
+                    logging.error(f"Could not fetch t850hPa climatology: {e}")
+                    clima = None
+
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)"
@@ -77,7 +113,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
         if _is_heatmap:
             return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
         else:
-            return make_lineplot(data, var=variable, models=model, title=loc_label), None, False
+            return make_lineplot(data, var=variable, models=model, title=loc_label, clima=clima), None, False
 
     except Exception as e:
         logging.error(
