@@ -24,9 +24,9 @@ daily_vars_options = [
     {"label": "Mean Soil Moisture 0-7 cm [m³/m³]", "value": "soil_moisture_0_to_7cm_mean"},
     {"label": "Mean Soil Moisture 7-28 cm [m³/m³]", "value": "soil_moisture_7_to_28cm_mean"},
     {"label": "Mean Soil Moisture 28-100 cm [m³/m³]", "value": "soil_moisture_28_to_100cm_mean"},
-    {"label": "Mean Soil Temperature 0-7 cm [m³/m³]", "value": "soil_temperature_0_to_7cm_mean"},
-    {"label": "Mean Soil Temperature 7-28 cm [m³/m³]", "value": "soil_temperature_7_to_28cm_mean"},
-    {"label": "Mean Soil Temperature 28-100 cm [m³/m³]", "value": "soil_temperature_28_to_100cm_mean"},
+    {"label": "Mean Soil Temperature 0-7 cm [°C]", "value": "soil_temperature_0_to_7cm_mean"},
+    {"label": "Mean Soil Temperature 7-28 cm [°C]", "value": "soil_temperature_7_to_28cm_mean"},
+    {"label": "Mean Soil Temperature 28-100 cm [°C]", "value": "soil_temperature_28_to_100cm_mean"},
 ]
 
 opts_selector = dbc.Card(

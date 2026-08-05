@@ -1148,6 +1148,17 @@ def compute_yearly_comparison(
         additional["time"] = additional["time"].dt.tz_localize(
             None, ambiguous="NaT", nonexistent="NaT"
         )
+
+        # Soil variables are analyzed very differently by the reanalysis and
+        # the forecast model, which introduces a discontinuity at the stitch
+        # point even though the physical state barely changes day to day.
+        # Remove it by shifting the forecast segment to match the reanalysis
+        # level at the boundary.
+        if var.startswith("soil_moisture") or var.startswith("soil_temperature"):
+            if not daily.empty and not additional.empty:
+                offset = daily[var].tail(3).mean() - additional[var].head(3).mean()
+                additional[var] = additional[var] + offset
+
         daily = (
             pd.concat([daily, additional])
             .drop_duplicates(subset=["time"])
