@@ -946,6 +946,15 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     return stats
 
 
+#  Synthetic "accumulated" variables that are not returned directly by open-meteo:
+#  they are derived by thresholding a raw daily variable, then counting/cumsumming
+#  the number of days matching the condition.
+THRESHOLD_ACC_VARS = {
+    "days_tmax_gt_30": {"source_var": "temperature_2m_max", "condition": lambda x: x > 30},
+    "days_tmin_lt_0": {"source_var": "temperature_2m_min", "condition": lambda x: x < 0},
+}
+
+
 @cache.memoize(3600)
 def compute_yearly_accumulation(latitude=53.55,
                                 longitude=9.99,
@@ -957,7 +966,10 @@ def compute_yearly_accumulation(latitude=53.55,
                                 q3=0.95):
     """Compute cumulative sum of some variable over the year"""
     current_year = pd.to_datetime("now", utc=True).year
-    
+
+    threshold_spec = THRESHOLD_ACC_VARS.get(var)
+    fetch_var = threshold_spec["source_var"] if threshold_spec else var
+
     # Download static base period for quantiles (fully cacheable)
     base_daily = get_historical_daily_data(
             latitude=latitude,
@@ -965,7 +977,7 @@ def compute_yearly_accumulation(latitude=53.55,
             model=model,
             start_date='1991-01-01',
             end_date='2020-12-31',
-            variables=var)
+            variables=fetch_var)
 
     # Conditionally download the target year if outside the base period
     if year < 1991 or year > 2020:
@@ -976,10 +988,16 @@ def compute_yearly_accumulation(latitude=53.55,
             model=model,
             start_date=f"{year}-01-01",
             end_date=end_dt,
-            variables=var)
+            variables=fetch_var)
         daily = pd.concat([base_daily, target_daily]).drop_duplicates(subset=['time']).reset_index(drop=True)
     else:
         daily = base_daily.copy()
+
+    if threshold_spec:
+        # Turn the raw variable into a 0/1 day-matches-condition indicator,
+        # kept under the requested `var` name so the rest of the pipeline
+        # (cumsum, quantiles, ensemble forecast) can treat it like any other variable.
+        daily[var] = threshold_spec["condition"](daily[fetch_var]).astype(int)
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
@@ -991,15 +1009,19 @@ def compute_yearly_accumulation(latitude=53.55,
                 model="ecmwf_ifs025",
                 latitude=latitude,
                 longitude=longitude,
-                variables=var,
+                variables=fetch_var,
                 start_date=forecast_start.strftime("%Y-%m-%d"),
                 end_date=forecast_end.strftime("%Y-%m-%d"),
             )
             ensemble = ensemble.set_index('time')
             ensemble = ensemble.dropna(how='all')
             # Only select the right variable
-            ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$')]
-            # 
+            ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{fetch_var}$|{fetch_var}_member(0[1-9]|[1-9][0-9])$')]
+            if threshold_spec:
+                # Threshold each ensemble member first, so mean/quantile below give the
+                # expected fraction of members (i.e. probability) matching the condition per day.
+                ensemble = threshold_spec["condition"](ensemble).astype(int)
+            #
             ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
                 ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
                 left_index=True,

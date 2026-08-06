@@ -10,6 +10,8 @@ acc_vars_options = [
     {"label": "Sunshine hours", "value": "sunshine_duration"},
     {"label": "Shortwave radiation [MJ/m²]", "value": "shortwave_radiation_sum"},
     {"label": "Reference Evapotranspiration (ET0) [mm]", "value": "et0_fao_evapotranspiration"},
+    {"label": "Number of days > 30°C", "value": "days_tmax_gt_30"},
+    {"label": "Number of days < 0°C", "value": "days_tmin_lt_0"},
 ]
 daily_vars_options = [
     {"label": "Mean temperature [°C]", "value": "temperature_2m_mean"},
