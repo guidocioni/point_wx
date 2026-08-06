@@ -270,6 +270,85 @@ def make_daily_figure(df, year, var, title=None):
             font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 
+    # Add max and min annotations
+    df_valid = df[df[var].notna()]
+    if not df_valid.empty:
+        max_idx = df_valid[var].idxmax()
+        min_idx = df_valid[var].idxmin()
+        max_value = df_valid.loc[max_idx, var]
+        min_value = df_valid.loc[min_idx, var]
+        max_time = df_valid.loc[max_idx, "time"]
+        min_time = df_valid.loc[min_idx, "time"]
+
+        # Format dates as "day month" (e.g., "15 Aug")
+        max_date_str = pd.to_datetime(max_time).strftime("%d %b")
+        min_date_str = pd.to_datetime(min_time).strftime("%d %b")
+
+        # Determine horizontal positioning: if in first half, arrow to right; if second half, to left
+        time_range = df_valid["time"].max() - df_valid["time"].min()
+        midpoint = df_valid["time"].min() + time_range / 2
+
+        max_ax = 50 if max_time < midpoint else -50
+        min_ax = 50 if min_time < midpoint else -50
+
+        fig.add_annotation(
+            x=max_time,
+            y=max_value,
+            text=f"Max: {max_value:.1f}<br>{max_date_str}",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=1,
+            arrowcolor="#2a3f5f",
+            ax=max_ax,
+            ay=0,
+            font=dict(size=9, color="#2a3f5f"),
+            bgcolor="rgba(255, 255, 255, 0.85)",
+            bordercolor="#2a3f5f",
+            borderwidth=1,
+            borderpad=2,
+        )
+
+        fig.add_annotation(
+            x=min_time,
+            y=min_value,
+            text=f"Min: {min_value:.1f}<br>{min_date_str}",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=1,
+            arrowcolor="#2a3f5f",
+            ax=min_ax,
+            ay=0,
+            font=dict(size=9, color="#2a3f5f"),
+            bgcolor="rgba(255, 255, 255, 0.85)",
+            bordercolor="#2a3f5f",
+            borderwidth=1,
+            borderpad=2,
+        )
+
+        # Calculate and display average anomaly for the year
+        df_anomaly = df_valid.copy()
+        df_anomaly["anomaly"] = df_anomaly[var] - df_anomaly[f"{var}_clima"]
+        avg_anomaly = df_anomaly["anomaly"].mean()
+        anomaly_sign = "+" if avg_anomaly >= 0 else ""
+
+        fig.add_annotation(
+            x=1.0,
+            y=0.96,
+            xref="paper",
+            yref="paper",
+            text=f"Avg Anomaly: {anomaly_sign}{avg_anomaly:.1f}",
+            showarrow=False,
+            font=dict(size=10, color="#2a3f5f"),
+            bgcolor="rgba(255, 255, 255, 0.85)",
+            bordercolor="#2a3f5f",
+            borderwidth=1,
+            borderpad=4,
+            xanchor="right",
+            yanchor="top",
+        )
+
     fig.update_layout(
         modebar=dict(orientation="v"),
         dragmode=False,
