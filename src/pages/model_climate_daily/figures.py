@@ -114,29 +114,63 @@ def make_acc_figure(df, year, var, title=None):
                 )
             # Only add forecast range if the columns exist
             if f"{var}_min_yearly_acc" in df.columns and f"{var}_max_yearly_acc" in df.columns:
+                # Draw full forecast first, then overlay ensemble portion with higher opacity
+                # This avoids gaps at transitions
+
+                # Full forecast with reduced opacity (seasonal level)
                 fig.add_trace(
                     go.Scatter(
                         x=df.dummy_date,
                         y=df[f"{var}_min_yearly_acc"],
                         mode="lines",
-                        name="Forecast q15",
+                        name="Seasonal Forecast q15",
                         line=dict(width=0, color="red"),
                         showlegend=False,
                         hoverinfo="skip"
                     ),
                 )
-
                 fig.add_trace(
                     go.Scatter(
                         x=df.dummy_date,
                         y=df[f"{var}_max_yearly_acc"],
                         mode="lines",
-                        name="Forecast q95",
+                        name="Seasonal Forecast q95",
                         line=dict(width=0, color="red"),
                         showlegend=False,
                         fill="tonexty",
+                        fillcolor="rgba(255, 0, 0, 0.2)",
                     ),
                 )
+
+                # Overlay ensemble portion with higher opacity
+                today = pd.to_datetime("now")
+                ensemble_cutoff = today + pd.Timedelta(days=25)
+                df_ensemble = df[df.dummy_date <= ensemble_cutoff]
+
+                if not df_ensemble.empty and df_ensemble[f"{var}_min_yearly_acc"].notna().any():
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df_ensemble.dummy_date,
+                            y=df_ensemble[f"{var}_min_yearly_acc"],
+                            mode="lines",
+                            name="Ensemble q15",
+                            line=dict(width=0, color="red"),
+                            showlegend=False,
+                            hoverinfo="skip"
+                        ),
+                    )
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df_ensemble.dummy_date,
+                            y=df_ensemble[f"{var}_max_yearly_acc"],
+                            mode="lines",
+                            name="Ensemble q95",
+                            line=dict(width=0, color="red"),
+                            showlegend=False,
+                            fill="tonexty",
+                            fillcolor="rgba(255, 0, 0, .4)",
+                        ),
+                    )
 
                 # Add FORECAST annotation to the right of today's line
                 fig.add_annotation(

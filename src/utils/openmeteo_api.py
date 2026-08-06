@@ -999,7 +999,7 @@ def compute_yearly_accumulation(latitude=53.55,
             ensemble = ensemble.dropna(how='all')
             # Only select the right variable
             ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$')]
-            # 
+            #
             ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
                 ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
                 left_index=True,
@@ -1017,6 +1017,43 @@ def compute_yearly_accumulation(latitude=53.55,
                 f"Cannot add ensemble forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
             )
 
+        # Add seasonal forecast after ensemble for variables that are supported
+        # Store seasonal data to process after accumulation is computed
+        seasonal_data = None
+        seasonal_vars = ['precipitation_sum', 'rain_sum', 'snowfall_sum', 'sunshine_duration',
+                        'shortwave_radiation_sum', 'et0_fao_evapotranspiration']
+        if var in seasonal_vars:
+            try:
+                seasonal_start = daily["time"].max() + pd.to_timedelta("1 day")
+                seasonal_end = f"{year}-12-31"
+
+                seasonal = get_seasonal_forecast_daily_data(
+                    latitude=latitude,
+                    longitude=longitude,
+                    model="ecmwf_seasonal_seamless",
+                    variables=var,
+                    start_date=seasonal_start.strftime("%Y-%m-%d"),
+                    end_date=seasonal_end,
+                )
+                seasonal = seasonal.set_index('time')
+                seasonal = seasonal.dropna(how='all')
+                # Only select the right variable (ensemble members)
+                seasonal = seasonal.loc[:, seasonal.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-4][0-9]|50|51)$')]
+
+                # Store seasonal ensemble data for later processing
+                seasonal_data = seasonal
+
+                # Add just the mean values for now
+                seasonal_processed = seasonal.mean(axis=1).to_frame(name=var).reset_index()
+                seasonal_processed['time'] = seasonal_processed['time'].dt.tz_localize(
+                    None, ambiguous='NaT', nonexistent='NaT')
+
+                daily = pd.concat([daily, seasonal_processed]).drop_duplicates(subset=['time']).reset_index(drop=True)
+            except Exception as e:
+                logging.warning(
+                    f"Cannot add seasonal forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+                )
+
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
     # Compute cumulative sum of the mean first
@@ -1027,6 +1064,7 @@ def compute_yearly_accumulation(latitude=53.55,
         try:
             # Create the forecast min/max yearly accumulation columns
             # The offset should be: the accumulated value just before the first forecast min/max appears
+
             if f"{var}_min" in daily.columns and f"{var}_max" in daily.columns:
                 # Find the first date where min/max forecast data exists
                 first_forecast = daily[daily[f'{var}_min'].notna()]['time'].min()
@@ -1045,6 +1083,62 @@ def compute_yearly_accumulation(latitude=53.55,
                             daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
                                 _var].transform(lambda x: x.cumsum()) + offset
                             daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
+
+            # Process seasonal forecast if it exists
+            if seasonal_data is not None:
+                # Find where the ensemble forecast ends (last day with ensemble min/max data)
+                seasonal_first_date = pd.Timestamp(seasonal_data.index.min()).tz_localize(None)
+                last_before_seasonal = daily[daily['time'] < seasonal_first_date]['time'].max()
+
+                # For the seasonal forecast, we need to offset each percentile separately
+                # to match where the ensemble percentiles end
+                seasonal_accumulated = seasonal_data.cumsum()
+
+                # Get offsets from the ensemble min/max accumulated values
+                if pd.notna(last_before_seasonal):
+                    # Check if ensemble min/max exist
+                    if f'{var}_min_yearly_acc' in daily.columns and f'{var}_max_yearly_acc' in daily.columns:
+                        offset_min_row = daily.loc[daily['time'] == last_before_seasonal, f'{var}_min_yearly_acc']
+                        offset_max_row = daily.loc[daily['time'] == last_before_seasonal, f'{var}_max_yearly_acc']
+
+                        if not offset_min_row.empty and pd.notna(offset_min_row.iloc[0]):
+                            seasonal_offset_min = offset_min_row.iloc[0] if len(offset_min_row) > 1 else offset_min_row.item()
+                        else:
+                            # Fall back to main line if ensemble min doesn't exist
+                            offset_row = daily.loc[daily['time'] == last_before_seasonal, f'{var}_yearly_acc']
+                            seasonal_offset_min = offset_row.iloc[0] if not offset_row.empty else 0
+
+                        if not offset_max_row.empty and pd.notna(offset_max_row.iloc[0]):
+                            seasonal_offset_max = offset_max_row.iloc[0] if len(offset_max_row) > 1 else offset_max_row.item()
+                        else:
+                            # Fall back to main line if ensemble max doesn't exist
+                            offset_row = daily.loc[daily['time'] == last_before_seasonal, f'{var}_yearly_acc']
+                            seasonal_offset_max = offset_row.iloc[0] if not offset_row.empty else 0
+                    else:
+                        # No ensemble forecast, use main line offset
+                        offset_row = daily.loc[daily['time'] == last_before_seasonal, f'{var}_yearly_acc']
+                        seasonal_offset_min = seasonal_offset_max = offset_row.iloc[0] if not offset_row.empty else 0
+                else:
+                    seasonal_offset_min = seasonal_offset_max = 0
+
+                # Compute quantiles from the accumulated trajectories with appropriate offsets
+                seasonal_q15 = (seasonal_accumulated.quantile(0.15, axis=1) + seasonal_offset_min).to_frame(name=f"{var}_min_yearly_acc").reset_index()
+                seasonal_q95 = (seasonal_accumulated.quantile(0.95, axis=1) + seasonal_offset_max).to_frame(name=f"{var}_max_yearly_acc").reset_index()
+                seasonal_q15['time'] = seasonal_q15['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
+                seasonal_q95['time'] = seasonal_q95['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
+
+                # Merge seasonal quantiles into daily dataframe
+                daily = daily.merge(seasonal_q15, on='time', how='left', suffixes=('', '_seasonal'))
+                daily = daily.merge(seasonal_q95, on='time', how='left', suffixes=('', '_seasonal'))
+
+                # Fill in seasonal values where ensemble values are NaN
+                if f'{var}_min_yearly_acc_seasonal' in daily.columns:
+                    daily[f'{var}_min_yearly_acc'] = daily[f'{var}_min_yearly_acc'].fillna(daily[f'{var}_min_yearly_acc_seasonal'])
+                    daily = daily.drop(columns=[f'{var}_min_yearly_acc_seasonal'])
+                if f'{var}_max_yearly_acc_seasonal' in daily.columns:
+                    daily[f'{var}_max_yearly_acc'] = daily[f'{var}_max_yearly_acc'].fillna(daily[f'{var}_max_yearly_acc_seasonal'])
+                    daily = daily.drop(columns=[f'{var}_max_yearly_acc_seasonal'])
+
         except Exception as e:
             logging.warning(
                 f"Cannot add forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
@@ -1187,6 +1281,7 @@ def compute_yearly_comparison(
     # For past years, drop NaN to only show dates with actual data
     daily = daily.merge(clima, right_on='dummy_date',
                         left_on='time', how='right')
+
     if year != current_year:
         daily = daily.dropna()
     else:
@@ -1372,6 +1467,113 @@ def compute_predictability_index(data):
     }, index=data.index)
 
     return result
+
+
+@cache.memoize(21600)
+def get_seasonal_forecast_daily_data(
+    latitude=53.55,
+    longitude=9.99,
+    variables="temperature_2m_mean",
+    timezone='auto',
+    model="ecmwf_seasonal_seamless",
+    forecast_days=None,
+    past_days=None,
+    start_date=None,
+    end_date=None,
+    cell_selection='land',
+    elevation=None
+):
+    """
+    Get seasonal forecast daily data from the seasonal-api endpoint.
+
+    Parameters:
+    -----------
+    latitude : float
+        Geographic latitude
+    longitude : float
+        Geographic longitude
+    variables : str
+        Comma-separated daily variables (e.g., "temperature_2m_mean,precipitation_sum")
+    timezone : str
+        Timezone for output (default: 'auto')
+    model : str
+        Model selection. Options:
+        - 'ecmwf_seasonal_seamless': ECMWF Seasonal Seamless (EC46 + SEAS5, all 51 members) [default]
+        - 'ecmwf_seas5': ECMWF SEAS5 (all 51 members)
+        - 'ecmwf_ec46': ECMWF EC46 (all 51 members)
+        - 'ecmwf_seasonal_ensemble_mean_seamless': Seamless ensemble mean
+        - 'ecmwf_seas5_ensemble_mean': SEAS5 ensemble mean
+        - 'ecmwf_ec46_ensemble_mean': EC46 ensemble mean
+    forecast_days : int, optional
+        Number of forecast days (default: 180 for ~6 months, max ~210 for 7 months)
+    past_days : int, optional
+        Number of past days to include
+    start_date : str, optional
+        Start date in ISO 8601 format (YYYY-MM-DD)
+    end_date : str, optional
+        End date in ISO 8601 format (YYYY-MM-DD)
+    cell_selection : str
+        Grid cell selection method (default: 'land')
+    elevation : float, optional
+        Elevation in meters
+
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with time and requested variables, includes metadata in .attrs
+
+    Notes:
+    ------
+    - Native temporal resolution is 6-hourly, aggregated to daily here
+    - Data are not bias-corrected and may not accurately reflect local conditions
+    - EC46 updates daily around 20:30 GMT+0; SEAS5 updates monthly on the 5th
+    - Global 36 km spatial resolution
+    """
+    if not forecast_days and not start_date and not end_date:
+        # Default to 6 months (180 days) for seasonal forecasts
+        forecast_days = 180
+
+    payload = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": variables,
+        "timezone": timezone,
+        "models": model,
+        "cell_selection": cell_selection
+    }
+
+    if past_days:
+        payload['past_days'] = past_days
+    if forecast_days:
+        payload['forecast_days'] = forecast_days
+    if start_date:
+        payload['start_date'] = start_date
+    if end_date:
+        payload['end_date'] = end_date
+    if elevation:
+        payload['elevation'] = elevation
+
+    resp = make_request(
+        "https://seasonal-api.open-meteo.com/v1/seasonal",
+        payload
+    ).json()
+
+    data = pd.DataFrame.from_dict(resp['daily'])
+    data['time'] = pd.to_datetime(
+        data['time']
+    ).dt.tz_localize(resp['timezone'], ambiguous='NaT', nonexistent='NaT')
+
+    # Units conversion (consistent with other forecast functions)
+    for col in data.columns[data.columns.str.contains('snow_depth')]:
+        data[col] = data[col] * 100.  # m to cm
+    for col in data.columns[data.columns.str.contains('sunshine_duration')]:
+        data[col] = data[col] / 3600.  # s to hrs
+
+    # Add metadata (experimental)
+    data.attrs = {x: resp[x] for x in resp if x not in ["hourly", "daily", "six_hourly"]}
+    data.attrs["request"] = payload
+
+    return data
 
 
 @cache.memoize(31536000)
