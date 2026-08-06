@@ -88,6 +88,30 @@ def make_acc_figure(df, year, var, title=None):
                         hoverinfo='y'
                     )
                 )
+                # Add text annotation with today's value
+                today_date_str = pd.to_datetime("now").strftime("%d %b")
+                var_label = next(item["label"] for item in acc_vars_options if item["value"] == var)
+                # Extract units from label (text in parentheses)
+                import re
+                units_match = re.search(r'\(([^)]+)\)', var_label)
+                units = units_match.group(1) if units_match else ""
+                fig.add_annotation(
+                    x=pd.to_datetime("now", utc=True),
+                    y=current_value,
+                    text=f"{current_value:.1f} {units}<br>{today_date_str}",
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowsize=1,
+                    arrowwidth=1,
+                    arrowcolor="#2a3f5f",
+                    ax=-50,
+                    ay=-30,
+                    font=dict(size=9, color="#2a3f5f"),
+                    bgcolor="rgba(255, 255, 255, 0.85)",
+                    bordercolor="#2a3f5f",
+                    borderwidth=1,
+                    borderpad=2,
+                )
             # Only add forecast range if the columns exist
             if f"{var}_min_yearly_acc" in df.columns and f"{var}_max_yearly_acc" in df.columns:
                 fig.add_trace(
@@ -112,6 +136,15 @@ def make_acc_figure(df, year, var, title=None):
                         showlegend=False,
                         fill="tonexty",
                     ),
+                )
+
+                # Add FORECAST annotation to the right of today's line
+                fig.add_annotation(
+                    x=pd.to_datetime("now", utc=True),
+                    y=0.2, text='FORECAST', showarrow=False, textangle=90,
+                    xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+                    xshift=15,  # Offset 15 pixels to the right
+                    font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
                 )
         except Exception as e:
             logging.warning(
@@ -267,6 +300,13 @@ def make_daily_figure(df, year, var, title=None):
             y=0.2, text='TODAY', showarrow=False, textangle=-90,
             xref='x', yref='y domain', yanchor='bottom', xanchor='center',
             xshift=-15,  # Offset 15 pixels to the left
+            font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
+        )
+        fig.add_annotation(
+            x=pd.to_datetime("now", utc=True),
+            y=0.2, text='FORECAST', showarrow=False, textangle=90,
+            xref='x', yref='y domain', yanchor='bottom', xanchor='center',
+            xshift=15,  # Offset 15 pixels to the right
             font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 
