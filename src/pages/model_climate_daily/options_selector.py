@@ -7,10 +7,9 @@ acc_vars_options = [
     {"label": "Rain [mm]", "value": "rain_sum"},
     {"label": "Snow [cm]", "value": "snowfall_sum"},
     {"label": "Precipitation hours", "value": "precipitation_hours"},
-    # {"label": "Sunshine hours", "value": "sunshine_duration"}, # When it will be supported by the Ensemble daily aggregation
+    {"label": "Sunshine hours", "value": "sunshine_duration"},
     {"label": "Shortwave radiation [MJ/m²]", "value": "shortwave_radiation_sum"},
-    {"label": "Wind speed maximum [km/h]", "value": "wind_speed_10m_max"},
-    {"label": "Wind speed [km/h]", "value": "wind_speed_10m_mean"},
+    {"label": "Reference Evapotranspiration (ET0) [mm]", "value": "et0_fao_evapotranspiration"},
     {"label": "Mean Cloud Cover [%]", "value": "cloud_cover_mean"},
 ]
 daily_vars_options = [
