@@ -153,6 +153,7 @@ ENSEMBLE_MODELS = [
     {
         "group": "Seamless",
         "items": [
+            # {"label": "Best Match 🌍", "value": "best_match"}, # Disabled until it is fixed upstream in openmeteo
             {"label": "ICON Seamless 🌍", "value": "icon_seamless"},
             {"label": "GFS Seamless 🌍", "value": "gfs_seamless"},
         ],
