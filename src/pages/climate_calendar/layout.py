@@ -1,9 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from components.location_selector import loc_selector
-from dash_iconify import DashIconify
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
@@ -12,23 +11,17 @@ dash.register_page(__name__, path="/calendar", title="Climate calendar")
 
 layout = html.Div(
     [
-        dmc.Accordion(
-            children=[
-                dmc.AccordionItem(
-                    value="help",
-                    children=[
-                        dmc.AccordionControl(
-                            "click to show",
-                            icon=DashIconify(icon="ion:information", width=30),
-                        ),
-                        dmc.AccordionPanel(
-                            dmc.Text(
-                            ),
-                        ),
-                    ],
-                )
-            ],
-            className="mb-2",
+        info_box(
+            [
+                "This page shows a calendar-style heatmap of a chosen variable — months on one axis, "
+                "years on the other — built from reanalysis data. It's a quick way to spot long-term "
+                "trends, anomalies and record months at a glance.",
+                "Use the Graph dropdown to choose what to display: absolute values (e.g. mean "
+                "temperature, accumulated precipitation), day counts (e.g. frost days, hot days, wet "
+                "days), or anomalies and anomaly rankings relative to the model's own climatology.",
+                "The color scale is diverging (red/blue) for anomalies and sequential otherwise; the "
+                "Start year sets how far back the calendar goes.",
+            ]
         ),
         dbc.Row(
             [

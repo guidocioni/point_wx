@@ -109,5 +109,5 @@ opts_selector = dbc.Card(
         ),
     ],
     body=True,
-    className="mb-2",
+    className="mb-2 selector-card",
 )

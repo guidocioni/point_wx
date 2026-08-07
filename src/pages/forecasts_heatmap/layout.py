@@ -1,9 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from components.location_selector import loc_selector
-from dash_iconify import DashIconify
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
@@ -12,30 +11,13 @@ dash.register_page(__name__, path="/forecasts-heatmap", title="Multimodel")
 
 layout = html.Div(
     [
-        dbc.Row(
-            dmc.Accordion(
-                children=[
-                    dmc.AccordionItem(
-                        value="help",
-                        children=[
-                            dmc.AccordionControl(
-                                "click to show",
-                                icon=DashIconify(icon="ion:information", width=30),
-                            ),
-                            dmc.AccordionPanel(
-                                dmc.Text(
-                                    [
-                                        "In this page you can compare the same variable across different deterministic models.",
-                                        html.Br(),
-                                        "The data used is the same as in the deterministic page but here you can focus on a single variable."
-                                    ]
-                                ),
-                            ),
-                        ],
-                    )
-                ],
-                className="mb-2",
-            ),
+        info_box(
+            [
+                "This page compares a single variable across several deterministic models at once, "
+                "using the same data as the Deterministic page but focused on one variable instead of many.",
+                "Use the Type toggle to switch between a heatmap (time vs. model) and a line plot, and "
+                "the 15 mins toggle for sub-hourly data where the model supports it.",
+            ]
         ),
         dbc.Row(
             [

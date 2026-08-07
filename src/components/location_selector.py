@@ -6,7 +6,14 @@ from dash import html, dcc
 loc_selector = dbc.Card(
     [
         html.Div(id="geo"),
-        dmc.Text("Location", size="sm"),
+        dmc.Group(
+            [
+                DashIconify(icon="ion:location-outline", width=16),
+                dmc.Text("Location", size="sm"),
+            ],
+            gap=4,
+            className="selector-card-title mb-1",
+        ),
         dcc.Dropdown(
                 multi=False,
                 id="location_search_new",
@@ -55,5 +62,5 @@ loc_selector = dbc.Card(
         ),
     ],
     body=True,
-    className="mb-2",
+    className="mb-2 selector-card",
 )

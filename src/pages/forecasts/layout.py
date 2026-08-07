@@ -1,9 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from components.location_selector import loc_selector
-from dash_iconify import DashIconify
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
@@ -12,32 +11,14 @@ dash.register_page(__name__, path="/forecasts", title="Deterministic")
 
 layout = html.Div(
     [
-        dbc.Row(
-            dmc.Accordion(
-                children=[
-                    dmc.AccordionItem(
-                        value="help",
-                        children=[
-                            dmc.AccordionControl(
-                                "click to show",
-                                icon=DashIconify(icon="ion:information", width=30),
-                            ),
-                            dmc.AccordionPanel(
-                                dmc.Text(
-                                    [
-                                        "In this page deterministic forecasts are shown. These are models that do not have many "
-                                        "scenarios (members) but only a single one. On the flip side you get higher spatial resolution and thus more "
-                                        "details in both space and time.",
-                                        html.Br(),
-                                        "Note that you can compare different models at the same time to see the spread in the forecast.",
-                                    ]
-                                ),
-                            ),
-                        ],
-                    )
-                ],
-                className="mb-2",
-            ),
+        info_box(
+            [
+                "This page shows deterministic model forecasts — models that produce a single scenario "
+                "(member) rather than many, trading ensemble spread for higher spatial and temporal "
+                "resolution and more fine-grained detail.",
+                "You can select multiple models at once to compare how they diverge for the same "
+                "location and variable.",
+            ]
         ),
         dbc.Row(
             [
