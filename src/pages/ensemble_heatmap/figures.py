@@ -384,7 +384,7 @@ def make_lineplot(
 
 # CARDS for layout
 images_config = deepcopy(images_config)
-images_config.update({'toImageButtonOptions': {'width': 1500, 'height': 800}})
+images_config['toImageButtonOptions'].update({'width': 1200, 'height': 700})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="ensemble-heatmap"),
     config=images_config,

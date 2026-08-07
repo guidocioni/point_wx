@@ -251,7 +251,7 @@ def make_calendar_figure(df, graph_type, title=None):
 
 # CARDS for layout
 images_config = deepcopy(images_config)
-images_config.update({'toImageButtonOptions': {'width': 1500, 'height': 700}})
+images_config['toImageButtonOptions'].update({'width': 1200, 'height': 700})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="calendar"),
     config=images_config,
