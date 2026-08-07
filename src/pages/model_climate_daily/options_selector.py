@@ -10,8 +10,8 @@ acc_vars_options = [
     {"label": "Sunshine hours", "value": "sunshine_duration"},
     {"label": "Shortwave radiation [MJ/m²]", "value": "shortwave_radiation_sum"},
     {"label": "Reference Evapotranspiration (ET0) [mm]", "value": "et0_fao_evapotranspiration"},
-    {"label": "Hot Days (Max > 30°C)", "value": "days_tmax_gt_30"},
-    {"label": "Heat Waves (Max > 35°C)", "value": "days_tmax_gt_35"},
+    {"label": "Warm Days (Max > 30°C)", "value": "days_tmax_gt_30"},
+    {"label": "Hot Days (Max > 35°C)", "value": "days_tmax_gt_35"},
     {"label": "Tropical Nights (Min >= 20°C)", "value": "days_tmin_gt_20"},
     {"label": "Frost Days (Min <= 0°C)", "value": "days_tmin_lt_0"},
 ]
