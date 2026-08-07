@@ -951,7 +951,9 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
 #  the number of days matching the condition.
 THRESHOLD_ACC_VARS = {
     "days_tmax_gt_30": {"source_var": "temperature_2m_max", "condition": lambda x: x > 30},
-    "days_tmin_lt_0": {"source_var": "temperature_2m_min", "condition": lambda x: x < 0},
+    "days_tmax_gt_35": {"source_var": "temperature_2m_max", "condition": lambda x: x > 35},
+    "days_tmin_gt_20": {"source_var": "temperature_2m_min", "condition": lambda x: x >= 20},
+    "days_tmin_lt_0": {"source_var": "temperature_2m_min", "condition": lambda x: x <= 0},
 }
 
 
