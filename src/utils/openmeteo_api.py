@@ -946,6 +946,19 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
     return stats
 
 
+#  Synthetic "accumulated" variables that are not returned directly by open-meteo:
+#  they are derived by thresholding a raw daily variable, then counting/cumsumming
+#  the number of days matching the condition.
+#  NOTE: kept in sync with the same dict on `main` (commit 800ccb8) — this branch
+#  diverged before that commit, so it's ported here by hand rather than via merge.
+THRESHOLD_ACC_VARS = {
+    "days_tmax_gt_30": {"source_var": "temperature_2m_max", "condition": lambda x: x > 30},
+    "days_tmax_gt_35": {"source_var": "temperature_2m_max", "condition": lambda x: x > 35},
+    "days_tmin_gt_20": {"source_var": "temperature_2m_min", "condition": lambda x: x >= 20},
+    "days_tmin_lt_0": {"source_var": "temperature_2m_min", "condition": lambda x: x <= 0},
+}
+
+
 @cache.memoize(3600)
 def compute_yearly_accumulation(latitude=53.55,
                                 longitude=9.99,
@@ -957,7 +970,10 @@ def compute_yearly_accumulation(latitude=53.55,
                                 q3=0.95):
     """Compute cumulative sum of some variable over the year"""
     current_year = pd.to_datetime("now", utc=True).year
-    
+
+    threshold_spec = THRESHOLD_ACC_VARS.get(var)
+    fetch_var = threshold_spec["source_var"] if threshold_spec else var
+
     # Download static base period for quantiles (fully cacheable)
     base_daily = get_historical_daily_data(
             latitude=latitude,
@@ -965,7 +981,7 @@ def compute_yearly_accumulation(latitude=53.55,
             model=model,
             start_date='1991-01-01',
             end_date='2020-12-31',
-            variables=var)
+            variables=fetch_var)
 
     # Conditionally download the target year if outside the base period
     if year < 1991 or year > 2020:
@@ -976,10 +992,16 @@ def compute_yearly_accumulation(latitude=53.55,
             model=model,
             start_date=f"{year}-01-01",
             end_date=end_dt,
-            variables=var)
+            variables=fetch_var)
         daily = pd.concat([base_daily, target_daily]).drop_duplicates(subset=['time']).reset_index(drop=True)
     else:
         daily = base_daily.copy()
+
+    if threshold_spec:
+        # Turn the raw variable into a 0/1 day-matches-condition indicator,
+        # kept under the requested `var` name so the rest of the pipeline
+        # (cumsum, quantiles, ensemble/seasonal forecast) can treat it like any other variable.
+        daily[var] = threshold_spec["condition"](daily[fetch_var]).astype(int)
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
@@ -991,14 +1013,18 @@ def compute_yearly_accumulation(latitude=53.55,
                 model="ecmwf_ifs025",
                 latitude=latitude,
                 longitude=longitude,
-                variables=var,
+                variables=fetch_var,
                 start_date=forecast_start.strftime("%Y-%m-%d"),
                 end_date=forecast_end.strftime("%Y-%m-%d"),
             )
             ensemble = ensemble.set_index('time')
             ensemble = ensemble.dropna(how='all')
             # Only select the right variable
-            ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-9][0-9])$')]
+            ensemble = ensemble.loc[:, ensemble.columns.str.match(rf'{fetch_var}$|{fetch_var}_member(0[1-9]|[1-9][0-9])$')]
+            if threshold_spec:
+                # Threshold each ensemble member first, so mean/quantile below give the
+                # expected fraction of members (i.e. probability) matching the condition per day.
+                ensemble = threshold_spec["condition"](ensemble).astype(int)
             #
             ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
                 ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
@@ -1021,8 +1047,9 @@ def compute_yearly_accumulation(latitude=53.55,
         # Store seasonal data to process after accumulation is computed
         seasonal_data = None
         seasonal_vars = ['precipitation_sum', 'rain_sum', 'snowfall_sum', 'sunshine_duration',
-                        'shortwave_radiation_sum', 'et0_fao_evapotranspiration']
-        if var in seasonal_vars:
+                        'shortwave_radiation_sum', 'et0_fao_evapotranspiration',
+                        'temperature_2m_max', 'temperature_2m_min']
+        if fetch_var in seasonal_vars:
             try:
                 seasonal_start = daily["time"].max() + pd.to_timedelta("1 day")
                 seasonal_end = f"{year}-12-31"
@@ -1031,14 +1058,20 @@ def compute_yearly_accumulation(latitude=53.55,
                     latitude=latitude,
                     longitude=longitude,
                     model="ecmwf_seasonal_seamless",
-                    variables=var,
+                    variables=fetch_var,
                     start_date=seasonal_start.strftime("%Y-%m-%d"),
                     end_date=seasonal_end,
                 )
                 seasonal = seasonal.set_index('time')
                 seasonal = seasonal.dropna(how='all')
                 # Only select the right variable (ensemble members)
-                seasonal = seasonal.loc[:, seasonal.columns.str.match(rf'{var}$|{var}_member(0[1-9]|[1-4][0-9]|50|51)$')]
+                seasonal = seasonal.loc[:, seasonal.columns.str.match(rf'{fetch_var}$|{fetch_var}_member(0[1-9]|[1-4][0-9]|50|51)$')]
+
+                if threshold_spec:
+                    # Threshold each seasonal ensemble member first, same as for the
+                    # near-term ensemble, so mean/quantile give the fraction of members
+                    # (i.e. probability) matching the condition per day.
+                    seasonal = threshold_spec["condition"](seasonal).astype(int)
 
                 # Store seasonal ensemble data for later processing
                 seasonal_data = seasonal
@@ -1059,6 +1092,11 @@ def compute_yearly_accumulation(latitude=53.55,
     # Compute cumulative sum of the mean first
     daily[f'{var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
             var].transform(lambda x: x.cumsum())
+    if threshold_spec:
+        # The forecast/seasonal portion comes from averaging binary (0/1) ensemble
+        # members, so the cumulative count can end up fractional (e.g. 91.53 "days").
+        # Round to whole days since this is a day-count variable.
+        daily[f'{var}_yearly_acc'] = daily[f'{var}_yearly_acc'].round()
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
@@ -1082,6 +1120,8 @@ def compute_yearly_accumulation(latitude=53.55,
                         for _var in [f"{var}_min", f"{var}_max"]:
                             daily[f'{_var}_yearly_acc'] = daily.groupby(daily.time.dt.year)[
                                 _var].transform(lambda x: x.cumsum()) + offset
+                            if threshold_spec:
+                                daily[f'{_var}_yearly_acc'] = daily[f'{_var}_yearly_acc'].round()
                             daily.loc[daily['time'] < pd.to_datetime('now') - pd.to_timedelta("1 day"),f'{_var}_yearly_acc']=np.nan
 
             # Process seasonal forecast if it exists
@@ -1124,6 +1164,9 @@ def compute_yearly_accumulation(latitude=53.55,
                 # Compute quantiles from the accumulated trajectories with appropriate offsets
                 seasonal_q15 = (seasonal_accumulated.quantile(0.15, axis=1) + seasonal_offset_min).to_frame(name=f"{var}_min_yearly_acc").reset_index()
                 seasonal_q95 = (seasonal_accumulated.quantile(0.95, axis=1) + seasonal_offset_max).to_frame(name=f"{var}_max_yearly_acc").reset_index()
+                if threshold_spec:
+                    seasonal_q15[f"{var}_min_yearly_acc"] = seasonal_q15[f"{var}_min_yearly_acc"].round()
+                    seasonal_q95[f"{var}_max_yearly_acc"] = seasonal_q95[f"{var}_max_yearly_acc"].round()
                 seasonal_q15['time'] = seasonal_q15['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
                 seasonal_q95['time'] = seasonal_q95['time'].dt.tz_localize(None, ambiguous='NaT', nonexistent='NaT')
 
@@ -1259,17 +1302,73 @@ def compute_yearly_comparison(
             .reset_index(drop=True)
         )
 
+        # Extend further out with the seasonal forecast ensemble: mean plus 15-95th
+        # percentile range. These are kept in their own columns (not merged into `var`)
+        # so they never feed the above/below climatology fill: they only show up as a
+        # separate, lower-opacity mean line + range band beyond the actual/short-range
+        # forecast data.
+        try:
+            seasonal_start = daily["time"].max() + pd.to_timedelta("1 day")
+            seasonal_end = f"{year}-12-31"
+
+            seasonal = get_seasonal_forecast_daily_data(
+                latitude=latitude,
+                longitude=longitude,
+                model="ecmwf_seasonal_seamless",
+                variables=var,
+                start_date=seasonal_start.strftime("%Y-%m-%d"),
+                end_date=seasonal_end,
+            )
+            seasonal = seasonal.set_index("time")
+            seasonal = seasonal.dropna(how="all")
+            # Only select the right variable (ensemble members)
+            seasonal = seasonal.loc[
+                :, seasonal.columns.str.match(rf"{var}$|{var}_member(0[1-9]|[1-4][0-9]|50|51)$")
+            ]
+
+            # Same discontinuity fix as above, applied to the seasonal segment
+            if var.startswith("soil_moisture") or var.startswith("soil_temperature"):
+                if not daily.empty and not seasonal.empty:
+                    offset = daily[var].tail(3).mean() - seasonal.mean(axis=1).head(3).mean()
+                    seasonal = seasonal + offset
+
+            seasonal_stats = (
+                seasonal.mean(axis=1).to_frame(name=f"{var}_seasonal_mean")
+                .merge(
+                    seasonal.quantile(0.15, axis=1).to_frame(name=f"{var}_seasonal_min"),
+                    left_index=True, right_index=True,
+                )
+                .merge(
+                    seasonal.quantile(0.95, axis=1).to_frame(name=f"{var}_seasonal_max"),
+                    left_index=True, right_index=True,
+                )
+                .reset_index()
+            )
+            seasonal_stats["time"] = seasonal_stats["time"].dt.tz_localize(
+                None, ambiguous="NaT", nonexistent="NaT"
+            )
+
+            daily = (
+                pd.concat([daily, seasonal_stats])
+                .sort_values("time")
+                .reset_index(drop=True)
+            )
+        except Exception as e:
+            logging.warning(
+                f"Cannot add seasonal forecast data: {type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
+            )
+
     # Remove leap years
     daily = daily[~((daily.time.dt.month == 2) & (daily.time.dt.day == 29))]
 
     # Although the data starts from 1981 (or 1991 depending on base), we compute the quantiles and mean only over the 1991-2020 period
+    # Restricted to `var` alone (rather than numeric_only=True over the whole frame) since `daily`
+    # may now also carry the `{var}_seasonal_mean` column, which must not leak into the climatology.
     daily['doy'] = daily.time.dt.strftime("%m%d")
-    clima = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
-                      ].groupby('doy').mean(numeric_only=True).add_suffix("_clima")
-    clima['q05'] = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
-                             ].groupby('doy').quantile(q=0.05, numeric_only=True).add_suffix("_q05").values
-    clima['q95'] = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')
-                             ].groupby('doy').quantile(q=0.95, numeric_only=True).add_suffix("_q95").values
+    period = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')]
+    clima = period.groupby('doy')[var].mean().to_frame().add_suffix("_clima")
+    clima['q05'] = period.groupby('doy')[var].quantile(q=0.05).values
+    clima['q95'] = period.groupby('doy')[var].quantile(q=0.95).values
 
     # Smooth quantiles with a centered 15-day rolling window, extend to avoid gaps
     for col in ['q05', 'q95']:
