@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import get_vertical_data
+from utils.openmeteo_api import get_vertical_data, get_model_meta
 from utils.custom_logger import logging
 from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
 from .figures import make_figure_vertical, make_figure_skewt
@@ -96,10 +96,18 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
             df_merged['dewpoint'] = dewpoint_from_relative_humidity(temperature=df_merged['temperature'].values * units('degC'),
                                             relative_humidity=df_merged['relative_humidity'].values / 100.).magnitude
 
+        run_info = ""
+        try:
+            meta = get_model_meta(type="deterministic", model=model)
+            if meta and meta.get("last_run_initialisation_time") is not None:
+                run_info = f" | Run: {meta['last_run_initialisation_time'].strftime('%Y-%m-%d %HZ')}"
+        except Exception as e:
+            logging.error(f"Could not fetch model run metadata for model={model}: {e}")
+
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(df.attrs['longitude']):.1f}E"
             f", {float(df.attrs['latitude']):.1f}N, {float(df.attrs['elevation']):.0f}m)<br>"
-            f"<sup>Model = <b>{model.upper()}</b></sup>"
+            f"<sup>Model = <b>{model.upper()}</b>{run_info}</sup>"
         )
 
         if heatmap_:

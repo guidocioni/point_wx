@@ -1,5 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
-from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology, compute_predictability_index
+from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology, compute_predictability_index, get_model_meta
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR, ENSEMBLE_MODELS, filter_options, validate_model_selection
 from utils.custom_logger import logging
@@ -85,10 +85,18 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
             }
         )
 
+        run_info = ""
+        try:
+            meta = get_model_meta(type="ensemble", model=model)
+            if meta and meta.get("last_run_initialisation_time") is not None:
+                run_info = f" | Run: {meta['last_run_initialisation_time'].strftime('%Y-%m-%d %HZ')}"
+        except Exception as e:
+            logging.error(f"Could not fetch model run metadata for model={model}: {e}")
+
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
-            f"<sup>Ens = <b>{model.upper()}</b></sup>"
+            f"<sup>Ens = <b>{model.upper()}</b>{run_info}</sup>"
         )
 
         return make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width), None, False

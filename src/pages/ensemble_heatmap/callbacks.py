@@ -1,6 +1,7 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import (
     get_ensemble_data,
+    get_model_meta,
     weather_code_to_precip_type,
     compute_climatology,
     compute_climatology_zarr,
@@ -107,11 +108,19 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
                     logging.error(f"Could not fetch t850hPa climatology: {e}")
                     clima = None
 
+        run_info = ""
+        try:
+            meta = get_model_meta(type="ensemble", model=model)
+            if meta and meta.get("last_run_initialisation_time") is not None:
+                run_info = f" | Run: {meta['last_run_initialisation_time'].strftime('%Y-%m-%d %HZ')}"
+        except Exception as e:
+            logging.error(f"Could not fetch model run metadata for model={model}: {e}")
+
         loc_label = location[0]["label"].split("|")[0] + (
             f"|📍 {float(data.attrs['longitude']):.1f}E"
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)<br>"
             f"<sup>Variable = <b>{variable}</b> | "
-            f"Ens = <b>{model.upper()}</b></sup>"
+            f"Ens = <b>{model.upper()}</b>{run_info}</sup>"
         )
         if _is_heatmap:
             return make_heatmap(data, var=variable, title=loc_label), None, False

@@ -436,19 +436,25 @@ def get_ensemble_daily_data(latitude=53.55,
 
 
 @cache.memoize(1800)
-def get_model_meta(model, base_url="https://ensemble-api.open-meteo.com"):
+def get_model_meta(type, model):
     """
     Get run metadata (e.g. last initialisation time) for a model, with
     epoch-seconds fields parsed into UTC timestamps.
     Returns None if the model has no meta.json (e.g. seamless models).
     """
-    meta_model = MODEL_META_MAP.get(model)
+    if type == "ensemble":
+        base_url = "https://ensemble-api.open-meteo.com"
+    elif type == "deterministic":
+        base_url = "https://api.open-meteo.com/"
+    else:
+        raise ValueError(
+            "Only ensemble and deterministic models are supported for meta retrieval"
+        )
+    meta_model = MODEL_META_MAP.get(type).get(model)
     if meta_model is None:
         return None
 
-    resp = make_request(
-        f"{base_url}/data/{meta_model}/static/meta.json", {}
-    ).json()
+    resp = make_request(f"{base_url}/data/{meta_model}/static/meta.json", {}).json()
 
     for key in (
         "last_run_initialisation_time",

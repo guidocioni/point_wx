@@ -101,7 +101,7 @@ def generate_figure(
 
         run_info = ""
         try:
-            meta = get_model_meta(model)
+            meta = get_model_meta(type="ensemble", model=model)
             if meta and meta.get("last_run_initialisation_time") is not None:
                 run_info = f" | Run: {meta['last_run_initialisation_time'].strftime('%Y-%m-%d %HZ')}"
         except Exception as e:
