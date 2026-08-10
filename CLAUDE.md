@@ -61,7 +61,57 @@ Holds the `cache` object, all env vars, the Plotly `images_config`, and the larg
 
 A custom template named `"custom"` is defined in `src/utils/custom_theme.py` and set as the default in `settings.py`.
 
+### Caching (`src/utils/openmeteo_api.py`)
+
+- TTL strategy: forecast data ~10 min, historical ~24h, climatology ~7 days
+- Clear cache: delete files in `CACHE_DIR` (default `.cache/`) or set `DISABLE_CACHE=1`
+- All API responses are memoized to avoid redundant requests
+
+### Pattern-matching IDs (cross-page)
+
+- `{"type": "submit-button", "index": "<page>"}` — triggers data fetch
+- `{"type": "fade", "index": "<page>"}` — wraps figures for fade-in animation
+- `{"type": "figure", "id": "<page>"}` — target for figure output
+
+## Implementation patterns
+
+### Typical callback flow
+
+1. User fills location + options selectors
+2. Pattern-matching submit button fires page callback
+3. Callback reads `locations-list`/`location-selected` Stores + page option values
+4. Calls fetch function from `openmeteo_api.py` (auto-cached)
+5. Transforms response → calls figure builder from `figures.py`
+6. Returns figure + error-modal outputs (always return both, using `allow_duplicate=True`)
+
+### Component libraries
+
+- **dash-bootstrap-components (dbc)**: Layout (Container, Row, Col), Cards, Modals, Navbar, Accordion — most structural components
+- **dash-mantine-components (dmc)**: Form inputs (Select, MultiSelect, DatePicker, SegmentedControl, NumberInput) — richer interactivity and styling
+- Both can mix freely; dmc requires `REACT_VERSION=18.2.0`
+
+### Store usage
+
+- **Global Stores** (in `app.py`): `locations-list`, `location-selected`, `locations-favorites`, `client-details`, `client-first-visit` — read by all pages
+- **Page-local Stores**: Use sparingly; prefer direct callback outputs when data doesn't need to persist across navigation
+- **DataFrame serialization**: `df.to_json(orient="split")` → Store → `pd.read_json(StringIO(json_str), orient="split")` (preserves dtypes, smaller than records)
+
+### Multi-page routing
+
+- Each page's `path=` in `dash.register_page()` is appended to `URL_BASE_PATHNAME`
+- Example: `path="/forecasts"` → `http://localhost:8083/pointwx/forecasts`
+- Homepage is registered with `path="/"` → `http://localhost:8083/pointwx/`
+- `dash.page_registry` (available after app init) holds all registered pages
+
+### Performance
+
+- `prevent_initial_call=True` on most callbacks (avoid firing on page load with no data)
+- Pattern-matching callbacks centralized in `app.py` minimize duplication
+- Large datasets: keep figure data transforms in `openmeteo_api.py` layer, not in callbacks
+- Loading states: use dmc.LoadingOverlay or dbc.Spinner around `Collapse` wrappers
+
 ## Conventions
 
 - DataFrames are passed between callbacks as JSON through `dcc.Store` and re-read with `pd.read_json(StringIO(...), orient="split")`.
 - Errors surface through the shared `error-modal` / `error-message` outputs (using `allow_duplicate=True`), not raised exceptions.
+- When testing add `from app import app` (even if you're not running the app) at the top of every script to properly initialize the cache
