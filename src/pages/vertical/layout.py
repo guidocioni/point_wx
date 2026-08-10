@@ -1,9 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from components.location_selector import loc_selector
-from dash_iconify import DashIconify
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
@@ -12,28 +11,17 @@ dash.register_page(__name__, path="/vertical", title="Vertical")
 
 layout = html.Div(
     [
-        dbc.Row(
-            dmc.Accordion(
-                children=[
-                    dmc.AccordionItem(
-                        value="help",
-                        children=[
-                            dmc.AccordionControl(
-                                "click to show",
-                                icon=DashIconify(icon="ion:information", width=30),
-                            ),
-                            dmc.AccordionPanel(
-                                dmc.Text(
-                                    [
-                                        "Vertical meteogram",
-                                    ]
-                                ),
-                            ),
-                        ],
-                    )
-                ],
-                className="mb-2",
-            )
+        info_box(
+            [
+                "This page shows the vertical structure of the atmosphere above the selected location "
+                "as forecast time progresses.",
+                "The default view is a time–height cross-section with temperature (filled contours), "
+                "the 0°C isotherm, geopotential height, cloud cover and wind vectors (direction and "
+                "speed) at each pressure level.",
+                "Use the Type toggle to switch to a Skew-T diagram instead, showing the parcel profile "
+                "and dry/moist adiabats for a single forecast time — useful to assess atmospheric "
+                "stability.",
+            ]
         ),
         dbc.Row(
             [

@@ -1,9 +1,8 @@
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
 from components.location_selector import loc_selector
-from dash_iconify import DashIconify
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .callbacks import *
 
@@ -11,46 +10,27 @@ dash.register_page(__name__, path="/dailyclimate", title="Climate (daily)")
 
 layout = html.Div(
     [
-        dmc.Accordion(
-            children=[
-                dmc.AccordionItem(
-                    value="help",
+        info_box(
+            [
+                "Here you can compare how a chosen variable behaved in a given year against historical "
+                "data.",
+                "The first plot shows a running accumulation from the start of the year; the second "
+                "shows a day-by-day comparison of the absolute value.",
+                "Notes:",
+                html.Ul(
                     children=[
-                        dmc.AccordionControl(
-                            "click to show",
-                            icon=DashIconify(icon="ion:information", width=30),
+                        html.Li("The minimum selectable year is 1951."),
+                        html.Li(
+                            "Percentiles and the daily climatology are computed over the "
+                            "1991–2020 base period."
                         ),
-                        dmc.AccordionPanel(
-                            dmc.Text(
-                                [
-                                    "Here you can compare some variables behaviour of a certain year to historical data. ",
-                                    "The first plot shows an accumulation starting from the beginning of the year, while the second plot shows a day to day comparison of the absolute value.",
-                                    html.Br(),
-                                    "Note that: ",
-                                    html.Ul(
-                                        children=[
-                                            html.Li(
-                                                "The minimum year is limited to 1981"
-                                            ),
-                                            html.Li(
-                                                "The percentiles of the accumulated variable are computed on the period 1981-2020"
-                                            ),
-                                            html.Li(
-                                                "The percentiles/statistics of the daily variable are computed on the period 1991-2020"
-                                            ),
-                                            html.Li(
-                                                "ERA5-Seamless is the best option as it combines both ERA5 and ERA5-Land. IFS only covers from 2017 onwards and the option 'Best Match' combines ERA5-Seamless in the past with IFS from 2017, but statistics computed on this may not be consistent. CERRA only covers Europe up to 2021."
-                                            ),
-                                        ]
-                                    ),
-                                    "If selecting the current year, 10 days of forecasts from ECMWF-IFS are also shown.",
-                                ]
-                            ),
-                        ),
-                    ],
-                )
-            ],
-            className="mb-2",
+                        html.Li("Data comes from the ERA5 reanalysis."),
+                    ]
+                ),
+                "For the current year, the record is extended with an ECMWF-IFS ensemble forecast "
+                "(~25 days ahead) followed by ECMWF seasonal forecast data through the end of the "
+                "year, where available.",
+            ]
         ),
         dbc.Row(
             [

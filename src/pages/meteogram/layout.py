@@ -1,9 +1,8 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import dash_mantine_components as dmc
-from dash_iconify import DashIconify
 from components.location_selector import loc_selector
+from components.info_box import info_box
 from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
@@ -18,31 +17,17 @@ layout = html.Div(
     id="meteogram-page-div",
     children=[
         dcc.Store(id="meteogram-viewport-width"),
-        dbc.Row(
-            dmc.Accordion(
-                children=[
-                    dmc.AccordionItem(
-                        value='help',
-                        children=[
-                            dmc.AccordionControl("click to show",
-                                                 icon=DashIconify(icon="ion:information",width=30),),
-                            dmc.AccordionPanel(
-                                dmc.Text(
-                                    [
-                                        "A simple meteogram showing daily maximum/minimum temperatures, and weather (icons).",
-                                        html.Br(),
-                                        "The first plot shows the average minimum and maximum temperatures (lines), and the extrema (shading). ",
-                                        "The bottom plot shows the sunshine hours (yellow bar), precipitation amount (blue bar), probability (text inside blue bar) and range (vertical line).",
-                                        html.Br(),
-                                        "The diamond symbols represent the 1991-2020 climatology for the same location."
-                                    ]
-                                ),
-                            ),
-                        ],
-                    )
-                ],
-                className="mb-2",
-            )
+        info_box(
+            [
+                "A daily meteogram summarizing minimum/maximum temperatures and expected weather for "
+                "the selected model.",
+                "The top plot shows the average minimum and maximum temperature (lines) together with "
+                "the range of possible extremes (shaded area).",
+                "The bottom plot shows sunshine hours (yellow bars), expected precipitation amount "
+                "(blue bars, with probability printed inside) and its likely range (vertical line).",
+                "Diamond markers show the 1991–2020 climatology for the same location and day, for "
+                "comparison.",
+            ]
         ),
         dbc.Row(
             [

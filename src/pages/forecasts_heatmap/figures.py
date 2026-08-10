@@ -282,6 +282,7 @@ def make_lineplot(
 
 
 # CARDS for layout
+images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="deterministic-heatmap"), config=images_config
 )

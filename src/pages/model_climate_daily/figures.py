@@ -114,29 +114,70 @@ def make_acc_figure(df, year, var, title=None):
                 )
             # Only add forecast range if the columns exist
             if f"{var}_min_yearly_acc" in df.columns and f"{var}_max_yearly_acc" in df.columns:
+                # Draw full forecast first, then overlay ensemble portion with higher opacity
+                # This avoids gaps at transitions
+
+                # Full forecast with reduced opacity (seasonal level)
+                # All four traces below share a legendgroup so the single "Seasonal
+                # Forecast Range" legend entry toggles the whole band (both the dim
+                # full-range fill and the higher-opacity near-term overlay) together.
                 fig.add_trace(
                     go.Scatter(
                         x=df.dummy_date,
                         y=df[f"{var}_min_yearly_acc"],
                         mode="lines",
-                        name="Forecast q15",
+                        name="Seasonal Forecast q15",
                         line=dict(width=0, color="red"),
+                        legendgroup="seasonal_range",
                         showlegend=False,
                         hoverinfo="skip"
                     ),
                 )
-
                 fig.add_trace(
                     go.Scatter(
                         x=df.dummy_date,
                         y=df[f"{var}_max_yearly_acc"],
                         mode="lines",
-                        name="Forecast q95",
+                        name="Seasonal Forecast Range",
                         line=dict(width=0, color="red"),
-                        showlegend=False,
+                        legendgroup="seasonal_range",
+                        showlegend=True,
                         fill="tonexty",
+                        fillcolor="rgba(255, 0, 0, 0.2)",
                     ),
                 )
+
+                # Overlay ensemble portion with higher opacity
+                today = pd.to_datetime("now")
+                ensemble_cutoff = today + pd.Timedelta(days=25)
+                df_ensemble = df[df.dummy_date <= ensemble_cutoff]
+
+                if not df_ensemble.empty and df_ensemble[f"{var}_min_yearly_acc"].notna().any():
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df_ensemble.dummy_date,
+                            y=df_ensemble[f"{var}_min_yearly_acc"],
+                            mode="lines",
+                            name="Ensemble q15",
+                            line=dict(width=0, color="red"),
+                            legendgroup="seasonal_range",
+                            showlegend=False,
+                            hoverinfo="skip"
+                        ),
+                    )
+                    fig.add_trace(
+                        go.Scatter(
+                            x=df_ensemble.dummy_date,
+                            y=df_ensemble[f"{var}_max_yearly_acc"],
+                            mode="lines",
+                            name="Ensemble q95",
+                            line=dict(width=0, color="red"),
+                            legendgroup="seasonal_range",
+                            showlegend=False,
+                            fill="tonexty",
+                            fillcolor="rgba(255, 0, 0, .4)",
+                        ),
+                    )
 
                 # Add FORECAST annotation to the right of today's line
                 fig.add_annotation(
@@ -156,7 +197,7 @@ def make_acc_figure(df, year, var, title=None):
         dragmode=False,
         margin={"r": 5, "t": 50, "l": 0.1, "b": 0.1},
         barmode="stack",
-        legend=dict(orientation="h"),
+        legend=dict(orientation="h", font=dict(size=11)),
         yaxis=dict(showgrid=True, title=next(item["label"] for item in acc_vars_options if item["value"] == var),
                    zeroline=True, zerolinewidth=4, autorange='min'),
     )
@@ -279,6 +320,41 @@ def make_daily_figure(df, year, var, title=None):
         showlegend=True, fill="tonexty",
     ))
 
+    # Seasonal forecast ensemble: 15-95th percentile range (faint fill) plus a mean
+    # line, extending beyond the actual/short-range forecast data. Uses the same
+    # variable-based color as the above/below fills, at low opacity, to signal
+    # reduced confidence without clashing with the (unrelated) climatology band.
+    seasonal_mean_col = f"{var}_seasonal_mean"
+    seasonal_min_col = f"{var}_seasonal_min"
+    seasonal_max_col = f"{var}_seasonal_max"
+    if seasonal_mean_col in df.columns:
+        df_seasonal = df[df[seasonal_mean_col].notna()]
+        if not df_seasonal.empty:
+            if seasonal_min_col in df.columns and seasonal_max_col in df.columns:
+                seasonal_fill = color_above.replace(", 1)", ", 0.15)")
+                # Shared legendgroup so the single "Seasonal Forecast Range" entry
+                # toggles both traces (and thus the whole fill) together.
+                fig.add_trace(go.Scatter(
+                    x=df_seasonal.dummy_date, y=df_seasonal[seasonal_min_col],
+                    mode="lines", name="Seasonal Forecast q15",
+                    line=dict(width=0, color=seasonal_fill),
+                    legendgroup="seasonal_range",
+                    showlegend=False, hoverinfo="skip",
+                ))
+                fig.add_trace(go.Scatter(
+                    x=df_seasonal.dummy_date, y=df_seasonal[seasonal_max_col],
+                    mode="lines", name="Seasonal Forecast Range",
+                    line=dict(width=0, color=seasonal_fill),
+                    legendgroup="seasonal_range",
+                    showlegend=True, fill="tonexty", fillcolor=seasonal_fill,
+                ))
+            fig.add_trace(go.Scatter(
+                x=df_seasonal.dummy_date, y=df_seasonal[seasonal_mean_col],
+                mode="lines", name="Seasonal Forecast Mean",
+                line=dict(width=2, color=color_above.replace(", 1)", ", 0.6)")),
+                showlegend=True,
+            ))
+
     if year == pd.to_datetime("now", utc=True).year:
         current_row = df[df['time'] == pd.to_datetime("now").normalize()][var]
         if not current_row.empty and not pd.isna(current_row.item()):
@@ -394,7 +470,7 @@ def make_daily_figure(df, year, var, title=None):
         dragmode=False,
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode="stack",
-        legend=dict(orientation="h"),
+        legend=dict(orientation="h", font=dict(size=11)),
         yaxis=dict(
             showgrid=True,
             title=next(item["label"] for item in daily_vars_options if item["value"] == var),

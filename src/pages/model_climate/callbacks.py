@@ -24,7 +24,7 @@ from datetime import date, timedelta
 from copy import deepcopy
 
 images_config = deepcopy(images_config)
-images_config.update({'toImageButtonOptions': {'width': 1100, 'height': 500}})
+images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
 
 @callback(
     [
