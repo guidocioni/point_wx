@@ -13,11 +13,20 @@ layout = html.Div(
     [
         info_box(
             [
-                "This page uses the same ensemble forecast data as the Ensemble page but presents it "
-                "differently: a heatmap with time on the x-axis and each ensemble member on the y-axis, "
-                "colored by the value of the variable you choose.",
-                "This makes it easy to spot how much the members spread out — and when — for a given "
-                "variable.",
+                (
+                    "This page uses the same ensemble forecast data as the Ensemble page but presents it "
+                    "differently: a heatmap with time on the x-axis and each ensemble member on the y-axis, "
+                    "colored by the value of the variable you choose."
+                ),
+                (
+                    "This makes it easy to spot how much the members spread out — and when — for a given "
+                    "variable."
+                ),
+                (
+                    "When decimate is enabled, the original model output resolution is used, otherwise "
+                    "hourly interpolated data is shown. The type switch can be used to show the data into a line"
+                    "plot instead than a heatmap"
+                ),
             ]
         ),
         dbc.Row(

@@ -12,10 +12,23 @@ layout = html.Div(
     [
         info_box(
             [
-                "This page reconstructs the monthly climate of a location in detail, using historical "
-                "statistics for temperature, precipitation, snow, cloud cover and wind.",
-                "Choose a 30-year period (e.g. 1991–2020) to approximate a standard climatology, or any "
-                "other period longer than a month.",
+                (
+                    "This page reconstructs the monthly climate of a location in detail, using historical "
+                    "statistics for temperature, precipitation, snow, cloud cover and wind."
+                ),
+                (
+                    "Choose a 30-year period (e.g. 1991–2020) to approximate a standard climatology, or any "
+                    "other period longer than a month."
+                ),
+                html.Strong("⚠️ About reanalysis data:"),
+                (
+                    " Reanalysis combines observations with numerical models to create a globally consistent "
+                    "dataset. Unlike direct weather station measurements, it provides homogeneous coverage "
+                    "everywhere — useful for locations with sparse observations or for comparing different "
+                    "regions on equal footing. While individual values may differ slightly from local station "
+                    'records, anomalies computed against the reanalysis climatology (e.g. "5°C warmer than '
+                    'average") still represent the magnitude of observed departures.'
+                ),
             ]
         ),
         dbc.Row(
@@ -26,63 +39,85 @@ layout = html.Div(
         ),
         dbc.Collapse(
             dbc.Spinner(
-                html.Div([
-                    html.Div([
+                html.Div(
+                    [
                         html.Div(
                             [
-                                "The typical evolution of average minimum and maximum temperatures for every month are shown in the red and blue solid lines. ",
-                                "The dashed lines show instead the extremes that you can expect at this location. ",
-                                "The blue bars show the monthly cumulated precipitation as average.",
+                                html.Div(
+                                    [
+                                        "The typical evolution of average minimum and maximum temperatures for every month are shown in the red and blue solid lines. ",
+                                        "The dashed lines show instead the extremes that you can expect at this location. ",
+                                        "The blue bars show the monthly cumulated precipitation as average.",
+                                    ],
+                                    className="mb-2",
+                                ),
+                                html.Div(id="temp-prec-climate-container"),
                             ],
                             className="mb-2",
                         ),
-                        html.Div(id="temp-prec-climate-container"),
-                    ], className="mb-2"),
-                    html.Div([
                         html.Div(
                             [
-                                "Here we show the number of days with overcast (>80% cloud cover), partly cloudy (20-80%) and sunny (<20%) days. ",
-                                "The number of precipitation days (>= 1 mm) are also shown.",
+                                html.Div(
+                                    [
+                                        "Here we show the number of days with overcast (>80% cloud cover), partly cloudy (20-80%) and sunny (<20%) days. ",
+                                        "The number of precipitation days (>= 1 mm) are also shown.",
+                                    ],
+                                    className="mb-2",
+                                ),
+                                html.Div(id="clouds-climate-container"),
                             ],
                             className="mb-2",
                         ),
-                        html.Div(id="clouds-climate-container"),
-                    ], className="mb-2"),
-                    html.Div([
                         html.Div(
                             [
-                                "The number of days that exceed a certain precipitation threshold are shown in this plot. ",
-                                "Snow days (>= 1 cm) are also shown.",
+                                html.Div(
+                                    [
+                                        "The number of days that exceed a certain precipitation threshold are shown in this plot. ",
+                                        "Snow days (>= 1 cm) are also shown.",
+                                    ],
+                                    className="mb-2",
+                                ),
+                                html.Div(id="precipitation-climate-container"),
                             ],
                             className="mb-2",
                         ),
-                        html.Div(id="precipitation-climate-container"),
-                    ], className="mb-2"),
-                    html.Div([
                         html.Div(
                             [
-                                "The number of days that exceed a certain temperature threshold are shown in this plot. ",
-                                "Frost days (daily minimum temperature <= 0°C) are also shown.",
+                                html.Div(
+                                    [
+                                        "The number of days that exceed a certain temperature threshold are shown in this plot. ",
+                                        "Frost days (daily minimum temperature <= 0°C) are also shown.",
+                                    ],
+                                    className="mb-2",
+                                ),
+                                html.Div(id="temperature-climate-container"),
                             ],
                             className="mb-2",
                         ),
-                        html.Div(id="temperature-climate-container"),
-                    ], className="mb-2"),
-                    html.Div([
                         html.Div(
                             [
-                                "The number of days that exceed a certain wind speed threshold are shown in this plot. ",
-                                "Note that we use the average of maximum wind speed at 10m.",
+                                html.Div(
+                                    [
+                                        "The number of days that exceed a certain wind speed threshold are shown in this plot. ",
+                                        "Note that we use the average of maximum wind speed at 10m.",
+                                    ],
+                                    className="mb-2",
+                                ),
+                                html.Div(id="winds-climate-container"),
                             ],
                             className="mb-2",
                         ),
-                        html.Div(id="winds-climate-container"),
-                    ], className="mb-2"),
-                    html.Div([
-                        html.Div("Winds dominant directions throughout the year", className="mb-2"),
-                        html.Div(id="winds-rose-climate-container"),
-                    ]),
-                ])
+                        html.Div(
+                            [
+                                html.Div(
+                                    "Winds dominant directions throughout the year",
+                                    className="mb-2",
+                                ),
+                                html.Div(id="winds-rose-climate-container"),
+                            ]
+                        ),
+                    ]
+                )
             ),
             id={"type": "fade", "index": "monthly"},
             is_open=False,

@@ -7,11 +7,7 @@ from .options_selector import opts_selector
 from .figures import fig_subplots
 from .callbacks import *
 
-dash.register_page(
-    __name__,
-    path='/meteogram',
-    title='Meteogram'
-)
+dash.register_page(__name__, path="/meteogram", title="Meteogram")
 
 layout = html.Div(
     id="meteogram-page-div",
@@ -19,20 +15,35 @@ layout = html.Div(
         dcc.Store(id="meteogram-viewport-width"),
         info_box(
             [
-                "A daily meteogram summarizing minimum/maximum temperatures and expected weather for "
-                "the selected model.",
-                "The top plot shows the average minimum and maximum temperature (lines) together with "
-                "the range of possible extremes (shaded area).",
-                "The bottom plot shows sunshine hours (yellow bars), expected precipitation amount "
-                "(blue bars, with probability printed inside) and its likely range (vertical line).",
-                "Diamond markers show the 1991–2020 climatology for the same location and day, for "
-                "comparison.",
+                (
+                    "A daily meteogram summarizing minimum/maximum temperatures and expected weather for "
+                    "the selected model."
+                ),
+                (
+                    "The top plot shows the daily minimum (blue) and maximum (red) temperature (lines) together with "
+                    "the Interquartile Range (25-75th percentiles, inner shading) and min-max range (outer shading) "
+                    "derived from the ensemble members."
+                ),
+                (
+                    "The bottom plot shows sunshine hours (yellow bars, inverted y axis!), expected precipitation amount "
+                    "(blue bars, with probability printed inside) and its likely range (vertical line). Snow probability "
+                    "is shown (if forecast)."
+                ),
+                (
+                    "Diamond markers (♦️,🔹) show the 1991–2020 climatology for the same location and day, for "
+                    "comparison."
+                ),
+                (
+                    "Depending on the location, a different model may be the most appropriate. As a rule of thumb use "
+                    "ICON Seamless for most of the locations for best accuracy, IFS to extend the forecast horizon and "
+                    "GFS for better coverage over North America."
+                )
             ]
         ),
         dbc.Row(
             [
                 dbc.Col(loc_selector, sm=12, md=12, lg=6),
-                dbc.Col(opts_selector, sm=12, md=12, lg=6)
+                dbc.Col(opts_selector, sm=12, md=12, lg=6),
             ]
         ),
         dbc.Row(
@@ -42,8 +53,9 @@ layout = html.Div(
                         dbc.Spinner(fig_subplots),
                     ]
                 ),
-                id={'type':'fade', 'index':'meteogram'},
-                is_open=False)
+                id={"type": "fade", "index": "meteogram"},
+                is_open=False,
+            )
         ),
-    ]
+    ],
 )
