@@ -21,6 +21,7 @@ except ImportError:
         Output(dict(type="figure", id="vertical"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "vertical"}, "n_clicks"),
     [
@@ -35,12 +36,12 @@ except ImportError:
 )
 def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, days_):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     # Validate model selection
     is_valid, error_msg = validate_model_selection(model, DETERMINISTIC_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True
+        return no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -115,12 +116,14 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
                 make_figure_vertical(time_axis, vertical_levels, arrs, title=loc_label),
                 None,
                 False,
+                n_clicks,
             )
         else:
             return (
                 make_figure_skewt(df_merged, title=loc_label),
                 None,
                 False,
+                n_clicks,
             )
 
     except Exception as e:
@@ -131,6 +134,7 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

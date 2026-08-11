@@ -15,6 +15,7 @@ from io import StringIO
         Output(dict(type="figure", id="deterministic-heatmap"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "deterministic-heatmap"}, "n_clicks"),
     [
@@ -31,13 +32,14 @@ from io import StringIO
 )
 def generate_figure(n_clicks, locations, location, model, variable, from_now_, days_, _is_heatmap, minutes_15_):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     if len(model) == 0:
         return (
             no_update,
             "You need to select a least one model!",
             True,
+            no_update,
         )
 
     # Validate model selections
@@ -48,6 +50,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             no_update,
             f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
             True,
+            no_update,
         )
 
     # Validate variable selection
@@ -57,6 +60,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             no_update,
             "The selected variable is no longer available. Please select a different one.",
             True,
+            no_update,
         )
 
     # unpack locations data
@@ -111,9 +115,9 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)"
         )
         if _is_heatmap:
-            return make_heatmap(data, var=variable, title=loc_label, models=model), None, False
+            return make_heatmap(data, var=variable, title=loc_label, models=model), None, False, n_clicks
         else:
-            return make_lineplot(data, var=variable, models=model, title=loc_label, clima=clima), None, False
+            return make_lineplot(data, var=variable, models=model, title=loc_label, clima=clima), None, False, n_clicks
 
     except Exception as e:
         logging.error(
@@ -123,6 +127,7 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

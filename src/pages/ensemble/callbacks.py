@@ -20,6 +20,7 @@ from io import StringIO
         #  Output("polar-plot", "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "ensemble"}, "n_clicks"),
     [
@@ -36,12 +37,12 @@ def generate_figure(
     n_clicks, locations, location, model, clima_, from_now_, clouds_plot_
 ):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     # Validate model selection against current options
     is_valid, error_msg = validate_model_selection(model, ENSEMBLE_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True
+        return no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -118,6 +119,7 @@ def generate_figure(
             # make_barpolar_figure(data),
             None,
             False,  # deactivate error popup
+            n_clicks,
         )
 
     except Exception as e:
@@ -128,6 +130,7 @@ def generate_figure(
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

@@ -13,6 +13,7 @@ from io import StringIO
         Output(dict(type="figure", id="calendar"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "calendar"}, "n_clicks"),
     [
@@ -27,12 +28,12 @@ from io import StringIO
 )
 def generate_figure(n_clicks, locations, location, model, graph_type, graph_types, year_start):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     # Validate model selection
     is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True
+        return no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -96,7 +97,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             f"Until <b>{last_date}</b></sup>"
         )
 
-        return make_calendar_figure(data, graph_type=graph_type, title=loc_label), None, False
+        return make_calendar_figure(data, graph_type=graph_type, title=loc_label), None, False, n_clicks
 
     except Exception as e:
         logging.error(
@@ -106,6 +107,7 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

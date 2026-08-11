@@ -92,6 +92,7 @@ def serve_layout():
                 dcc.Store(id="client-details", data={}, storage_type="session"),
                 dcc.Store(id="client-first-visit", storage_type="local"),
                 dcc.Store(id='dummy-data'),
+                dcc.Store(id='figure-ready-signal'),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -330,20 +331,26 @@ clientside_callback(
 
 
 '''
-Every time the figure is ready, scroll to it.
+Every time a new figure has actually been produced by a page callback, scroll to it.
+Note this is driven by "figure-ready-signal" (set explicitly by each page's figure
+callback on its success path), NOT by the Graph "figure" prop directly: since Dash
+4.4.1, dcc.Graph syncs relayout changes (zoom/pan/reset axes/...) back into the
+"figure" prop, which would otherwise retrigger this callback on every plot interaction.
 This involved some trickery because pattern matching callback does not
 really play well with JS, so we needed to extract the right id of the element
 for the scrollIntoView function to work.
 '''
 clientside_callback(
     """
-    function(figure_data, element_id) {
+    function(signal, element_ids) {
         // console.log("Triggered clientside callback");
-        if (!figure_data || figure_data[0] === undefined || figure_data[0] === null) {
+        if (signal === undefined || signal === null) {
             return window.dash_clientside.no_update;
         }
-        // console.log(figure_data);
-        element_id = element_id[0];
+        var element_id = element_ids && element_ids[0];
+        if (!element_id) {
+            return window.dash_clientside.no_update;
+        }
         if (!(typeof element_id === 'string' || element_id instanceof String)) {
             element_id = JSON.stringify(element_id, Object.keys(element_id).sort());
             // console.log(element_id);
@@ -364,8 +371,8 @@ clientside_callback(
     }
     """,
     Output("dummy-data", "data"),
-    Input(dict(type="figure", id=ALL), "figure"),
-    State(dict(type="figure", id=ALL), "id"),
+    Input("figure-ready-signal", "data"),
+    State(dict(type="fade", index=ALL), "id"),
     prevent_initial_call=True,
 )
 

@@ -13,6 +13,7 @@ from io import StringIO
         Output(dict(type="figure", id="meteogram"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "meteogram"}, "n_clicks"),
     [
@@ -25,7 +26,7 @@ from io import StringIO
 )
 def generate_figure(n_clicks, locations, location, model, viewport_width):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     # Validate model selection (meteogram uses a filtered subset of ENSEMBLE_MODELS)
     meteogram_models = filter_options(
@@ -46,7 +47,7 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
     )
     is_valid, error_msg = validate_model_selection(model, meteogram_models, "model")
     if not is_valid:
-        return no_update, error_msg, True
+        return no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -99,7 +100,7 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
             f"<sup>Ens = <b>{model.upper()}</b>{run_info}</sup>"
         )
 
-        return make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width), None, False
+        return make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width), None, False, n_clicks
 
     except Exception as e:
         logging.error(
@@ -109,6 +110,7 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

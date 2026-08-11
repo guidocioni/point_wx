@@ -36,6 +36,7 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
         Output("winds-rose-climate-container", "children"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "monthly"}, "n_clicks"),
     [
@@ -49,6 +50,7 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
 def generate_figure(n_clicks, locations, location, model, dates):
     if n_clicks is None:
         return (
+            no_update,
             no_update,
             no_update,
             no_update,
@@ -149,6 +151,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
             winds_rose_container,
             None,
             False,
+            n_clicks,
         )
 
     except Exception as e:
@@ -164,6 +167,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
             "An error occurred when processing the data",
             True,
+            no_update,
         )
 
 

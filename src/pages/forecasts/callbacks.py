@@ -13,6 +13,7 @@ import plotly.io as pio
         Output(dict(type="figure", id="deterministic"), "figure"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "deterministic"}, "n_clicks"),
     [
@@ -27,13 +28,14 @@ import plotly.io as pio
 )
 def generate_figure(n_clicks, locations, location, models, from_now_, days_, minutes_15_):
     if n_clicks is None:
-        return no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update
 
     if len(models) == 0:
         return (
             no_update,
             "You need to select a least one model!",
             True,
+            no_update,
         )
 
     # Validate model selections
@@ -44,6 +46,7 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
             no_update,
             f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
             True,
+            no_update,
         )
 
     # unpack locations data
@@ -77,6 +80,7 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
             make_subplot_figure(data=data, title=loc_label, sun=sun, models=models),
             None,
             False,
+            n_clicks,
         )
     except Exception as e:
         logging.error(
@@ -86,6 +90,7 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
             no_update,
             "An error occurred when processing the data",
             True,  # Error message
+            no_update,
         )
 
 

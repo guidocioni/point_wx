@@ -18,6 +18,7 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
         Output("temp-climate-daily-container", "children"),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
+        Output("figure-ready-signal", "data", allow_duplicate=True),
     ],
     Input({"type": "submit-button", "index": "daily"}, "n_clicks"),
     [
@@ -32,14 +33,14 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
 )
 def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_var):
     if n_clicks is None:
-        return no_update, no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update, no_update
 
     # No need to validate models for the moment (as it is fixed)
     # TODO But there is a bug in this function to be fixed
     # Validate model selection
     # is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
     # if not is_valid:
-    #     return no_update, no_update, error_msg, True
+    #     return no_update, no_update, error_msg, True, no_update
 
     if model == "cerra" and ((year > 2021) or (year < 1985)):
         return (
@@ -47,6 +48,7 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
             no_update,
             "The reanalysis model CERRA only covers dates up to 2021!",
             True,
+            no_update,
         )
 
     # unpack locations data
@@ -96,13 +98,13 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
                         )
 
 
-        return graph_prec, graph_temp, None, False
+        return graph_prec, graph_temp, None, False, n_clicks
 
     except Exception as e:
         logging.error(
             f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}. Parameters used model={model}, year={year}"
         )
-        return no_update, no_update, "An error occurred when processing the data", True
+        return no_update, no_update, "An error occurred when processing the data", True, no_update
 
 
 @callback(
