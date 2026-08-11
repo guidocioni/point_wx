@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -514,5 +515,6 @@ def make_subplot_figure(data, title=None, clima=None, viewport_width=None):
 
 
 # CARDS for layout
+images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 800, 'height': 850})
 fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh', 'minHeight': '650px'})
