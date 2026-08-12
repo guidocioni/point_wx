@@ -5,6 +5,7 @@ from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
 from .figures import make_figure_vertical, make_figure_skewt
 import pandas as pd
 from io import StringIO
+from utils.url_sync import Param, register
 
 try:
     from metpy.calc import dewpoint_from_relative_humidity
@@ -148,3 +149,12 @@ clientside_callback(
     Input('models-selection-vertical', 'value'),
     prevent_initial_call=True
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("vertical", [
+    Param("models-selection-vertical", "value", "model", valid=DETERMINISTIC_MODELS),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("heatmap-skewt-plot-switch", "checked", "heatmap", kind="bool"),
+    Param("forecast-days", "value", "days", kind="int", lo=1, hi=15),
+])

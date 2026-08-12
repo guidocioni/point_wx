@@ -1,7 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS
-from utils.url_sync import Param, register
 from dash_iconify import DashIconify
 
 opts_selector = dbc.Card(
@@ -94,12 +93,3 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
-
-
-register("heatmap", [
-    Param("models-selection-heatmap", "value", "model", valid=ENSEMBLE_MODELS),
-    Param("variable-selection-heatmap", "value", "var", valid=ENSEMBLE_VARS),
-    Param("decimate-switch", "checked", "decimate", kind="bool"),
-    Param("from-now-switch", "checked", "fromnow", kind="bool"),
-    Param("heatmap-line-plot-switch", "checked", "heatmap", kind="bool"),
-])

@@ -10,7 +10,8 @@ the two callbacks that keep them in sync:
 The figure is deliberately NOT computed from the URL: submit stays manual, so a shared
 link that is opened many times does not translate into many open-meteo requests.
 
-Usage, from a page's ``options_selector.py``::
+Usage, from a page's ``callbacks.py`` (register() creates callbacks, so it belongs there
+with the rest of the page's callbacks rather than next to the components)::
 
     from utils.url_sync import Param, register
 

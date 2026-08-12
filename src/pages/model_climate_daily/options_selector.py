@@ -1,8 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import REANALYSIS_MODELS
-from datetime import date
-from utils.url_sync import Param, register
 
 acc_vars_options = [
     {"label": "Precipitation [mm]", "value": "precipitation_sum"},
@@ -85,16 +83,3 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
-
-
-register("daily", [
-    Param("models-selection-climate-daily", "value", "model", valid=REANALYSIS_MODELS),
-    # No value= on the NumberInput itself: the current year is the fallback, applied
-    # only when the URL does not carry a ?year= (see callbacks.update_max_date)
-    # hi mirrors the max that callbacks.update_max_date puts on the component; without it
-    # a future ?year= would sail through and fail when the data is fetched
-    Param("year-selection-climate", "value", "year", kind="int", lo=1951,
-          hi=lambda: date.today().year, default=lambda: date.today().year),
-    Param("acc-variable-selection-daily", "value", "accvar", valid=acc_vars_options),
-    Param("inst-variable-selection-daily", "value", "instvar", valid=daily_vars_options),
-])

@@ -12,6 +12,7 @@ from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
 from io import StringIO
+from utils.url_sync import Param, register
 
 
 @callback(
@@ -145,3 +146,12 @@ clientside_callback(
     Input("models-selection", "value"),
     prevent_initial_call=True,
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("ensemble", [
+    Param("models-selection", "value", "model", valid=ENSEMBLE_MODELS),
+    Param("clima-switch", "checked", "clima", kind="bool"),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("wind-cloud-plot-switch", "checked", "clouds", kind="bool"),
+])

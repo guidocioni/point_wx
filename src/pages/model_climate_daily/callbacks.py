@@ -8,6 +8,8 @@ import pandas as pd
 from io import StringIO
 from datetime import date
 from copy import deepcopy
+from .options_selector import acc_vars_options, daily_vars_options
+from utils.url_sync import Param, register
 
 images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
@@ -145,3 +147,17 @@ clientside_callback(
     Input("models-selection-climate-daily", "value"),
     prevent_initial_call=True,
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("daily", [
+    Param("models-selection-climate-daily", "value", "model", valid=REANALYSIS_MODELS),
+    # No value= on the NumberInput itself: the current year is the fallback, applied
+    # only when the URL does not carry a ?year= (see callbacks.update_max_date)
+    # hi mirrors the max that callbacks.update_max_date puts on the component; without it
+    # a future ?year= would sail through and fail when the data is fetched
+    Param("year-selection-climate", "value", "year", kind="int", lo=1951,
+          hi=lambda: date.today().year, default=lambda: date.today().year),
+    Param("acc-variable-selection-daily", "value", "accvar", valid=acc_vars_options),
+    Param("inst-variable-selection-daily", "value", "instvar", valid=daily_vars_options),
+])

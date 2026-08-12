@@ -6,6 +6,7 @@ from utils.custom_logger import logging
 from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
+from utils.url_sync import Param, register
 
 
 @callback(
@@ -135,3 +136,9 @@ clientside_callback(
     Output('meteogram-viewport-width', 'data'),
     Input('meteogram-page-div', 'id'),
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("meteogram", [
+    Param("models-selection-meteogram", "value", "model", valid=ENSEMBLE_MODELS),
+])
