@@ -80,6 +80,19 @@ globally rather than per mounted page. `allow_duplicate` forces `prevent_initial
 why the mount signal has to arrive through a store (see app.py below) instead of being read
 directly off the page's own components.
 
+> **The trap this design exists to avoid.** Dash builds the suffix it appends to an
+> `allow_duplicate` output from `sha256` of the callback's **inputs only** (`create_callback_id` in
+> `dash/_callback.py`). Pages sharing one global trigger store therefore all produce the *same*
+> suffix, and every shared selector ends up claimed by several callbacks under an identical
+> `id.prop@hash`. Python does not catch this — it only compares whole callback ids, which still
+> differ by component name — so the app imports, serves `_dash-dependencies`, and passes every
+> server-side test. dash-renderer indexes individual outputs, so it only fails **in the browser**,
+> as `Output N (...@<hash>) is already in use`. Keeping the trigger and handshake stores per page
+> makes each reader's input list unique, and with it the suffix.
+>
+> `scripts/check_dup_outputs.py` replicates the renderer's check against a running server; run it
+> after touching any `allow_duplicate` output, since nothing else will catch this headlessly.
+
 The reader writes **only the props the URL explicitly names** (`no_update` for the rest — this is
 the persistence-safety property) and always emits a token on `url-sync-applied`, even when it
 applied nothing.
@@ -112,26 +125,26 @@ Two details that matter, both found while testing:
   runs, and without the fallback the address bar would drop `lat`/`lon` for that window — long
   enough for a reload or a copied URL to lose the location.
 
-Each page's reader/writer guard on `applied["page"] == page`, and in any case only fire while that
-page's components are mounted.
+Each page's reader/writer only fire while that page's components are mounted, and are keyed on that
+page's own stores.
 
 ### 2. `src/app.py` — three additions
 
-- Three stores next to the existing ones in `serve_layout`: `url-query` (the query string on its way
-  to the address bar), `url-sync-trigger` (which page just mounted) and `url-sync-applied` (the
-  reader → writer handshake).
-- One global callback announcing the mounted page. Every page carries exactly one `fade` Collapse,
-  so its index identifies the page — which means **no page layout has to change at all**:
+- `dcc.Store(id="url-query")` (the query string on its way to the address bar) next to the existing
+  stores in `serve_layout`, plus `*sync_stores()` — a per-page `url-sync-trigger` (this page just
+  mounted) and `url-sync-applied` (reader → writer handshake), generated from the list of pages that
+  called `register()`.
+- One global callback announcing the mounted page. Every page carries exactly one `fade` Collapse
+  with the same index as its stores, so `MATCH` pairs them and only the mounted page fires — which
+  means **no page layout has to change at all**:
 
 ```python
 @callback(
-    Output("url-sync-trigger", "data"),
-    Input({"type": "fade", "index": ALL}, "id"),
+    Output({"type": "url-sync-trigger", "index": MATCH}, "data"),
+    Input({"type": "fade", "index": MATCH}, "id"),
 )
-def fire_url_sync(fade_ids):
-    if not fade_ids:
-        raise PreventUpdate          # home and chatbot have nothing to sync
-    return {"page": fade_ids[0]["index"], "token": str(uuid.uuid4())}
+def fire_url_sync(_):
+    return str(uuid.uuid4())   # fresh token, so re-mounting a page always re-syncs
 ```
 
 - One global clientside callback (mirroring the style of the existing scroll/back-to-top ones):
@@ -357,4 +370,6 @@ registered callbacks rather than the helpers in isolation:
   (45.4642, 9.19 → "Duomo (🇮🇹| 9.2E, 45.5N, 147m)") with a stable 6-digit id;
 - the app importing with no `DuplicateCallbackOutput`, serving under both `/pointwx/` and a
   non-default `URL_BASE_PATHNAME=/wxtest/`, and issuing **zero** open-meteo forecast requests
-  throughout.
+  throughout;
+- `scripts/check_dup_outputs.py` reporting 166 distinct outputs across 73 callbacks with no
+  duplicate claims (it reports 5 collisions against the first, broken version — see the trap above).
