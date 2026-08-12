@@ -14,6 +14,8 @@ acc_vars_options = [
     {"label": "Hot Days (Max > 35°C)", "value": "days_tmax_gt_35"},
     {"label": "Tropical Nights (Min >= 20°C)", "value": "days_tmin_gt_20"},
     {"label": "Frost Days (Min <= 0°C)", "value": "days_tmin_lt_0"},
+    {"label": "Extreme Warm Days (Max > local 99th pct)", "value": "days_tmax_gt_p99"},
+    {"label": "Extreme Cold Days (Min < local 1th pct)", "value": "days_tmin_lt_p01"},
 ]
 daily_vars_options = [
     {"label": "Mean temperature [°C]", "value": "temperature_2m_mean"},

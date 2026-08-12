@@ -955,12 +955,26 @@ def compute_monthly_clima(latitude=53.55, longitude=9.99, model='era5',
 #  Synthetic "accumulated" variables that are not returned directly by open-meteo:
 #  they are derived by thresholding a raw daily variable, then counting/cumsumming
 #  the number of days matching the condition.
+#
+#  An entry may optionally carry a "quantile" key. When present, `condition` is
+#  always written against a fixed 0 (e.g. `x > 0`): the raw values are first
+#  turned into an anomaly against the smoothed per-day-of-year quantile
+#  climatology (computed inline in `compute_yearly_accumulation`, applied via
+#  `_doy_threshold`), so the same "x > 0" condition ends up meaning "exceeds
+#  the local Nth percentile for that calendar day" instead of a fixed value.
 THRESHOLD_ACC_VARS = {
     "days_tmax_gt_30": {"source_var": "temperature_2m_max", "condition": lambda x: x > 30},
     "days_tmax_gt_35": {"source_var": "temperature_2m_max", "condition": lambda x: x > 35},
     "days_tmin_gt_20": {"source_var": "temperature_2m_min", "condition": lambda x: x >= 20},
     "days_tmin_lt_0": {"source_var": "temperature_2m_min", "condition": lambda x: x <= 0},
+    "days_tmax_gt_p99": {"source_var": "temperature_2m_max", "condition": lambda x: x > 0, "quantile": 0.99},
+    "days_tmin_lt_p01": {"source_var": "temperature_2m_min", "condition": lambda x: x < 0, "quantile": 0.01},
 }
+
+
+def _doy_threshold(times, doy_quantile):
+    """Map each timestamp in `times` to its per-day-of-year quantile threshold."""
+    return pd.DatetimeIndex(times).strftime("%m%d").map(doy_quantile).values
 
 
 @cache.memoize(3600)
@@ -977,6 +991,7 @@ def compute_yearly_accumulation(latitude=53.55,
 
     threshold_spec = THRESHOLD_ACC_VARS.get(var)
     fetch_var = threshold_spec["source_var"] if threshold_spec else var
+    quantile = threshold_spec.get("quantile") if threshold_spec else None
 
     # Download static base period for quantiles (fully cacheable)
     base_daily = get_historical_daily_data(
@@ -986,6 +1001,32 @@ def compute_yearly_accumulation(latitude=53.55,
             start_date='1991-01-01',
             end_date='2020-12-31',
             variables=fetch_var)
+
+    doy_clima = None
+    if quantile is not None:
+        # Per-day-of-year quantile of the raw variable over the base period.
+        # A single calendar day only has ~30 raw samples (one per year), far
+        # too few to estimate a tail quantile like the 99th percentile from
+        # directly (quantile(0.99) on 30 points just interpolates the top two
+        # values, i.e. close to that day's historical max). Instead, pool raw
+        # values from a +/-5-day window across all years first (~330 samples
+        # per calendar day), then take the quantile of the pooled sample -
+        # the standard approach for climatological percentile thresholds.
+        calendar = pd.date_range('2001-01-01', '2001-12-31').strftime("%m%d")
+        n_days = len(calendar)
+        ordinal = base_daily['time'].dt.strftime("%m%d").map(
+            {d: i for i, d in enumerate(calendar)})
+        window_half = 5
+        pooled = pd.concat([
+            pd.DataFrame({
+                'target': (ordinal + offset) % n_days,
+                'value': base_daily[fetch_var].values,
+            })
+            for offset in range(-window_half, window_half + 1)
+        ], ignore_index=True)
+        doy_clima = pooled.groupby('target')['value'].quantile(quantile)
+        doy_clima = doy_clima.reindex(range(n_days))
+        doy_clima.index = calendar
 
     # Conditionally download the target year if outside the base period
     if year < 1991 or year > 2020:
@@ -1005,7 +1046,10 @@ def compute_yearly_accumulation(latitude=53.55,
         # Turn the raw variable into a 0/1 day-matches-condition indicator,
         # kept under the requested `var` name so the rest of the pipeline
         # (cumsum, quantiles, ensemble/seasonal forecast) can treat it like any other variable.
-        daily[var] = threshold_spec["condition"](daily[fetch_var]).astype(int)
+        values = daily[fetch_var]
+        if quantile is not None:
+            values = values - _doy_threshold(daily['time'], doy_clima)
+        daily[var] = threshold_spec["condition"](values).astype(int)
 
     if year == pd.to_datetime("now", utc=True).year:
         try:
@@ -1028,7 +1072,10 @@ def compute_yearly_accumulation(latitude=53.55,
             if threshold_spec:
                 # Threshold each ensemble member first, so mean/quantile below give the
                 # expected fraction of members (i.e. probability) matching the condition per day.
-                ensemble = threshold_spec["condition"](ensemble).astype(int)
+                values = ensemble
+                if quantile is not None:
+                    values = ensemble.sub(_doy_threshold(ensemble.index, doy_clima), axis=0)
+                ensemble = threshold_spec["condition"](values).astype(int)
             #
             ensemble = ensemble.mean(axis=1).to_frame(name=var).merge(
                 ensemble.quantile(0.15, axis=1).to_frame(name=f"{var}_min"),
@@ -1075,7 +1122,10 @@ def compute_yearly_accumulation(latitude=53.55,
                     # Threshold each seasonal ensemble member first, same as for the
                     # near-term ensemble, so mean/quantile give the fraction of members
                     # (i.e. probability) matching the condition per day.
-                    seasonal = threshold_spec["condition"](seasonal).astype(int)
+                    values = seasonal
+                    if quantile is not None:
+                        values = seasonal.sub(_doy_threshold(seasonal.index, doy_clima), axis=0)
+                    seasonal = threshold_spec["condition"](values).astype(int)
 
                 # Store seasonal ensemble data for later processing
                 seasonal_data = seasonal
