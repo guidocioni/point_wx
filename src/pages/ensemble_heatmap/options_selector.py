@@ -12,7 +12,8 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-1",
-            allowDeselect=False,
+            clearable=False,
+            allowDeselect=False
         ),
         dmc.Select(
             label="Variable",
@@ -22,6 +23,10 @@ opts_selector = dbc.Card(
             persistence="true",
             className="mb-2",
             clearable=False,
+            searchable=True,
+            clearSearchOnFocus=True,
+            nothingFoundMessage="Nothing found...",
+            allowDeselect=False
         ),
         dmc.Group(
             gap=10,

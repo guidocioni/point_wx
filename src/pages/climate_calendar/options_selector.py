@@ -38,8 +38,11 @@ opts_selector = dbc.Card(
                 ],
             value="accumulated_precipitation",
             className="mb-2",
-            allowDeselect=False,
+            clearable=False,
             searchable=True,
+            clearSearchOnFocus=True,
+            nothingFoundMessage="Nothing found...",
+            allowDeselect=False,
             persistence='true'
         ),
         dmc.NumberInput(

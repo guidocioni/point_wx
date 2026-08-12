@@ -13,7 +13,8 @@ opts_selector = dbc.Card(
             value="icon_seamless",
             persistence="true",
             className="mb-2",
-            allowDeselect=False,
+            clearable=False,
+            allowDeselect=False
         ),
         dmc.Group(
             gap=10,

@@ -60,6 +60,7 @@ opts_selector = dbc.Card(
             data=acc_vars_options,
             value="precipitation_sum",
             clearable=False,
+            allowDeselect=False,
             className="mb-2",
         ),
         dmc.Select(
@@ -68,6 +69,7 @@ opts_selector = dbc.Card(
             data=daily_vars_options,
             value="temperature_2m_mean",
             clearable=False,
+            allowDeselect=False,
             className="mb-2",
         ),
         dbc.Button(

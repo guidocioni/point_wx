@@ -24,7 +24,10 @@ opts_selector = dbc.Card(
             persistence="true",
             className="mb-2",
             clearable=False,
-            searchable=True
+            searchable=True,
+            clearSearchOnFocus=True,
+            nothingFoundMessage="Nothing found...",
+            allowDeselect=False
             ),
         dmc.Group(
             gap=8,

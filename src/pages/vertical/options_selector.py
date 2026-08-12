@@ -14,7 +14,9 @@ opts_selector = dbc.Card(
             persistence="true",
             className="mb-2",
             searchable=True,
-            allowDeselect=False
+            allowDeselect=False,
+            clearSearchOnFocus=True,
+            nothingFoundMessage="Nothing found..."
         ),
         dmc.Group(
             children=[
