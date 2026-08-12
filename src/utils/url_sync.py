@@ -78,6 +78,10 @@ class Param:
     ``valid`` is any option list accepted by settings.get_valid_values(); when given,
     values outside it are ignored. ``default`` is applied only when the URL does not
     carry the key AND the component currently holds no value.
+
+    ``lo``/``hi`` bound an "int" and may each be a callable, for components whose limits
+    are only known at runtime -- a year capped at the current one, say, where a literal
+    would silently go stale on New Year's Day.
     """
 
     cid: str
@@ -145,10 +149,11 @@ def _decode_one(param, query, current):
             out = int(float(raw))
         except (ValueError, TypeError):
             return _fallback(param, current)
-        if param.lo is not None:
-            out = max(param.lo, out)
-        if param.hi is not None:
-            out = min(param.hi, out)
+        lo, hi = _resolve(param.lo), _resolve(param.hi)
+        if lo is not None:
+            out = max(lo, out)
+        if hi is not None:
+            out = min(hi, out)
         return out
 
     if param.kind == "list":
@@ -162,10 +167,15 @@ def _decode_one(param, query, current):
     return raw
 
 
+def _resolve(value):
+    """Allow a Param bound/default to be a callable evaluated at request time."""
+    return value() if callable(value) else value
+
+
 def _fallback(param, current):
     """Value to use when the URL says nothing usable about this parameter."""
     if current in (None, [], "") and param.default is not None:
-        return param.default() if callable(param.default) else param.default
+        return _resolve(param.default)
     return no_update
 
 

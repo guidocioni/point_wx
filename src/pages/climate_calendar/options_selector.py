@@ -2,6 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import REANALYSIS_MODELS
 from utils.url_sync import Param, register
+from datetime import date
 
 graph_options = [
                     {"label": "Accumulated precipitation (mm)", "value": "accumulated_precipitation"},
@@ -72,5 +73,6 @@ opts_selector = dbc.Card(
 register("calendar", [
     Param("models-selection-climate-calendar", "value", "model", valid=REANALYSIS_MODELS),
     Param("graph-selection-climate-calendar", "value", "graph", valid=graph_options),
-    Param("year-selection-calendar", "value", "year", kind="int", lo=1940),
+    Param("year-selection-calendar", "value", "year", kind="int", lo=1940,
+          hi=lambda: date.today().year),
 ])
