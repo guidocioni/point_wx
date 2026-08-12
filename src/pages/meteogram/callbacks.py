@@ -1,11 +1,12 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
 from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology, compute_predictability_index, get_model_meta
 from utils.figures_utils import get_weather_icons
-from utils.settings import ASSETS_DIR, ENSEMBLE_MODELS, filter_options, validate_model_selection
+from utils.settings import ASSETS_DIR, validate_model_selection
 from utils.custom_logger import logging
 from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
+from .options_selector import METEOGRAM_MODELS
 from utils.url_sync import Param, register
 
 
@@ -30,23 +31,7 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
         return no_update, no_update, no_update, no_update
 
     # Validate model selection (meteogram uses a filtered subset of ENSEMBLE_MODELS)
-    meteogram_models = filter_options(
-        [
-            "icon_seamless",
-            "gfs_seamless",
-            "ecmwf_ifs025",
-            "ecmwf_aifs025",
-            "ecmwf_ifs_europe_ensemble",
-            "ecmwf_aifs_europe_ensemble",
-            "ncep_aigefs025",
-            "google_weathernext2_ensemble",
-            "icon_global",
-            "icon_eu",
-            "ukmo_global_ensemble_20km",
-        ],
-        ENSEMBLE_MODELS,
-    )
-    is_valid, error_msg = validate_model_selection(model, meteogram_models, "model")
+    is_valid, error_msg = validate_model_selection(model, METEOGRAM_MODELS, "model")
     if not is_valid:
         return no_update, error_msg, True, no_update
 
@@ -140,5 +125,5 @@ clientside_callback(
 
 # Keep the page's selectors and the URL query string in sync
 register("meteogram", [
-    Param("models-selection-meteogram", "value", "model", valid=ENSEMBLE_MODELS),
+    Param("models-selection-meteogram", "value", "model", valid=METEOGRAM_MODELS),
 ])

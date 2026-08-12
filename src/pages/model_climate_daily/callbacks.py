@@ -8,7 +8,7 @@ import pandas as pd
 from io import StringIO
 from datetime import date
 from copy import deepcopy
-from .options_selector import acc_vars_options, daily_vars_options
+from .options_selector import acc_vars_options, daily_vars_options, DISABLED_MODELS, ENABLED_MODELS
 from utils.url_sync import Param, register
 
 images_config = deepcopy(images_config)
@@ -130,10 +130,7 @@ def update_max_date(_):
 )
 def disable_models(_, models):
     for model in models:
-        if model["value"] in ["ecmwf_ifs", "era5_land"]:
-            model["disabled"] = True
-        else:
-            model["disabled"] = False
+        model["disabled"] = model["value"] in DISABLED_MODELS
     return [models]
 
 
@@ -151,7 +148,7 @@ clientside_callback(
 
 # Keep the page's selectors and the URL query string in sync
 register("daily", [
-    Param("models-selection-climate-daily", "value", "model", valid=REANALYSIS_MODELS),
+    Param("models-selection-climate-daily", "value", "model", valid=ENABLED_MODELS),
     # No value= on the NumberInput itself: the current year is the fallback, applied
     # only when the URL does not carry a ?year= (see callbacks.update_max_date)
     # hi mirrors the max that callbacks.update_max_date puts on the component; without it
