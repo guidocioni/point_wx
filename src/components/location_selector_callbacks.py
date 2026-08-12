@@ -4,10 +4,51 @@ from utils.openmeteo_api import get_elevation
 from dash.exceptions import PreventUpdate
 from utils.figures_utils import make_map
 from utils.flags import flags_df
+from utils.url_sync import coords_from_search, coords_of_selected
+from utils.custom_logger import logging
 import pandas as pd
 import dash_leaflet as dl
 from io import StringIO
 from unidecode import unidecode
+
+
+def location_from_coords(lat, lon, elevation=None):
+    """Build a one-row locations DataFrame out of bare coordinates.
+
+    Used by every path that produces a location without going through the search box:
+    a click on the map, the geolocation button, and ?lat=..&lon=.. in the URL.
+    The reverse geocoding and the elevation lookup are both cached (see mapbox_api and
+    openmeteo_api), so repeatedly opening the same shared link is cheap.
+    """
+    place_details = get_place_address_reverse(lon, lat)
+    return pd.DataFrame(
+        {
+            "id": create_unique_id(
+                lat, lon, place_details["name"]
+            ),  # Fake id just to have one
+            "name": place_details["name"],
+            "latitude": lat,
+            "longitude": lon,
+            "elevation": elevation if elevation is not None else get_elevation(lat, lon),
+            "feature_code": "",
+            "country_code": place_details["country_code"]
+            if "country_code" in place_details
+            else "",
+            "admin1_id": "",
+            "admin3_id": "",
+            "admin4_id": "",
+            "timezone": "",
+            "population": 0,
+            "postcodes": [""],
+            "country_id": "",
+            "country": place_details["country_name"]
+            if "country_name" in place_details
+            else "",
+            "admin1": "",
+            "admin3": "",
+            "admin4": "",
+        }
+    )
 
 
 def create_options(locations):
@@ -70,17 +111,39 @@ def create_options(locations):
 
 
 @callback(
-    [Output("location_search_new", "options"), Output("location_search_new", "value")],
+    [
+        Output("location_search_new", "options"),
+        Output("location_search_new", "value"),
+        Output("locations-list", "data"),
+    ],
     Input("url", "pathname"),
-    [State("location-selected", "data"), State("locations-list", "data")],
+    [
+        State("url", "search"),
+        State("location-selected", "data"),
+        State("locations-list", "data"),
+        State("locations-favorites", "data"),
+    ],
 )
-def load_cache(_, location_selected, locations_list):
+def load_cache(_, search, location_selected, locations_list, locations_favorites):
     """
     Every time the URL of the app changes (which happens when we load or change page)
     then load the selected value (and options) into the app.
     Unfortunately the dropdown component does not persist all the values even
     on page change.
+
+    If the URL carries ?lat=..&lon=.. (a shared link) that wins over the cached
+    selection, and the location is rebuilt from the coordinates exactly like a click
+    on the map would do.
     """
+    lat, lon = coords_from_search(search)
+    if lat is not None:
+        # Nothing to do if the cached selection already sits on those coordinates:
+        # avoids a pointless geocode on every navigation within the app
+        if (lat, lon) != coords_of_selected(locations_list, location_selected):
+            from_url = _options_from_coords(lat, lon, locations_favorites)
+            if from_url is not None:
+                return from_url
+
     cache_location_selected = no_update
     cache_locations_list = no_update
 
@@ -95,13 +158,39 @@ def load_cache(_, location_selected, locations_list):
     if location_selected is not None and len(location_selected) >=1:
         cache_location_selected = location_selected[0]["value"]
 
-    return cache_locations_list, cache_location_selected
+    return cache_locations_list, cache_location_selected, no_update
+
+
+def _options_from_coords(lat, lon, locations_favorites):
+    """(options, value, locations-list) for a location coming from the URL, or None.
+
+    Returns None (so that the caller falls back to the cached location) if anything
+    goes wrong, in particular if create_options() drops the row because the reverse
+    geocoding could not attach a country code to it.
+    """
+    try:
+        locations = location_from_coords(lat, lon)
+        target_id = str(locations["id"].iloc[0])
+        if locations_favorites:
+            favorites = pd.read_json(
+                StringIO(locations_favorites), orient="split", dtype={"id": str}
+            )
+            locations = pd.concat(
+                [locations, favorites[favorites["id"] != target_id]]
+            )
+        options = create_options(locations)
+        if not any(o["value"] == target_id for o in options):
+            return None
+        return options, target_id, locations.to_json(orient="split")
+    except Exception as e:
+        logging.warning(f"Could not build a location from URL coordinates {lat},{lon}: {e}")
+        return None
 
 
 @callback(
     [
         Output("location_search_new", "options", allow_duplicate=True),
-        Output("locations-list", "data"),
+        Output("locations-list", "data", allow_duplicate=True),
     ],
     Input("location_search_new", "search_value"),
     State("locations-favorites", "data"),
@@ -262,35 +351,7 @@ def map_click(click_lat_lng, clickData, locations_favorites):
         lat = clickData["latlng"]["lat"]
         lon = clickData["latlng"]["lng"]
     if lat is not None and lon is not None:
-        place_details = get_place_address_reverse(lon, lat)
-        locations = pd.DataFrame(
-            {
-                "id": create_unique_id(
-                    lat, lon, place_details["name"]
-                ),  # Fake id just to have one
-                "name": place_details["name"],
-                "latitude": lat,
-                "longitude": lon,
-                "elevation": get_elevation(lat, lon),
-                "feature_code": "",
-                "country_code": place_details["country_code"]
-                if "country_code" in place_details
-                else "",
-                "admin1_id": "",
-                "admin3_id": "",
-                "admin4_id": "",
-                "timezone": "",
-                "population": 0,
-                "postcodes": [""],
-                "country_id": "",
-                "country": place_details["country_name"]
-                if "country_name" in place_details
-                else "",
-                "admin1": "",
-                "admin3": "",
-                "admin4": "",
-            }
-        )
+        locations = location_from_coords(lat, lon)
         if locations_favorites:
             locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})
             locations = pd.concat([locations, locations_favorites])
@@ -329,36 +390,8 @@ def update_location_with_geolocate(_, pos, n_clicks, locations_favorites):
     if pos and n_clicks:
         lat = pd.to_numeric(pos["lat"])
         lon = pd.to_numeric(pos["lon"])
-        place_details = get_place_address_reverse(lon, lat)
-        locations = pd.DataFrame(
-            {
-                "id": create_unique_id(
-                    lat, lon, place_details["name"]
-                ),  # Fake id just to have one
-                "name": place_details["name"],
-                "latitude": lat,
-                "longitude": lon,
-                "elevation": float(pos["alt"])
-                if pos["alt"]
-                else get_elevation(pos["lat"], pos["lon"]),
-                "feature_code": "",
-                "country_code": place_details["country_code"]
-                if "country_code" in place_details
-                else "",
-                "admin1_id": "",
-                "admin3_id": "",
-                "admin4_id": "",
-                "timezone": "",
-                "population": 0,
-                "postcodes": [""],
-                "country_id": "",
-                "country": place_details["country_name"]
-                if "country_name" in place_details
-                else "",
-                "admin1": "",
-                "admin3": "",
-                "admin4": "",
-            }
+        locations = location_from_coords(
+            lat, lon, elevation=float(pos["alt"]) if pos["alt"] else None
         )
         if locations_favorites:
             locations_favorites = pd.read_json(StringIO(locations_favorites), orient="split", dtype={"id": str})

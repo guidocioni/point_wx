@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import REANALYSIS_MODELS
+from utils.url_sync import Param, register
 
 opts_selector = dbc.Card(
     [
@@ -43,3 +44,9 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
+
+
+register("monthly", [
+    Param("models-selection-climate", "value", "model", valid=REANALYSIS_MODELS),
+    Param("date-range-climate", "value", ("start", "end"), kind="daterange"),
+])

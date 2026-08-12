@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import DETERMINISTIC_MODELS
+from utils.url_sync import Param, register
 from dash_iconify import DashIconify
 
 
@@ -86,3 +87,11 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
+
+
+register("vertical", [
+    Param("models-selection-vertical", "value", "model", valid=DETERMINISTIC_MODELS),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("heatmap-skewt-plot-switch", "checked", "heatmap", kind="bool"),
+    Param("forecast-days", "value", "days", kind="int", lo=1, hi=15),
+])

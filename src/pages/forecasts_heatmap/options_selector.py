@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS
+from utils.url_sync import Param, register
 from dash_iconify import DashIconify
 
 opts_selector = dbc.Card(
@@ -114,3 +115,13 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
+
+
+register("deterministic-heatmap", [
+    Param("models-selection-deterministic-heatmap", "value", "models", kind="list", valid=DETERMINISTIC_MODELS),
+    Param("variable-selection-deterministic-heatmap", "value", "var", valid=DETERMINISTIC_VARS),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("minutely-15-switch", "checked", "min15", kind="bool"),
+    Param("heatmap-line-plot-switch", "checked", "heatmap", kind="bool"),
+    Param("forecast-days", "value", "days", kind="int", lo=1, hi=15),
+])

@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import ENSEMBLE_MODELS
+from utils.url_sync import Param, register
 from dash_iconify import DashIconify
 
 
@@ -82,3 +83,11 @@ opts_selector = dbc.Card(
     body=True,
     className="mb-2 selector-card",
 )
+
+
+register("ensemble", [
+    Param("models-selection", "value", "model", valid=ENSEMBLE_MODELS),
+    Param("clima-switch", "checked", "clima", kind="bool"),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("wind-cloud-plot-switch", "checked", "clouds", kind="bool"),
+])

@@ -108,14 +108,14 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
 
 
 @callback(
-    [
-        Output("year-selection-climate", "value"),
-        Output("year-selection-climate", "max"),
-    ],
+    Output("year-selection-climate", "max"),
     Input("year-selection-climate", "id"),
 )
 def update_max_date(_):
-    return date.today().year, date.today().year
+    # Only the upper bound is set here: the initial value is provided by the URL sync
+    # (see options_selector.py), which falls back to the current year when the URL
+    # does not carry a ?year=. Setting it here too would clobber a shared link.
+    return date.today().year
 
 
 # Disable some models

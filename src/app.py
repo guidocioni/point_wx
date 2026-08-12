@@ -93,6 +93,9 @@ def serve_layout():
                 dcc.Store(id="client-first-visit", storage_type="local"),
                 dcc.Store(id='dummy-data'),
                 dcc.Store(id='figure-ready-signal'),
+                dcc.Store(id='url-query'),
+                dcc.Store(id='url-sync-trigger'),
+                dcc.Store(id='url-sync-applied'),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -305,6 +308,55 @@ def toggle_fade(n, is_open):
     if n:
         return True
     return False
+
+
+'''
+URL query parameters sync, part 1 of 2 (see utils/url_sync.py for the rest).
+
+Announce which page has just been mounted, so that its selectors can be filled in from
+the query string. This has to go through a store rather than being consumed directly by
+the page callbacks: those write to selectors whose ids are shared between pages
+(from-now-switch, forecast-days, ...) and therefore must use allow_duplicate, which in
+turn forbids them from running on an initial call. Every page carries exactly one "fade"
+Collapse, so its index identifies the page.
+'''
+@callback(
+    Output("url-sync-trigger", "data"),
+    Input({"type": "fade", "index": ALL}, "id"),
+)
+def fire_url_sync(fade_ids):
+    if not fade_ids:
+        # Pages without figures (home, chatbot) have nothing to sync
+        raise PreventUpdate
+    # A fresh token every time, so that mounting the same page twice always re-syncs
+    return {"page": fade_ids[0]["index"], "token": str(uuid.uuid4())}
+
+
+'''
+URL query parameters sync, part 2 of 2: reflect the query string built by the page
+writer callbacks into the address bar.
+
+This uses history.replaceState rather than Output("url", "search") on purpose: dcc.Location
+pushes a new history entry on every change, which would mean one Back press per switch
+toggled. window.location.pathname is used as-is so that URL_BASE_PATHNAME (or any proxy
+prefix) is preserved without having to be reconstructed.
+Note this leaves the "url" component's own search prop stale, which is harmless: it is only
+read when a page mounts, and the writer immediately re-normalises the address bar anyway.
+'''
+clientside_callback(
+    """
+    function(qs) {
+        if (qs === undefined || qs === null) {
+            return window.dash_clientside.no_update;
+        }
+        window.history.replaceState(null, '', window.location.pathname + qs);
+        return null;
+    }
+    """,
+    Output("dummy-data", "data", allow_duplicate=True),
+    Input("url-query", "data"),
+    prevent_initial_call=True,
+)
 
 
 '''
