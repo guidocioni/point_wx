@@ -15,7 +15,6 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
-from utils.url_sync import sync_stores
 from components import navbar, footer
 from flask import request, redirect
 from utils.custom_logger import logging
@@ -94,9 +93,7 @@ def serve_layout():
                 dcc.Store(id="client-first-visit", storage_type="local"),
                 dcc.Store(id='dummy-data'),
                 dcc.Store(id='figure-ready-signal'),
-                dcc.Store(id='url-query'),
-                # One trigger/applied store per page that called url_sync.register()
-                *sync_stores(),
+                dcc.Store(id='url-location'),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -343,10 +340,15 @@ toggled. window.location.pathname is used as-is so that URL_BASE_PATHNAME (or an
 prefix) is preserved without having to be reconstructed.
 Note this leaves the "url" component's own search prop stale, which is harmless: it is only
 read when a page mounts, and the writer immediately re-normalises the address bar anyway.
+
+The input is an ALL pattern because the url-query store lives in the page layout (see
+url_sync.sync_stores); at most one is mounted at a time, and pages without figures mount
+none, which an ALL pattern handles as an empty list.
 '''
 clientside_callback(
     """
-    function(qs) {
+    function(qs_list) {
+        var qs = qs_list && qs_list[0];
         if (qs === undefined || qs === null) {
             return window.dash_clientside.no_update;
         }
@@ -355,7 +357,7 @@ clientside_callback(
     }
     """,
     Output("dummy-data", "data", allow_duplicate=True),
-    Input("url-query", "data"),
+    Input({"type": "url-query", "index": ALL}, "data"),
     prevent_initial_call=True,
 )
 

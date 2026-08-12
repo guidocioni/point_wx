@@ -111,11 +111,7 @@ def create_options(locations):
 
 
 @callback(
-    [
-        Output("location_search_new", "options"),
-        Output("location_search_new", "value"),
-        Output("locations-list", "data"),
-    ],
+    [Output("locations-list", "data"), Output("url-location", "data")],
     Input("url", "pathname"),
     [
         State("url", "search"),
@@ -124,26 +120,56 @@ def create_options(locations):
         State("locations-favorites", "data"),
     ],
 )
-def load_cache(_, search, location_selected, locations_list, locations_favorites):
+def resolve_url_location(_, search, location_selected, locations_list, locations_favorites):
+    """
+    When the URL carries ?lat=..&lon=.. (a shared link), rebuild that location from the
+    coordinates exactly like a click on the map would do, and put it in locations-list so
+    that load_cache below and the page callbacks can find it.
+
+    Both outputs are app-level stores on purpose. Dash only skips a callback when every
+    one of its outputs is missing from the layout, so mixing these with the (page-level)
+    dropdown would make this fire before the dropdown exists and be reported as writing
+    to a nonexistent object.
+    """
+    lat, lon = coords_from_search(search)
+    if lat is None:
+        return no_update, None
+    # Nothing to do if the cached selection already sits on those coordinates:
+    # avoids a pointless geocode on every navigation within the app
+    if (lat, lon) == coords_of_selected(locations_list, location_selected):
+        return no_update, None
+    try:
+        locations = location_from_coords(lat, lon)
+        target_id = str(locations["id"].iloc[0])
+        if locations_favorites:
+            favorites = pd.read_json(
+                StringIO(locations_favorites), orient="split", dtype={"id": str}
+            )
+            locations = pd.concat([locations, favorites[favorites["id"] != target_id]])
+        # create_options() inner-joins on the flags table, so a location the reverse
+        # geocoding could not attach a country code to would silently vanish
+        if not any(o["value"] == target_id for o in create_options(locations)):
+            return no_update, None
+        return locations.to_json(orient="split"), target_id
+    except Exception as e:
+        logging.warning(f"Could not build a location from URL coordinates {lat},{lon}: {e}")
+        return no_update, None
+
+
+@callback(
+    [Output("location_search_new", "options"), Output("location_search_new", "value")],
+    [Input("url", "pathname"), Input("url-location", "data")],
+    [State("location-selected", "data"), State("locations-list", "data")],
+)
+def load_cache(_, url_location, location_selected, locations_list):
     """
     Every time the URL of the app changes (which happens when we load or change page)
     then load the selected value (and options) into the app.
     Unfortunately the dropdown component does not persist all the values even
     on page change.
 
-    If the URL carries ?lat=..&lon=.. (a shared link) that wins over the cached
-    selection, and the location is rebuilt from the coordinates exactly like a click
-    on the map would do.
+    A location coming from the URL (resolved just above) wins over the cached selection.
     """
-    lat, lon = coords_from_search(search)
-    if lat is not None:
-        # Nothing to do if the cached selection already sits on those coordinates:
-        # avoids a pointless geocode on every navigation within the app
-        if (lat, lon) != coords_of_selected(locations_list, location_selected):
-            from_url = _options_from_coords(lat, lon, locations_favorites)
-            if from_url is not None:
-                return from_url
-
     cache_location_selected = no_update
     cache_locations_list = no_update
 
@@ -155,36 +181,12 @@ def load_cache(_, search, location_selected, locations_list, locations_favorites
         # Remove duplicates
         cache_locations_list = list({d['value']: d for d in cache_locations_list}.values())
 
-    if location_selected is not None and len(location_selected) >=1:
+    if url_location:
+        cache_location_selected = url_location
+    elif location_selected is not None and len(location_selected) >=1:
         cache_location_selected = location_selected[0]["value"]
 
-    return cache_locations_list, cache_location_selected, no_update
-
-
-def _options_from_coords(lat, lon, locations_favorites):
-    """(options, value, locations-list) for a location coming from the URL, or None.
-
-    Returns None (so that the caller falls back to the cached location) if anything
-    goes wrong, in particular if create_options() drops the row because the reverse
-    geocoding could not attach a country code to it.
-    """
-    try:
-        locations = location_from_coords(lat, lon)
-        target_id = str(locations["id"].iloc[0])
-        if locations_favorites:
-            favorites = pd.read_json(
-                StringIO(locations_favorites), orient="split", dtype={"id": str}
-            )
-            locations = pd.concat(
-                [locations, favorites[favorites["id"] != target_id]]
-            )
-        options = create_options(locations)
-        if not any(o["value"] == target_id for o in options):
-            return None
-        return options, target_id, locations.to_json(orient="split")
-    except Exception as e:
-        logging.warning(f"Could not build a location from URL coordinates {lat},{lon}: {e}")
-        return None
+    return cache_locations_list, cache_location_selected
 
 
 @callback(

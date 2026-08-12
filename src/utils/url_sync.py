@@ -40,11 +40,6 @@ from .settings import get_valid_values
 # so the id generated from a shared link matches the one the app would build itself.
 COORD_PRECISION = 4
 
-# Filled in by register() as the pages are imported, and read back by app.py to put the
-# matching stores in the layout
-REGISTERED_PAGES = []
-
-
 def trigger_id(page):
     """Store telling a page that it has just been mounted."""
     return {"type": "url-sync-trigger", "index": page}
@@ -55,13 +50,23 @@ def applied_id(page):
     return {"type": "url-sync-applied", "index": page}
 
 
-def sync_stores():
-    """The stores every registered page needs. Call from app.py's serve_layout()."""
-    return [
-        dcc.Store(id=maker(page))
-        for page in REGISTERED_PAGES
-        for maker in (trigger_id, applied_id)
-    ]
+def query_id(page):
+    """Store carrying the query string this page wants in the address bar."""
+    return {"type": "url-query", "index": page}
+
+
+def sync_stores(page):
+    """The stores this page's sync callbacks need. Spread into the page's own layout::
+
+        layout = html.Div([..., *sync_stores("ensemble")])
+
+    These deliberately live in the page layout rather than in the app layout. Dash only
+    skips a callback when *every* one of its outputs is missing from the current layout;
+    if even one is present it insists on all the others, and on all the inputs too. Were
+    these stores global, each page's reader and writer would be half-resolvable on every
+    other page and Dash would report the absent selectors as nonexistent objects.
+    """
+    return [dcc.Store(id=maker(page)) for maker in (trigger_id, applied_id, query_id)]
 
 
 @dataclass(frozen=True)
@@ -192,13 +197,14 @@ def register(page, params):
     ``page`` is the index already used by that page's {"type": "fade", "index": ...}
     Collapse and submit button.
 
-    Both callbacks below are keyed on this page's own trigger/applied stores rather than
-    on shared ones. That is not just tidiness: Dash derives the suffix it appends to an
-    allow_duplicate output from a hash of the callback's *inputs* only, so pages sharing
-    a single trigger store would all produce the same suffix and the renderer would
-    reject the second and later claims on shared selectors such as from-now-switch.
+    Both callbacks below are keyed on this page's own stores (see sync_stores()) rather
+    than on shared ones. That is not just tidiness: Dash derives the suffix it appends to
+    an allow_duplicate output from a hash of the callback's *inputs* only, so pages
+    sharing a single trigger store would all produce the same suffix and the renderer
+    would reject the second and later claims on shared selectors such as from-now-switch.
+    Page-local stores also keep both callbacks fully unresolvable, and so skipped, while
+    the page is not mounted.
     """
-    REGISTERED_PAGES.append(page)
 
     @callback(
         [Output(p.cid, p.prop, allow_duplicate=True) for p in params]
@@ -223,7 +229,7 @@ def register(page, params):
         return values + [trigger]
 
     @callback(
-        Output("url-query", "data", allow_duplicate=True),
+        Output(query_id(page), "data"),
         [Input(applied_id(page), "data")]
         + [Input(p.cid, p.prop) for p in params]
         + [Input("location-selected", "data")],
