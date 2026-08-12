@@ -20,8 +20,8 @@ Usage, from a page's ``options_selector.py``::
     ])
 
 where "ensemble" is the index the page already uses for its {"type": "fade", "index": ...}
-Collapse. No change to the page layout is needed: app.py announces the mounted page through
-the shared "url-sync-trigger" store.
+Collapse. No change to the page layout is needed: register() records the page here and
+app.py emits the two stores it needs (see sync_stores()) into the app layout.
 """
 
 import logging
@@ -31,7 +31,7 @@ from typing import Any, Optional, Sequence, Union
 from urllib.parse import parse_qs, quote, urlencode
 
 import pandas as pd
-from dash import Input, Output, State, callback, no_update
+from dash import Input, Output, State, callback, dcc, no_update
 from dash.exceptions import PreventUpdate
 
 from .settings import get_valid_values
@@ -39,6 +39,29 @@ from .settings import get_valid_values
 # Coordinates are rounded to the same precision create_unique_id() normalises to,
 # so the id generated from a shared link matches the one the app would build itself.
 COORD_PRECISION = 4
+
+# Filled in by register() as the pages are imported, and read back by app.py to put the
+# matching stores in the layout
+REGISTERED_PAGES = []
+
+
+def trigger_id(page):
+    """Store telling a page that it has just been mounted."""
+    return {"type": "url-sync-trigger", "index": page}
+
+
+def applied_id(page):
+    """Store telling a page's writer that its reader is done (see register())."""
+    return {"type": "url-sync-applied", "index": page}
+
+
+def sync_stores():
+    """The stores every registered page needs. Call from app.py's serve_layout()."""
+    return [
+        dcc.Store(id=maker(page))
+        for page in REGISTERED_PAGES
+        for maker in (trigger_id, applied_id)
+    ]
 
 
 @dataclass(frozen=True)
@@ -168,18 +191,25 @@ def register(page, params):
 
     ``page`` is the index already used by that page's {"type": "fade", "index": ...}
     Collapse and submit button.
+
+    Both callbacks below are keyed on this page's own trigger/applied stores rather than
+    on shared ones. That is not just tidiness: Dash derives the suffix it appends to an
+    allow_duplicate output from a hash of the callback's *inputs* only, so pages sharing
+    a single trigger store would all produce the same suffix and the renderer would
+    reject the second and later claims on shared selectors such as from-now-switch.
     """
+    REGISTERED_PAGES.append(page)
 
     @callback(
         [Output(p.cid, p.prop, allow_duplicate=True) for p in params]
-        + [Output("url-sync-applied", "data", allow_duplicate=True)],
-        Input("url-sync-trigger", "data"),
+        + [Output(applied_id(page), "data")],
+        Input(trigger_id(page), "data"),
         [State("url", "search")] + [State(p.cid, p.prop) for p in params],
         prevent_initial_call=True,
     )
     def _read_url(trigger, search, *current):
         """Apply the query string to this page's selectors, once, on mount."""
-        if not trigger or trigger.get("page") != page:
+        if not trigger:
             raise PreventUpdate
         query = parse_qs((search or "").lstrip("?"))
         try:
@@ -190,11 +220,11 @@ def register(page, params):
             values = [no_update] * len(params)
         # Always hand over to the writer, even when nothing was applied, so that the
         # address bar still gets normalised to this page's parameters
-        return values + [{"page": page, "token": trigger.get("token")}]
+        return values + [trigger]
 
     @callback(
         Output("url-query", "data", allow_duplicate=True),
-        [Input("url-sync-applied", "data")]
+        [Input(applied_id(page), "data")]
         + [Input(p.cid, p.prop) for p in params]
         + [Input("location-selected", "data")],
         [State("locations-list", "data"), State("url", "search")],
@@ -203,11 +233,11 @@ def register(page, params):
     def _write_url(applied, *args):
         """Re-serialise this page's selectors (and the location) into the query string.
 
-        Driven by url-sync-applied rather than by the mount trigger directly, so that it
+        Driven by the applied store rather than by the mount trigger directly, so that it
         can never run before the reader has had a chance to apply an incoming link and
         briefly rewrite the address bar with this page's default values.
         """
-        if not applied or applied.get("page") != page:
+        if not applied:
             raise PreventUpdate
         values = args[:-3]
         location_selected, locations_list, search = args[-3], args[-2], args[-1]

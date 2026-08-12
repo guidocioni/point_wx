@@ -15,6 +15,7 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
+from utils.url_sync import sync_stores
 from components import navbar, footer
 from flask import request, redirect
 from utils.custom_logger import logging
@@ -94,8 +95,8 @@ def serve_layout():
                 dcc.Store(id='dummy-data'),
                 dcc.Store(id='figure-ready-signal'),
                 dcc.Store(id='url-query'),
-                dcc.Store(id='url-sync-trigger'),
-                dcc.Store(id='url-sync-applied'),
+                # One trigger/applied store per page that called url_sync.register()
+                *sync_stores(),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -313,23 +314,23 @@ def toggle_fade(n, is_open):
 '''
 URL query parameters sync, part 1 of 2 (see utils/url_sync.py for the rest).
 
-Announce which page has just been mounted, so that its selectors can be filled in from
+Announce that a page has just been mounted, so that its selectors can be filled in from
 the query string. This has to go through a store rather than being consumed directly by
 the page callbacks: those write to selectors whose ids are shared between pages
 (from-now-switch, forecast-days, ...) and therefore must use allow_duplicate, which in
-turn forbids them from running on an initial call. Every page carries exactly one "fade"
-Collapse, so its index identifies the page.
+turn forbids them from running on an initial call.
+
+Every page carries exactly one "fade" Collapse with the same index as its stores, so MATCH
+pairs them up and only the mounted page fires. Pages without figures (home, chatbot) have
+no fade and no stores, and are simply never matched.
 '''
 @callback(
-    Output("url-sync-trigger", "data"),
-    Input({"type": "fade", "index": ALL}, "id"),
+    Output({"type": "url-sync-trigger", "index": MATCH}, "data"),
+    Input({"type": "fade", "index": MATCH}, "id"),
 )
-def fire_url_sync(fade_ids):
-    if not fade_ids:
-        # Pages without figures (home, chatbot) have nothing to sync
-        raise PreventUpdate
+def fire_url_sync(_):
     # A fresh token every time, so that mounting the same page twice always re-syncs
-    return {"page": fade_ids[0]["index"], "token": str(uuid.uuid4())}
+    return str(uuid.uuid4())
 
 
 '''
