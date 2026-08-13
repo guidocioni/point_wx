@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_historical_daily_data, compute_climatology
 from utils.custom_logger import logging
 from utils.settings import REANALYSIS_MODELS, validate_model_selection
@@ -13,6 +14,7 @@ from utils.url_sync import Param, register
 @callback(
     [
         Output(dict(type="figure", id="calendar"), "figure"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
         Output("figure-ready-signal", "data", allow_duplicate=True),
@@ -24,18 +26,19 @@ from utils.url_sync import Param, register
         State("models-selection-climate-calendar", "value"),
         State("graph-selection-climate-calendar", "value"),
         State("graph-selection-climate-calendar", "data"),
-        State("year-selection-calendar", "value")
+        State("year-selection-calendar", "value"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, graph_type, graph_types, year_start):
+def generate_figure(n_clicks, locations, location, model, graph_type, graph_types, year_start, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update, no_update
+        raise PreventUpdate
 
     # Validate model selection
     is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True, no_update
+        return no_update, no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -99,7 +102,10 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
             f"Until <b>{last_date}</b></sup>"
         )
 
-        return make_calendar_figure(data, graph_type=graph_type, title=loc_label), None, False, n_clicks
+        figure = make_calendar_figure(data, graph_type=graph_type, title=loc_label)
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["calendar"] = figure
+        return figure, figures_data, None, False, n_clicks
 
     except Exception as e:
         logging.error(
@@ -107,10 +113,28 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
         )
         return (
             no_update,
+            no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
             no_update,
         )
+
+
+@callback(
+    [
+        Output(dict(type="figure", id="calendar"), "figure", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'calendar'}, "is_open", allow_duplicate=True),
+    ],
+    Input("year-selection-calendar", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figure and open collapse when returning to this page"""
+    if not figures_store or "calendar" not in figures_store:
+        raise PreventUpdate
+
+    return figures_store["calendar"], True
 
 
 # Remove focus from dropdown once an element has been selected

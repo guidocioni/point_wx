@@ -7,6 +7,7 @@ from dash import (
     dcc,
     clientside_callback,
 )
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import compute_monthly_clima, get_historical_daily_data
 from utils.custom_logger import logging
 from utils.settings import images_config, REANALYSIS_MODELS, validate_model_selection
@@ -35,6 +36,7 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
         Output("temperature-climate-container", "children"),
         Output("winds-climate-container", "children"),
         Output("winds-rose-climate-container", "children"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
         Output("figure-ready-signal", "data", allow_duplicate=True),
@@ -45,22 +47,13 @@ images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
         State("location-selected", "data"),
         State("models-selection-climate", "value"),
         State("date-range-climate", "value"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, dates):
+def generate_figure(n_clicks, locations, location, model, dates, figures_store):
     if n_clicks is None:
-        return (
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-            no_update,
-        )
+        raise PreventUpdate
 
     # # Validate model selection
     # is_valid, error_msg = validate_model_selection(model, REANALYSIS_MODELS, "model")
@@ -143,6 +136,16 @@ def generate_figure(n_clicks, locations, location, model, dates):
 
         winds_rose_container = dcc.Graph(figure=fig_winds_rose, config=images_config)
 
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["monthly"] = {
+            "temp-prec": temp_prec_container,
+            "clouds": clouds_container,
+            "precipitation": precipitation_container,
+            "temperature": temperature_container,
+            "winds": winds_container,
+            "winds-rose": winds_rose_container,
+        }
+
         return (
             temp_prec_container,
             clouds_container,
@@ -150,6 +153,7 @@ def generate_figure(n_clicks, locations, location, model, dates):
             temperature_container,
             winds_container,
             winds_rose_container,
+            figures_data,
             None,
             False,
             n_clicks,
@@ -166,10 +170,42 @@ def generate_figure(n_clicks, locations, location, model, dates):
             no_update,
             no_update,
             no_update,
+            no_update,
             "An error occurred when processing the data",
             True,
             no_update,
         )
+
+
+@callback(
+    [
+        Output("temp-prec-climate-container", "children", allow_duplicate=True),
+        Output("clouds-climate-container", "children", allow_duplicate=True),
+        Output("precipitation-climate-container", "children", allow_duplicate=True),
+        Output("temperature-climate-container", "children", allow_duplicate=True),
+        Output("winds-climate-container", "children", allow_duplicate=True),
+        Output("winds-rose-climate-container", "children", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'monthly'}, "is_open", allow_duplicate=True),
+    ],
+    Input("models-selection-climate", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figures(_, figures_store):
+    """Restore all 6 figures and open collapse when returning to this page"""
+    if not figures_store or "monthly" not in figures_store:
+        raise PreventUpdate
+
+    monthly_figs = figures_store["monthly"]
+    return (
+        monthly_figs["temp-prec"],
+        monthly_figs["clouds"],
+        monthly_figs["precipitation"],
+        monthly_figs["temperature"],
+        monthly_figs["winds"],
+        monthly_figs["winds-rose"],
+        True,
+    )
 
 
 @callback(Output("date-range-climate", "maxDate"), Input("date-range-climate", "id"))

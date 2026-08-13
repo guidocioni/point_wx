@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
@@ -12,6 +13,7 @@ from utils.url_sync import Param, register
 @callback(
     [
         Output(dict(type="figure", id="deterministic"), "figure"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
         Output("figure-ready-signal", "data", allow_duplicate=True),
@@ -24,15 +26,17 @@ from utils.url_sync import Param, register
         State("from-now-switch", "checked"),
         State("forecast-days", "value"),
         State("minutely-15-switch", "checked"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, models, from_now_, days_, minutes_15_):
+def generate_figure(n_clicks, locations, location, models, from_now_, days_, minutes_15_, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update, no_update
+        raise PreventUpdate
 
     if len(models) == 0:
         return (
+            no_update,
             no_update,
             "You need to select a least one model!",
             True,
@@ -44,6 +48,7 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
     invalid_models = [m for m in models if m not in valid_models]
     if invalid_models:
         return (
+            no_update,
             no_update,
             f"The following selected model(s) are no longer available: {', '.join(invalid_models)}. Please update your selection.",
             True,
@@ -77,22 +82,38 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
             f", {float(data.attrs['latitude']):.1f}N, {float(data.attrs['elevation']):.0f}m)"
         )
 
-        return (
-            make_subplot_figure(data=data, title=loc_label, sun=sun, models=models),
-            None,
-            False,
-            n_clicks,
-        )
+        figure = make_subplot_figure(data=data, title=loc_label, sun=sun, models=models)
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["deterministic"] = figure
+        return figure, figures_data, None, False, n_clicks
     except Exception as e:
         logging.error(
             f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e} Parameters used model={', '.join(models)}, from_now={from_now_}, days={days_}, minutes_15={minutes_15_}"
         )
         return (
             no_update,
+            no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
             no_update,
         )
+
+
+@callback(
+    [
+        Output(dict(type="figure", id="deterministic"), "figure", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'deterministic'}, "is_open", allow_duplicate=True),
+    ],
+    Input("models-selection-deterministic", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figure and open collapse when returning to this page"""
+    if not figures_store or "deterministic" not in figures_store:
+        raise PreventUpdate
+
+    return figures_store["deterministic"], True
 
 
 @callback(

@@ -1,4 +1,5 @@
 from dash import callback, Output, Input, State, no_update, clientside_callback
+from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climatology, compute_predictability_index, get_model_meta
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR, validate_model_selection
@@ -13,6 +14,7 @@ from utils.url_sync import Param, register
 @callback(
     [
         Output(dict(type="figure", id="meteogram"), "figure"),
+        Output("figures-store", "data", allow_duplicate=True),
         Output("error-message", "children", allow_duplicate=True),
         Output("error-modal", "is_open", allow_duplicate=True),
         Output("figure-ready-signal", "data", allow_duplicate=True),
@@ -23,17 +25,18 @@ from utils.url_sync import Param, register
         State("location-selected", "data"),
         State("models-selection-meteogram", "value"),
         State("meteogram-viewport-width", "data"),
+        State("figures-store", "data"),
     ],
     prevent_initial_call=True,
 )
-def generate_figure(n_clicks, locations, location, model, viewport_width):
+def generate_figure(n_clicks, locations, location, model, viewport_width, figures_store):
     if n_clicks is None:
-        return no_update, no_update, no_update, no_update
+        raise PreventUpdate
 
     # Validate model selection (meteogram uses a filtered subset of ENSEMBLE_MODELS)
     is_valid, error_msg = validate_model_selection(model, METEOGRAM_MODELS, "model")
     if not is_valid:
-        return no_update, error_msg, True, no_update
+        return no_update, no_update, error_msg, True, no_update
 
     # unpack locations data
     locations = pd.read_json(StringIO(locations), orient="split", dtype={"id": str})
@@ -86,7 +89,10 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
             f"<sup>Ens = <b>{model.upper()}</b>{run_info}</sup>"
         )
 
-        return make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width), None, False, n_clicks
+        figure = make_subplot_figure(data, title=loc_label, clima=clima, viewport_width=viewport_width)
+        figures_data = figures_store.copy() if figures_store else {}
+        figures_data["meteogram"] = figure
+        return figure, figures_data, None, False, n_clicks
 
     except Exception as e:
         logging.error(
@@ -94,10 +100,28 @@ def generate_figure(n_clicks, locations, location, model, viewport_width):
         )
         return (
             no_update,
+            no_update,
             "An error occurred when processing the data",
-            True,  # Error message
+            True,
             no_update,
         )
+
+
+@callback(
+    [
+        Output(dict(type="figure", id="meteogram"), "figure", allow_duplicate=True),
+        Output({'type': 'fade', 'index': 'meteogram'}, "is_open", allow_duplicate=True),
+    ],
+    Input("models-selection-meteogram", "id"),
+    State("figures-store", "data"),
+    prevent_initial_call='initial_duplicate',
+)
+def restore_figure(_, figures_store):
+    """Restore figure and open collapse when returning to this page"""
+    if not figures_store or "meteogram" not in figures_store:
+        raise PreventUpdate
+
+    return figures_store["meteogram"], True
 
 
 clientside_callback(

@@ -91,6 +91,7 @@ def serve_layout():
                 dcc.Store(id="locations-favorites", storage_type="local"),
                 dcc.Store(id="client-details", data={}, storage_type="session"),
                 dcc.Store(id="client-first-visit", storage_type="local"),
+                dcc.Store(id="figures-store", data={}),  # memory storage (default) - clears on page refresh
                 dcc.Store(id='dummy-data'),
                 dcc.Store(id='figure-ready-signal'),
                 dcc.Store(id='url-location'),
@@ -288,10 +289,7 @@ clientside_callback(
 
 
 @callback(
-    Output(
-        {"type": "fade", "index": MATCH},
-        "is_open",
-    ),
+    Output({"type": "fade", "index": MATCH}, "is_open"),
     Input({"type": "submit-button", "index": MATCH}, "n_clicks"),
     State({"type": "fade", "index": MATCH}, "is_open"),
     prevent_initial_call=True,
@@ -395,6 +393,8 @@ Note this is driven by "figure-ready-signal" (set explicitly by each page's figu
 callback on its success path), NOT by the Graph "figure" prop directly: since Dash
 4.4.1, dcc.Graph syncs relayout changes (zoom/pan/reset axes/...) back into the
 "figure" prop, which would otherwise retrigger this callback on every plot interaction.
+This also means restoring a persisted figure (figures-store) on page mount never
+scrolls, since restore_figure() never touches "figure-ready-signal".
 This involved some trickery because pattern matching callback does not
 really play well with JS, so we needed to extract the right id of the element
 for the scrollIntoView function to work.
@@ -424,7 +424,7 @@ clientside_callback(
                     targetElement.scrollIntoView({ behavior: 'smooth' });
                 }, 200);
             }
-        }, 500); // Wait 1 second before retrieving the element
+        }, 500); // Wait 0.5 second before retrieving the element
 
         return null;
     }
