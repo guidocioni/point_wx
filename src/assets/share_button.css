@@ -1,0 +1,33 @@
+#share-button {
+  width: 3.25rem;
+  height: 3.25rem;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background-color 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Bootstrap's outline-button hover normally flips text to white assuming the
+   background also flips to solid; we keep the background light, so pin the
+   icon color here too or it goes white-on-white. */
+#share-button:hover,
+#share-button:focus {
+  transform: scale(1.08);
+  background-color: #fff;
+  color: var(--bs-primary, #2c3e50);
+  border-color: var(--bs-primary, #2c3e50);
+}
+
+#share-button:active {
+  transform: scale(0.94);
+}
+
+#share-button-icon {
+  font-size: 1.2rem;
+}

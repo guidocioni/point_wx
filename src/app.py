@@ -15,7 +15,7 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import APP_PORT, URL_BASE_PATHNAME, cache
-from components import navbar, footer
+from components import navbar, footer, share_button
 from flask import request, redirect
 from utils.custom_logger import logging
 from utils.ai_utils import create_ai_report
@@ -160,6 +160,7 @@ def serve_layout():
                 ),
                 dbc.Container(dash.page_container, class_name="my-2", id="content"),
                 dcc.Location(id="url", refresh=False),
+                share_button,
                 footer,
             ],
             id="app-div",
