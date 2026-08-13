@@ -2,7 +2,7 @@ from dash import dcc
 import plotly.express as px
 import pandas as pd
 from utils.settings import images_config
-from utils.figures_utils import add_attribution
+from utils.figures_utils import add_attribution, blank_figure
 from utils.weather_emoji import get_weather_emoji_series
 import plotly.graph_objects as go
 from copy import deepcopy
@@ -387,6 +387,7 @@ images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1200, 'height': 700})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="ensemble-heatmap"),
+    figure=blank_figure(),
     config=images_config,
     style={"height": "90vh", "minHeight": "500px"},
 )

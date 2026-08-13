@@ -4,7 +4,7 @@ import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE
 from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, wrap_comma_separated,
-    estimate_legend_rows,
+    estimate_legend_rows, blank_figure,
 )
 from utils.weather_emoji import get_weather_emoji_series
 import plotly.graph_objects as go
@@ -286,5 +286,5 @@ def make_lineplot(
 images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
 fig_subplots = dcc.Graph(
-    id=dict(type="figure", id="deterministic-heatmap"), config=images_config
+    id=dict(type="figure", id="deterministic-heatmap"), figure=blank_figure(), config=images_config
 )

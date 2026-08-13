@@ -2,6 +2,23 @@ import json
 import dash_leaflet as dl
 from utils.settings import MAPBOX_API_KEY, ASSETS_DIR
 import numpy as np
+import plotly.graph_objects as go
+
+
+def blank_figure():
+    """
+    Placeholder figure for a dcc.Graph before any data has been plotted into it
+    (page load, restoring from figures-store). A dcc.Graph without an explicit
+    "figure" defaults to {}, which Plotly renders as a chart with visible 0-1
+    axes/gridlines - this hides those so the empty state just looks blank
+    instead of broken.
+    """
+    return go.Figure().update_layout(
+        xaxis={"visible": False},
+        yaxis={"visible": False},
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+    )
 
 def estimate_legend_rows(items, avail_px=1300, entry_overhead_px=45, char_px=6.5):
     """Greedily pack a horizontal legend's entries into rows sized by each

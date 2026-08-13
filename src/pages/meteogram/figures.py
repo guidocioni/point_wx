@@ -3,7 +3,7 @@ from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from utils.settings import images_config
-from utils.figures_utils import add_attribution
+from utils.figures_utils import add_attribution, blank_figure
 from utils.weather_emoji import get_weather_emoji_series
 import pandas as pd
 
@@ -517,4 +517,4 @@ def make_subplot_figure(data, title=None, clima=None, viewport_width=None):
 # CARDS for layout
 images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 800, 'height': 850})
-fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), config=images_config, style={'height':'90vh', 'minHeight': '650px'})
+fig_subplots = dcc.Graph(id=dict(type="figure", id="meteogram"), figure=blank_figure(), config=images_config, style={'height':'90vh', 'minHeight': '650px'})

@@ -4,7 +4,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
 from utils.settings import images_config
-from utils.figures_utils import add_attribution, get_precip_yaxis_max
+from utils.figures_utils import add_attribution, get_precip_yaxis_max, blank_figure
 
 
 def make_boxplot_timeseries(df, var, clima=None):
@@ -490,7 +490,7 @@ def make_subplot_figure(data, clima=None, title=None, sun=None, additional_plot=
 # Figures for layout
 
 
-fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"),
+fig_subplots = dcc.Graph(id=dict(type="figure", id="ensemble"), figure=blank_figure(),
                          config=images_config, style={'height':'90vh', 'minHeight': '750px'})
 # fig_polar = dcc.Graph(id='polar-plot',
 #                       config={**images_config, 'displayModeBar': False})

@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 from utils.settings import images_config
-from utils.figures_utils import add_attribution
+from utils.figures_utils import add_attribution, blank_figure
 from copy import deepcopy
 
 DAY_COUNT_TYPES = (
@@ -254,6 +254,7 @@ images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1200, 'height': 700})
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="calendar"),
+    figure=blank_figure(),
     config=images_config,
     style={"height": "95vh", "minHeight": "500px"},
 )

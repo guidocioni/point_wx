@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from dash import dcc
 from utils.settings import images_config
-from utils.figures_utils import add_attribution
+from utils.figures_utils import add_attribution, blank_figure
 from utils.custom_logger import logging
 
 try:
@@ -540,6 +540,7 @@ def make_figure_skewt(df, title=None):
 
 fig_subplots = dcc.Graph(
     id=dict(type="figure", id="vertical"),
+    figure=blank_figure(),
     config=images_config,
     style={"height": "95vh", "minHeight": "650px"},
 )

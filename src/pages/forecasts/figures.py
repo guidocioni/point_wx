@@ -6,7 +6,7 @@ import pandas as pd
 from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
 from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, estimate_legend_rows,
-    get_precip_yaxis_max,
+    get_precip_yaxis_max, blank_figure,
 )
 
 
@@ -364,5 +364,5 @@ def make_subplot_figure(data, models, title=None, sun=None):
 
 
 fig_subplots = dcc.Graph(
-    id=dict(type="figure", id="deterministic"), config=images_config, style={'height':'90vh', 'minHeight': '680px'}
+    id=dict(type="figure", id="deterministic"), figure=blank_figure(), config=images_config, style={'height':'90vh', 'minHeight': '680px'}
 )
