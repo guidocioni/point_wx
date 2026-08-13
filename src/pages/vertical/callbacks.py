@@ -137,21 +137,21 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
         )
 
 
-@callback(
-    [
-        Output(dict(type="figure", id="vertical"), "figure", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'vertical'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("vertical" in figures_store)) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        return [figures_store["vertical"], true];
+    }
+    """,
+    Output(dict(type="figure", id="vertical"), "figure", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'vertical'}, "is_open", allow_duplicate=True),
     Input("models-selection-vertical", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figure and open collapse when returning to this page"""
-    if not figures_store or "vertical" not in figures_store:
-        raise PreventUpdate
-
-    return figures_store["vertical"], True
 
 
 clientside_callback(

@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, no_update
+from dash import callback, Output, Input, State, no_update, clientside_callback
 from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
@@ -99,21 +99,21 @@ def generate_figure(n_clicks, locations, location, models, from_now_, days_, min
         )
 
 
-@callback(
-    [
-        Output(dict(type="figure", id="deterministic"), "figure", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'deterministic'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("deterministic" in figures_store)) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        return [figures_store["deterministic"], true];
+    }
+    """,
+    Output(dict(type="figure", id="deterministic"), "figure", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'deterministic'}, "is_open", allow_duplicate=True),
     Input("models-selection-deterministic", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figure and open collapse when returning to this page"""
-    if not figures_store or "deterministic" not in figures_store:
-        raise PreventUpdate
-
-    return figures_store["deterministic"], True
 
 
 @callback(

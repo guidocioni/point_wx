@@ -114,23 +114,24 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
         return no_update, no_update, no_update, "An error occurred when processing the data", True, no_update
 
 
-@callback(
-    [
-        Output("prec-climate-daily-container", "children", allow_duplicate=True),
-        Output("temp-climate-daily-container", "children", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'daily'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("daily" in figures_store)) {
+            var nu = window.dash_clientside.no_update;
+            return [nu, nu, nu];
+        }
+        var figs = figures_store["daily"];
+        return [figs["prec"], figs["temp"], true];
+    }
+    """,
+    Output("prec-climate-daily-container", "children", allow_duplicate=True),
+    Output("temp-climate-daily-container", "children", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'daily'}, "is_open", allow_duplicate=True),
     Input("acc-variable-selection-daily", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figures and open collapse when returning to this page"""
-    if not figures_store or "daily" not in figures_store:
-        raise PreventUpdate
-
-    daily_figs = figures_store["daily"]
-    return daily_figs["prec"], daily_figs["temp"], True
 
 
 @callback(

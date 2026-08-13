@@ -177,35 +177,36 @@ def generate_figure(n_clicks, locations, location, model, dates, figures_store):
         )
 
 
-@callback(
-    [
-        Output("temp-prec-climate-container", "children", allow_duplicate=True),
-        Output("clouds-climate-container", "children", allow_duplicate=True),
-        Output("precipitation-climate-container", "children", allow_duplicate=True),
-        Output("temperature-climate-container", "children", allow_duplicate=True),
-        Output("winds-climate-container", "children", allow_duplicate=True),
-        Output("winds-rose-climate-container", "children", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'monthly'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        var nu = window.dash_clientside.no_update;
+        if (!figures_store || !("monthly" in figures_store)) {
+            return [nu, nu, nu, nu, nu, nu, nu];
+        }
+        var figs = figures_store["monthly"];
+        return [
+            figs["temp-prec"],
+            figs["clouds"],
+            figs["precipitation"],
+            figs["temperature"],
+            figs["winds"],
+            figs["winds-rose"],
+            true,
+        ];
+    }
+    """,
+    Output("temp-prec-climate-container", "children", allow_duplicate=True),
+    Output("clouds-climate-container", "children", allow_duplicate=True),
+    Output("precipitation-climate-container", "children", allow_duplicate=True),
+    Output("temperature-climate-container", "children", allow_duplicate=True),
+    Output("winds-climate-container", "children", allow_duplicate=True),
+    Output("winds-rose-climate-container", "children", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'monthly'}, "is_open", allow_duplicate=True),
     Input("models-selection-climate", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figures(_, figures_store):
-    """Restore all 6 figures and open collapse when returning to this page"""
-    if not figures_store or "monthly" not in figures_store:
-        raise PreventUpdate
-
-    monthly_figs = figures_store["monthly"]
-    return (
-        monthly_figs["temp-prec"],
-        monthly_figs["clouds"],
-        monthly_figs["precipitation"],
-        monthly_figs["temperature"],
-        monthly_figs["winds"],
-        monthly_figs["winds-rose"],
-        True,
-    )
 
 
 @callback(Output("date-range-climate", "maxDate"), Input("date-range-climate", "id"))

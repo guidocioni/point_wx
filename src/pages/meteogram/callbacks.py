@@ -107,21 +107,21 @@ def generate_figure(n_clicks, locations, location, model, viewport_width, figure
         )
 
 
-@callback(
-    [
-        Output(dict(type="figure", id="meteogram"), "figure", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'meteogram'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("meteogram" in figures_store)) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        return [figures_store["meteogram"], true];
+    }
+    """,
+    Output(dict(type="figure", id="meteogram"), "figure", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'meteogram'}, "is_open", allow_duplicate=True),
     Input("models-selection-meteogram", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figure and open collapse when returning to this page"""
-    if not figures_store or "meteogram" not in figures_store:
-        raise PreventUpdate
-
-    return figures_store["meteogram"], True
 
 
 clientside_callback(

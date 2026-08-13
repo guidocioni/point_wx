@@ -120,21 +120,21 @@ def generate_figure(n_clicks, locations, location, model, graph_type, graph_type
         )
 
 
-@callback(
-    [
-        Output(dict(type="figure", id="calendar"), "figure", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'calendar'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("calendar" in figures_store)) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        return [figures_store["calendar"], true];
+    }
+    """,
+    Output(dict(type="figure", id="calendar"), "figure", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'calendar'}, "is_open", allow_duplicate=True),
     Input("year-selection-calendar", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figure and open collapse when returning to this page"""
-    if not figures_store or "calendar" not in figures_store:
-        raise PreventUpdate
-
-    return figures_store["calendar"], True
 
 
 # Remove focus from dropdown once an element has been selected

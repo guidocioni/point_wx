@@ -149,21 +149,21 @@ def generate_figure(n_clicks, locations, location, model, variable, from_now_, d
         )
 
 
-@callback(
-    [
-        Output(dict(type="figure", id="ensemble-heatmap"), "figure", allow_duplicate=True),
-        Output({'type': 'fade', 'index': 'heatmap'}, "is_open", allow_duplicate=True),
-    ],
+clientside_callback(
+    """
+    function(_, figures_store) {
+        if (!figures_store || !("ensemble-heatmap" in figures_store)) {
+            return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+        }
+        return [figures_store["ensemble-heatmap"], true];
+    }
+    """,
+    Output(dict(type="figure", id="ensemble-heatmap"), "figure", allow_duplicate=True),
+    Output({'type': 'fade', 'index': 'heatmap'}, "is_open", allow_duplicate=True),
     Input("variable-selection-heatmap", "id"),
     State("figures-store", "data"),
     prevent_initial_call='initial_duplicate',
 )
-def restore_figure(_, figures_store):
-    """Restore figure and open collapse when returning to this page"""
-    if not figures_store or "ensemble-heatmap" not in figures_store:
-        raise PreventUpdate
-
-    return figures_store["ensemble-heatmap"], True
 
 
 # Remove focus from dropdown once an element has been selected
