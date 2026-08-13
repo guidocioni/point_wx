@@ -21,12 +21,13 @@ with the rest of the page's callbacks rather than next to the components)::
     ])
 
 where "ensemble" is the index the page already uses for its {"type": "fade", "index": ...}
-Collapse. No change to the page layout is needed: register() records the page here and
-app.py emits the two stores it needs (see sync_stores()) into the app layout.
+Collapse. The page's layout.py must also spread in the stores these callbacks talk
+through::
+
+    layout = html.Div([..., *sync_stores("ensemble")])
 """
 
-import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from io import StringIO
 from typing import Any, Optional, Sequence, Union
 from urllib.parse import parse_qs, quote, urlencode
@@ -35,24 +36,27 @@ import pandas as pd
 from dash import Input, Output, State, callback, dcc, no_update
 from dash.exceptions import PreventUpdate
 
+from .custom_logger import logging
 from .settings import get_valid_values
 
 # Coordinates are rounded to the same precision create_unique_id() normalises to,
 # so the id generated from a shared link matches the one the app would build itself.
 COORD_PRECISION = 4
 
+
+# The three page-scoped stores the sync callbacks hand off through, in the order they
+# fire: "this page just mounted" -> "the URL has been read into the selectors" -> "here
+# is the query string for the address bar". app.py writes the first and consumes the
+# last; register() below owns the middle.
 def trigger_id(page):
-    """Store telling a page that it has just been mounted."""
     return {"type": "url-sync-trigger", "index": page}
 
 
 def applied_id(page):
-    """Store telling a page's writer that its reader is done (see register())."""
     return {"type": "url-sync-applied", "index": page}
 
 
 def query_id(page):
-    """Store carrying the query string this page wants in the address bar."""
     return {"type": "url-query", "index": page}
 
 
@@ -93,11 +97,10 @@ class Param:
     lo: Optional[int] = None
     hi: Optional[int] = None
     default: Any = None
-    _valid_values: list = field(default_factory=list, compare=False, repr=False)
 
-    def __post_init__(self):
-        if self.valid is not None:
-            object.__setattr__(self, "_valid_values", get_valid_values(self.valid))
+    def allowed(self):
+        """The accepted values, or None when this parameter is unconstrained."""
+        return get_valid_values(self.valid) if self.valid is not None else None
 
 
 def _encode_one(param, value):
@@ -157,13 +160,15 @@ def _decode_one(param, query, current):
             out = min(hi, out)
         return out
 
+    allowed = param.allowed()
+
     if param.kind == "list":
         out = [v for v in raw.split(",") if v]
-        if param._valid_values:
-            out = [v for v in out if v in param._valid_values]
+        if allowed is not None:
+            out = [v for v in out if v in allowed]
         return out if out else _fallback(param, current)
 
-    if param._valid_values and raw not in param._valid_values:
+    if allowed is not None and raw not in allowed:
         return _fallback(param, current)
     return raw
 
@@ -198,7 +203,9 @@ def coords_of_selected(locations_list, location_selected):
             round(float(loc["latitude"].item()), COORD_PRECISION),
             round(float(loc["longitude"].item()), COORD_PRECISION),
         )
-    except (ValueError, KeyError, TypeError):
+    except Exception:
+        # locations-list comes out of the browser's local storage and may predate any
+        # change to its shape; never let that break the address bar
         return None, None
 
 
@@ -274,9 +281,6 @@ def register(page, params):
             return ""
         # Keep commas and colons literal so the URL stays readable/hand-editable
         return "?" + urlencode(pairs, safe=",:", quote_via=quote)
-
-    # Returned only to keep a reference; Dash has already registered both callbacks.
-    return _read_url, _write_url
 
 
 def coords_from_search(search):
