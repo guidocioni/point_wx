@@ -269,18 +269,22 @@ def update_navbar_title(pathname, is_open):
         return ""
 
 
-@callback(
+'''
+Disable submit button (on all pages) unless
+a location has been selected.
+
+Deliberately clientside: the answer is already in the browser, so a round-trip would just
+leave the button greyed out for a moment after the user has picked a location.
+'''
+clientside_callback(
+    """
+    function(location) {
+        return location === null || location === undefined;
+    }
+    """,
     Output({"type": "submit-button", "index": MATCH}, "disabled"),
     Input("location_search_new", "value"),
 )
-def activate_submit_button(location):
-    """
-    Disable submit button (on all pages) unless
-    a location has been selected
-    """
-    if location is None:
-        return True
-    return False
 
 
 @callback(
