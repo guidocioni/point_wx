@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from components.location_selector import loc_selector
 from components.info_box import info_box
 from .options_selector import opts_selector
+from utils.url_sync import sync_stores
 from .figures import fig_subplots
 from .callbacks import *
 
@@ -13,6 +14,7 @@ layout = html.Div(
     id="meteogram-page-div",
     children=[
         dcc.Store(id="meteogram-viewport-width"),
+        *sync_stores("meteogram"),
         info_box(
             [
                 (

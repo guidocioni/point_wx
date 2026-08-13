@@ -11,6 +11,7 @@ from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS, CLIMATOLOGY_VARS, val
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
+from utils.url_sync import Param, register
 
 
 @callback(
@@ -161,3 +162,13 @@ clientside_callback(
     Input('variable-selection-heatmap', 'value'),
     prevent_initial_call=True
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("heatmap", [
+    Param("models-selection-heatmap", "value", "model", valid=ENSEMBLE_MODELS),
+    Param("variable-selection-heatmap", "value", "var", valid=ENSEMBLE_VARS),
+    Param("decimate-switch", "checked", "decimate", kind="bool"),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("heatmap-line-plot-switch", "checked", "heatmap", kind="bool"),
+])

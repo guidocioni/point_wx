@@ -7,6 +7,7 @@ from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
 import plotly.io as pio
+from utils.url_sync import Param, register
 
 @callback(
     [
@@ -108,3 +109,12 @@ def constrain_days_minutely_15(checked, forecast_days):
         return min(3, forecast_days), 3
     else:
         return no_update, 15
+
+
+# Keep the page's selectors and the URL query string in sync
+register("deterministic", [
+    Param("models-selection-deterministic", "value", "models", kind="list", valid=DETERMINISTIC_MODELS),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("minutely-15-switch", "checked", "min15", kind="bool"),
+    Param("forecast-days", "value", "days", kind="int", lo=1, hi=15),
+])

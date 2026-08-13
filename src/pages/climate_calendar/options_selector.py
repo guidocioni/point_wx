@@ -2,20 +2,7 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import REANALYSIS_MODELS
 
-opts_selector = dbc.Card(
-    [
-        dmc.Select(
-            label='Model',
-            id="models-selection-climate-calendar",
-            data=REANALYSIS_MODELS,
-            value="era5_seamless",
-            className="mb-2",
-            allowDeselect=False
-        ),
-        dmc.Select(
-            label='Graph',
-            id="graph-selection-climate-calendar",
-            data=[
+graph_options = [
                     {"label": "Accumulated precipitation (mm)", "value": "accumulated_precipitation"},
                     {"label": "Wet days (Precipitation >= 1 mm)", "value": "precipitation_days"},
                     {"label": "Precipitation anomaly (%)", "value": "precipitation_anomaly"},
@@ -35,7 +22,22 @@ opts_selector = dbc.Card(
                     {"label": "Average temperature (°C)", "value": "temperature_mean"},
                     {"label": "Minimum temperature (°C)", "value": "temperature_min"},
                     {"label": "Maximum temperature (°C)", "value": "temperature_max"},
-                ],
+]
+
+opts_selector = dbc.Card(
+    [
+        dmc.Select(
+            label='Model',
+            id="models-selection-climate-calendar",
+            data=REANALYSIS_MODELS,
+            value="era5_seamless",
+            className="mb-2",
+            allowDeselect=False
+        ),
+        dmc.Select(
+            label='Graph',
+            id="graph-selection-climate-calendar",
+            data=graph_options,
             value="accumulated_precipitation",
             className="mb-2",
             clearable=False,

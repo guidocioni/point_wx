@@ -22,6 +22,7 @@ import pandas as pd
 from io import StringIO
 from datetime import date, timedelta
 from copy import deepcopy
+from utils.url_sync import Param, register
 
 images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1100, 'height': 500})
@@ -186,3 +187,10 @@ clientside_callback(
     Input("models-selection-climate", "value"),
     prevent_initial_call=True,
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("monthly", [
+    Param("models-selection-climate", "value", "model", valid=REANALYSIS_MODELS),
+    Param("date-range-climate", "value", ("start", "end"), kind="daterange"),
+])

@@ -2,6 +2,12 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from utils.settings import REANALYSIS_MODELS
 
+# These reanalysis models cause too many issues on this page. Defined here once and reused
+# by callbacks.py, both to grey them out in the dropdown (see callbacks.disable_models) and
+# to keep a URL ?model= from selecting one behind the UI's back.
+DISABLED_MODELS = ["ecmwf_ifs", "era5_land"]
+ENABLED_MODELS = [m for m in REANALYSIS_MODELS if m["value"] not in DISABLED_MODELS]
+
 acc_vars_options = [
     {"label": "Precipitation [mm]", "value": "precipitation_sum"},
     {"label": "Rain [mm]", "value": "rain_sum"},

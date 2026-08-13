@@ -6,6 +6,8 @@ from datetime import date, timedelta
 from .figures import make_calendar_figure
 import pandas as pd
 from io import StringIO
+from .options_selector import graph_options
+from utils.url_sync import Param, register
 
 
 @callback(
@@ -132,3 +134,12 @@ clientside_callback(
     Input('graph-selection-climate-calendar', 'value'),
     prevent_initial_call=True
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("calendar", [
+    Param("models-selection-climate-calendar", "value", "model", valid=REANALYSIS_MODELS),
+    Param("graph-selection-climate-calendar", "value", "graph", valid=graph_options),
+    Param("year-selection-calendar", "value", "year", kind="int", lo=1940,
+          hi=lambda: date.today().year),
+])

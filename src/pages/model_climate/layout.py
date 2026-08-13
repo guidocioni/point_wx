@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from components.location_selector import loc_selector
 from components.info_box import info_box
 from .options_selector import opts_selector
+from utils.url_sync import sync_stores
 from .callbacks import *
 
 dash.register_page(__name__, path="/climate", title="Climate (monthly)")
@@ -122,5 +123,6 @@ layout = html.Div(
             id={"type": "fade", "index": "monthly"},
             is_open=False,
         ),
+        *sync_stores("monthly"),
     ]
 )

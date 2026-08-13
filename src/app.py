@@ -93,6 +93,7 @@ def serve_layout():
                 dcc.Store(id="client-first-visit", storage_type="local"),
                 dcc.Store(id='dummy-data'),
                 dcc.Store(id='figure-ready-signal'),
+                dcc.Store(id='url-location'),
                 dbc.Modal(
                     [
                         dbc.ModalHeader(
@@ -268,18 +269,22 @@ def update_navbar_title(pathname, is_open):
         return ""
 
 
-@callback(
+'''
+Disable submit button (on all pages) unless
+a location has been selected.
+
+Deliberately clientside: the answer is already in the browser, so a round-trip would just
+leave the button greyed out for a moment after the user has picked a location.
+'''
+clientside_callback(
+    """
+    function(location) {
+        return location === null || location === undefined;
+    }
+    """,
     Output({"type": "submit-button", "index": MATCH}, "disabled"),
     Input("location_search_new", "value"),
 )
-def activate_submit_button(location):
-    """
-    Disable submit button (on all pages) unless
-    a location has been selected
-    """
-    if location is None:
-        return True
-    return False
 
 
 @callback(
@@ -305,6 +310,60 @@ def toggle_fade(n, is_open):
     if n:
         return True
     return False
+
+
+'''
+URL query parameters sync, part 1 of 2 (see utils/url_sync.py for the rest).
+
+Announce that a page has just been mounted, so that its selectors can be filled in from
+the query string. This has to go through a store rather than being consumed directly by
+the page callbacks: those write to selectors whose ids are shared between pages
+(from-now-switch, forecast-days, ...) and therefore must use allow_duplicate, which in
+turn forbids them from running on an initial call.
+
+Every page carries exactly one "fade" Collapse with the same index as its stores, so MATCH
+pairs them up and only the mounted page fires. Pages without figures (home, chatbot) have
+no fade and no stores, and are simply never matched.
+'''
+@callback(
+    Output({"type": "url-sync-trigger", "index": MATCH}, "data"),
+    Input({"type": "fade", "index": MATCH}, "id"),
+)
+def fire_url_sync(_):
+    # A fresh token every time, so that mounting the same page twice always re-syncs
+    return str(uuid.uuid4())
+
+
+'''
+URL query parameters sync, part 2 of 2: reflect the query string built by the page
+writer callbacks into the address bar.
+
+This uses history.replaceState rather than Output("url", "search") on purpose: dcc.Location
+pushes a new history entry on every change, which would mean one Back press per switch
+toggled. window.location.pathname is used as-is so that URL_BASE_PATHNAME (or any proxy
+prefix) is preserved without having to be reconstructed.
+Note this leaves the "url" component's own search prop stale, which is harmless: it is only
+read when a page mounts, and the writer immediately re-normalises the address bar anyway.
+
+The input is an ALL pattern because the url-query store lives in the page layout (see
+url_sync.sync_stores); at most one is mounted at a time, and pages without figures mount
+none, which an ALL pattern handles as an empty list.
+'''
+clientside_callback(
+    """
+    function(qs_list) {
+        var qs = qs_list && qs_list[0];
+        if (qs === undefined || qs === null) {
+            return window.dash_clientside.no_update;
+        }
+        window.history.replaceState(null, '', window.location.pathname + qs);
+        return null;
+    }
+    """,
+    Output("dummy-data", "data", allow_duplicate=True),
+    Input({"type": "url-query", "index": ALL}, "data"),
+    prevent_initial_call=True,
+)
 
 
 '''

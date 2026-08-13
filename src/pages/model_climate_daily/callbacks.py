@@ -8,6 +8,8 @@ import pandas as pd
 from io import StringIO
 from datetime import date
 from copy import deepcopy
+from .options_selector import acc_vars_options, daily_vars_options, DISABLED_MODELS, ENABLED_MODELS
+from utils.url_sync import Param, register
 
 images_config = deepcopy(images_config)
 images_config['toImageButtonOptions'].update({'width': 1100, 'height': 600})
@@ -108,14 +110,14 @@ def generate_figure(n_clicks, locations, location, model, year, acc_var, inst_va
 
 
 @callback(
-    [
-        Output("year-selection-climate", "value"),
-        Output("year-selection-climate", "max"),
-    ],
+    Output("year-selection-climate", "max"),
     Input("year-selection-climate", "id"),
 )
 def update_max_date(_):
-    return date.today().year, date.today().year
+    # Only the upper bound is set here: the initial value is provided by the URL sync
+    # (see options_selector.py), which falls back to the current year when the URL
+    # does not carry a ?year=. Setting it here too would clobber a shared link.
+    return date.today().year
 
 
 # Disable some models
@@ -128,10 +130,7 @@ def update_max_date(_):
 )
 def disable_models(_, models):
     for model in models:
-        if model["value"] in ["ecmwf_ifs", "era5_land"]:
-            model["disabled"] = True
-        else:
-            model["disabled"] = False
+        model["disabled"] = model["value"] in DISABLED_MODELS
     return [models]
 
 
@@ -145,3 +144,17 @@ clientside_callback(
     Input("models-selection-climate-daily", "value"),
     prevent_initial_call=True,
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("daily", [
+    Param("models-selection-climate-daily", "value", "model", valid=ENABLED_MODELS),
+    # No value= on the NumberInput itself: the current year is the fallback, applied
+    # only when the URL does not carry a ?year= (see callbacks.update_max_date)
+    # hi mirrors the max that callbacks.update_max_date puts on the component; without it
+    # a future ?year= would sail through and fail when the data is fetched
+    Param("year-selection-climate", "value", "year", kind="int", lo=1951,
+          hi=lambda: date.today().year, default=lambda: date.today().year),
+    Param("acc-variable-selection-daily", "value", "accvar", valid=acc_vars_options),
+    Param("inst-variable-selection-daily", "value", "instvar", valid=daily_vars_options),
+])

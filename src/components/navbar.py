@@ -7,7 +7,6 @@ https://dash-bootstrap-components.opensource.faculty.ai/docs/components/navbar/
 
 # package imports
 from dash import (
-    callback,
     Output,
     Input,
     State,
@@ -65,20 +64,28 @@ def navbar():
     )
 
 
-@callback(
+'''
+Toggle the collapse of the navbar if the navbar toggler button
+is pressed. Note that this button will not appear on large screens.
+
+Deliberately clientside: this is the most frequently tapped control on mobile and the
+whole decision is "not is_open", so going to the server for it just means the menu does
+not open until the round-trip finishes (a visible delay on a slow connection).
+'''
+clientside_callback(
+    """
+    function(n, is_open) {
+        if (n) {
+            return !is_open;
+        }
+        return is_open;
+    }
+    """,
     Output("navbar-collapse", "is_open", allow_duplicate=True),
     Input("navbar-toggler", "n_clicks"),
     State("navbar-collapse", "is_open"),
     prevent_initial_call=True,
 )
-def toggle_navbar_collapse(n, is_open):
-    """
-    Toggle the collapse of the navbar if the navbar toggler button
-    is pressed. Note that this button will not appear on large screens.
-    """
-    if n:
-        return not is_open
-    return is_open
 
 
 """

@@ -9,6 +9,7 @@ from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, CLIMATOLOGY
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
+from utils.url_sync import Param, register
 
 @callback(
     [
@@ -142,3 +143,14 @@ clientside_callback(
     Input('variable-selection-deterministic-heatmap', 'value'),
     prevent_initial_call=True
 )
+
+
+# Keep the page's selectors and the URL query string in sync
+register("deterministic-heatmap", [
+    Param("models-selection-deterministic-heatmap", "value", "models", kind="list", valid=DETERMINISTIC_MODELS),
+    Param("variable-selection-deterministic-heatmap", "value", "var", valid=DETERMINISTIC_VARS),
+    Param("from-now-switch", "checked", "fromnow", kind="bool"),
+    Param("minutely-15-switch", "checked", "min15", kind="bool"),
+    Param("heatmap-line-plot-switch", "checked", "heatmap", kind="bool"),
+    Param("forecast-days", "value", "days", kind="int", lo=1, hi=15),
+])
