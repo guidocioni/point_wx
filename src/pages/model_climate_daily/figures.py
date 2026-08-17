@@ -386,7 +386,7 @@ def make_daily_figure(df, year, var, title=None):
             font=dict(size=13, color='rgba(1, 1, 1, 0.3)'),
         )
 
-    # Add max and min annotations
+    # Add max and min as toggleable traces
     df_valid = df[df[var].notna()]
     if not df_valid.empty:
         max_idx = df_valid[var].idxmax()
@@ -400,48 +400,42 @@ def make_daily_figure(df, year, var, title=None):
         max_date_str = pd.to_datetime(max_time).strftime("%d %b")
         min_date_str = pd.to_datetime(min_time).strftime("%d %b")
 
-        # Determine horizontal positioning: if in first half, arrow to right; if second half, to left
+        # Determine horizontal text positioning: if in first half, text to right; if second half, to left
         time_range = df_valid["time"].max() - df_valid["time"].min()
         midpoint = df_valid["time"].min() + time_range / 2
 
-        max_ax = 50 if max_time < midpoint else -50
-        min_ax = 50 if min_time < midpoint else -50
+        max_textposition = 'middle right' if max_time < midpoint else 'middle left'
+        min_textposition = 'middle right' if min_time < midpoint else 'middle left'
 
-        fig.add_annotation(
-            x=max_time,
-            y=max_value,
-            text=f"Max: {max_value:.1f}<br>{max_date_str}",
-            showarrow=True,
-            arrowhead=2,
-            arrowsize=1,
-            arrowwidth=1,
-            arrowcolor="#2a3f5f",
-            ax=max_ax,
-            ay=0,
-            font=dict(size=9, color="#2a3f5f"),
-            bgcolor="rgba(255, 255, 255, 0.85)",
-            bordercolor="#2a3f5f",
-            borderwidth=1,
-            borderpad=2,
-        )
+        # Add max marker with text as a trace (toggleable)
+        fig.add_trace(go.Scatter(
+            x=[max_time],
+            y=[max_value],
+            mode='markers+text',
+            marker=dict(size=10, color='#d62728', symbol='triangle-up'),
+            text=f"{max_date_str}: {max_value:.1f}",
+            textposition=max_textposition,
+            textfont=dict(size=9, color="#2a3f5f"),
+            cliponaxis=False,
+            name='Max',
+            showlegend=True,
+            hovertemplate=f"Max: {max_value:.1f}<br>{max_date_str}<extra></extra>"
+        ))
 
-        fig.add_annotation(
-            x=min_time,
-            y=min_value,
-            text=f"Min: {min_value:.1f}<br>{min_date_str}",
-            showarrow=True,
-            arrowhead=2,
-            arrowsize=1,
-            arrowwidth=1,
-            arrowcolor="#2a3f5f",
-            ax=min_ax,
-            ay=0,
-            font=dict(size=9, color="#2a3f5f"),
-            bgcolor="rgba(255, 255, 255, 0.85)",
-            bordercolor="#2a3f5f",
-            borderwidth=1,
-            borderpad=2,
-        )
+        # Add min marker with text as a trace (toggleable)
+        fig.add_trace(go.Scatter(
+            x=[min_time],
+            y=[min_value],
+            mode='markers+text',
+            marker=dict(size=10, color='#1f77b4', symbol='triangle-down'),
+            text=f"{min_date_str}: {min_value:.1f}",
+            textposition=min_textposition,
+            textfont=dict(size=9, color="#2a3f5f"),
+            cliponaxis=False,
+            name='Min',
+            showlegend=True,
+            hovertemplate=f"Min: {min_value:.1f}<br>{min_date_str}<extra></extra>"
+        ))
 
         # Calculate and display average anomaly for the year
         df_anomaly = df_valid.copy()
@@ -471,6 +465,10 @@ def make_daily_figure(df, year, var, title=None):
         margin={"r": 5, "t": 30, "l": 0.1, "b": 0.1},
         barmode="stack",
         legend=dict(orientation="h", font=dict(size=11)),
+        xaxis=dict(
+            range=[df["time"].min(), df["time"].max()],
+            fixedrange=False
+        ),
         yaxis=dict(
             showgrid=True,
             title=next(item["label"] for item in daily_vars_options if item["value"] == var),
