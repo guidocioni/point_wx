@@ -143,7 +143,7 @@ def make_acc_figure(df, year, var, title=None):
                         legendgroup="seasonal_range",
                         showlegend=True,
                         fill="tonexty",
-                        fillcolor="rgba(255, 0, 0, 0.2)",
+                        fillcolor="rgba(255, 0, 0, 0.1)",
                     ),
                 )
 
@@ -175,7 +175,7 @@ def make_acc_figure(df, year, var, title=None):
                             legendgroup="seasonal_range",
                             showlegend=False,
                             fill="tonexty",
-                            fillcolor="rgba(255, 0, 0, .4)",
+                            fillcolor="rgba(255, 0, 0, .2)",
                         ),
                     )
 
@@ -304,7 +304,7 @@ def make_daily_figure(df, year, var, title=None):
     fig.add_trace(go.Scatter(
         x=df.dummy_date, y=df[f"{var}_clima"],
         mode="lines", name="Clima",
-        line=dict(width=3, color="black"), showlegend=True,
+        line=dict(width=2, color="black"), showlegend=True,
     ))
     fig.add_trace(go.Scatter(
         x=df.dummy_date, y=df["q05"],
@@ -351,7 +351,7 @@ def make_daily_figure(df, year, var, title=None):
             fig.add_trace(go.Scatter(
                 x=df_seasonal.dummy_date, y=df_seasonal[seasonal_mean_col],
                 mode="lines", name="Seasonal Forecast Mean",
-                line=dict(width=2, color=color_above.replace(", 1)", ", 0.6)")),
+                line=dict(width=1, color=color_above.replace(", 1)", ", 0.6)")),
                 showlegend=True,
             ))
 

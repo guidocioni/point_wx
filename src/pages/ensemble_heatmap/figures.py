@@ -240,7 +240,7 @@ def make_lineplot(
                 lambda x: category_names.get(x, "No precip") if not pd.isna(x) else "No precip"
             )
             traces.append(
-                go.Scatter(
+                go.Scattergl(
                     x=df.loc[:, "time"],
                     y=df.loc[:, col],
                     mode="lines",
@@ -254,7 +254,7 @@ def make_lineplot(
     else:
         for col in df.columns[df.columns.str.match(columns_regex)]:
             traces.append(
-                go.Scatter(
+                go.Scattergl(
                     x=df.loc[:, "time"],
                     y=df.loc[:, col],
                     mode="lines",
@@ -262,7 +262,7 @@ def make_lineplot(
                     hovertemplate="<extra></extra><b>%{x|%a %-d %b %H:%M}</b>, "
                     + var
                     + " = %{y}",
-                    line=dict(width=1),
+                    line=dict(width=2),
                     showlegend=False,
                 ),
             )
