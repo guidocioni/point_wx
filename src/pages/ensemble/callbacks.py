@@ -9,6 +9,7 @@ from utils.openmeteo_api import (
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
 from utils.settings import ENSEMBLE_MODELS, validate_model_selection
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks
 import pandas as pd
@@ -162,6 +163,14 @@ clientside_callback(
     """,
     Input("models-selection", "value"),
     prevent_initial_call=True,
+)
+
+
+# Register location-based model filtering callback using the factory
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection",
+    model_options=ENSEMBLE_MODELS,
+    model_type="ensemble"
 )
 
 

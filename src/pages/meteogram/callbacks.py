@@ -4,6 +4,7 @@ from utils.openmeteo_api import compute_daily_ensemble_meteogram, compute_climat
 from utils.figures_utils import get_weather_icons
 from utils.settings import ASSETS_DIR, validate_model_selection
 from utils.custom_logger import logging
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
@@ -144,6 +145,14 @@ clientside_callback(
     """,
     Output('meteogram-viewport-width', 'data'),
     Input('meteogram-page-div', 'id'),
+)
+
+
+# Register location-based model filtering callback
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection-meteogram",
+    model_options=METEOGRAM_MODELS,
+    model_type="ensemble"
 )
 
 

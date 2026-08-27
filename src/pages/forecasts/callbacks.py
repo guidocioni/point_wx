@@ -4,6 +4,7 @@ from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
 from utils.settings import DEFAULT_TEMPLATE, DETERMINISTIC_MODELS, get_valid_values
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_subplot_figure
 import pandas as pd
 from io import StringIO
@@ -130,6 +131,14 @@ def constrain_days_minutely_15(checked, forecast_days):
         return min(3, forecast_days), 3
     else:
         return no_update, 15
+
+
+# Register location-based model filtering callback
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection-deterministic",
+    model_options=DETERMINISTIC_MODELS,
+    model_type="deterministic"
+)
 
 
 # Keep the page's selectors and the URL query string in sync

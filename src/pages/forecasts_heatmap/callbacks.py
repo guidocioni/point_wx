@@ -7,6 +7,7 @@ from utils.openmeteo_api import (
 )
 from utils.custom_logger import logging
 from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, CLIMATOLOGY_VARS, get_valid_values
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -171,6 +172,14 @@ clientside_callback(
     """,
     Input('variable-selection-deterministic-heatmap', 'value'),
     prevent_initial_call=True
+)
+
+
+# Register location-based model filtering callback
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection-deterministic-heatmap",
+    model_options=DETERMINISTIC_MODELS,
+    model_type="deterministic"
 )
 
 

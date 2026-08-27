@@ -3,6 +3,7 @@ from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_vertical_data, get_model_meta
 from utils.custom_logger import logging
 from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_figure_vertical, make_figure_skewt
 import pandas as pd
 from io import StringIO
@@ -163,6 +164,14 @@ clientside_callback(
     """,
     Input('models-selection-vertical', 'value'),
     prevent_initial_call=True
+)
+
+
+# Register location-based model filtering callback
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection-vertical",
+    model_options=DETERMINISTIC_MODELS,
+    model_type="deterministic"
 )
 
 

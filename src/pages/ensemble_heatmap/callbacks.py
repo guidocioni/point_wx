@@ -9,6 +9,7 @@ from utils.openmeteo_api import (
 )
 from utils.custom_logger import logging
 from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS, CLIMATOLOGY_VARS, validate_model_selection
+from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_heatmap, make_lineplot
 import pandas as pd
 from io import StringIO
@@ -186,6 +187,14 @@ clientside_callback(
     """,
     Input('variable-selection-heatmap', 'value'),
     prevent_initial_call=True
+)
+
+
+# Register location-based model filtering callback
+create_location_model_filter_callback(
+    model_dropdown_id="models-selection-heatmap",
+    model_options=ENSEMBLE_MODELS,
+    model_type="ensemble"
 )
 
 
