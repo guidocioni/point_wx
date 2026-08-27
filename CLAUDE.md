@@ -45,13 +45,36 @@ The `dcc.Store` components (`locations-list`, `location-selected`, `locations-fa
 
 Shared across all pages via `src/components/location_selector.py` + `location_selector_callbacks.py`, which populate the `locations-list` / `location-selected` Stores that every page's callback reads.
 
+### URL state synchronization
+
+`src/utils/url_sync.py` maintains bidirectional sync between URL query parameters and app state via clientside callbacks. Changes to location/model/variable selections update the URL (using `history.replaceState`), and URL changes (back/forward navigation, direct links) restore app state. This enables shareable deep links to specific forecasts.
+
+### Location-aware model filtering
+
+When a user selects a location, available models are automatically filtered based on their geographic coverage domains. This ensures users only see models that provide data for their selected location. The filtering logic:
+- `src/utils/model_domains.py` — defines geographic bounding boxes for each model
+- `src/utils/location_model_filter.py` — callback factory to avoid duplicating filtering logic across pages
+- Applied on pages: `forecasts`, `forecasts_heatmap`, `ensemble`, `ensemble_heatmap`, `meteogram`, `vertical`
+
 ### Data layer (`src/utils/openmeteo_api.py`)
 
 The single source of API access (~1200 lines): `get_forecast_data`, `get_ensemble_data`, `get_historical_data`, `compute_climatology`, and many more, each `@cache.memoize`d with a TTL appropriate to how often the data changes. Add new data access here, not in page callbacks.
 
 ### Settings hub (`src/utils/settings.py`)
 
-Holds the `cache` object, all env vars, the Plotly `images_config`, and the large model/variable option lists (`ENSEMBLE_MODELS`, `ENSEMBLE_VARS`, `DETERMINISTIC_MODELS`, `DETERMINISTIC_VARS`, `REANALYSIS_MODELS`, ...) reused by the page selectors.
+Holds the `cache` object, all env vars, and the Plotly theme configuration. Model/variable option lists have been moved to `src/utils/constants/`.
+
+### Constants (`src/utils/constants/`)
+
+Organized constants module with separated concerns:
+- `ensemble.py` — `ENSEMBLE_MODELS`, `ENSEMBLE_VARS`
+- `deterministic.py` — `DETERMINISTIC_MODELS`, `DETERMINISTIC_VARS`
+- `reanalysis.py` — `REANALYSIS_MODELS`, `REANALYSIS_VARS`
+- `climatology.py` — climatology-related constants
+- `seasonal.py` — seasonal forecast constants
+- `domains.py` — model geographic coverage domains
+- `model_metadata.py` — model metadata and initialization times
+- `plotly_config.py` — Plotly image export configuration
 
 ### AI features
 

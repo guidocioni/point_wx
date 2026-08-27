@@ -56,6 +56,7 @@ This is a Dash application that uses the open-meteo APIs (https://open-meteo.com
   - Climate calendar with historical temperature anomalies
   - AI-powered weather reports and chatbot (optional, requires OpenAI API)
 - **Location search** with geocoding via Mapbox API, recent locations saved into cache
+- **Location-aware model filtering** - Models automatically filtered by geographic coverage
 - **Persistent session-based figure storage** for seamless navigation (experimental)
 - **Comprehensive caching** for improved performance (via `flask-caching`)
 - **Support for 60+ weather models** from open-meteo API
@@ -260,7 +261,11 @@ The `-v pointwx-cache:/var/cache/pointwx` flag creates a named volume to persist
 - `src/components/` - Shared UI components (location selector, navbar, etc.)
 - `src/utils/` - Core functionality
   - `openmeteo_api.py` - Single source for all weather API access (~1200 lines, heavily cached)
-  - `settings.py` - Configuration hub, environment variables, model/variable options
+  - `settings.py` - Configuration hub and environment variables
+  - `constants/` - Organized constants (model options, domains, metadata)
+  - `model_domains.py` - Model geographic coverage definitions
+  - `location_model_filter.py` - Location-aware model filtering callbacks
+  - `url_sync.py` - URL state synchronization for shareable deep links
   - `custom_theme.py` - Plotly theme definition
   - `ai_utils.py` - OpenAI integration for AI reports
   - `mapbox_api.py` - Geocoding via Mapbox
