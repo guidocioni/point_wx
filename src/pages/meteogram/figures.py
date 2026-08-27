@@ -2,7 +2,7 @@ from copy import deepcopy
 from dash import dcc
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from utils.settings import images_config
+from utils.constants import images_config
 from utils.figures_utils import add_attribution, blank_figure
 from utils.weather_emoji import get_weather_emoji_series
 import pandas as pd

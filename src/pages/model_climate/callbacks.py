@@ -10,7 +10,8 @@ from dash import (
 from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import compute_monthly_clima, get_historical_daily_data
 from utils.custom_logger import logging
-from utils.settings import images_config, REANALYSIS_MODELS, validate_model_selection
+from utils.constants import images_config, REANALYSIS_MODELS
+from utils.settings import validate_model_selection
 from .figures import (
     make_clouds_climate_figure,
     make_precipitation_climate_figure,

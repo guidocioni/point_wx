@@ -1,6 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from utils.settings import DETERMINISTIC_MODELS
+from utils.constants import DETERMINISTIC_MODELS
 
 opts_selector = dbc.Card(
     [

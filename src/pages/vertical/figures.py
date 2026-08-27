@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 from dash import dcc
-from utils.settings import images_config
+from utils.constants import images_config
 from utils.figures_utils import add_attribution, blank_figure
 from utils.custom_logger import logging
 

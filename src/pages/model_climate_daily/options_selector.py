@@ -1,6 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from utils.settings import REANALYSIS_MODELS
+from utils.constants import REANALYSIS_MODELS
 
 # These reanalysis models cause too many issues on this page. Defined here once and reused
 # by callbacks.py, both to grey them out in the dropdown (see callbacks.disable_models) and

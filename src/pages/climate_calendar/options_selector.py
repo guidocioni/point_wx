@@ -1,6 +1,6 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
-from utils.settings import REANALYSIS_MODELS
+from utils.constants import REANALYSIS_MODELS
 
 graph_options = [
                     {"label": "Accumulated precipitation (mm)", "value": "accumulated_precipitation"},

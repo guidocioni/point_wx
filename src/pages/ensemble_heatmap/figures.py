@@ -1,7 +1,7 @@
 from dash import dcc
 import plotly.express as px
 import pandas as pd
-from utils.settings import images_config
+from utils.constants import images_config
 from utils.figures_utils import add_attribution, blank_figure
 from utils.weather_emoji import get_weather_emoji_series
 import plotly.graph_objects as go
@@ -12,30 +12,36 @@ def make_heatmap(df, var, title=None):
     var_display = var.replace("_", " ").title()
     if var in [
         "temperature_2m",
+        "temperature_500hPa",
         "temperature_850hPa",
+        "temperature_2m_max",
+        "temperature_2m_min",
         "dew_point_2m",
         "apparent_temperature",
         "surface_temperature",
     ]:
         cmap = "Turbo"
-    elif var in ["cloudcover", "visibility"]:
+    elif var in ["cloudcover", "visibility", "cloud_cover_high", "cloud_cover_mid", "cloud_cover_low"]:
         cmap = "YlGnBu_r"
     elif var == "relative_humidity_2m":
         cmap = "YlGnBu"
     elif var in ["rain", "precipitation", "accumulated_precip", "accumulated_liquid"]:
         cmap = "dense"
-    elif var in ["snowfall", "snow_depth", "accumulated_snow"]:
+    elif var in ["snowfall", "snow_depth", "accumulated_snow", "snow_depth_water_equivalent", "snowfall_water_equivalent"]:
         cmap = "Burgyl"
     elif var in [
-        "windgusts_10m",
+        "wind_gusts_10m",
         "pressure_msl",
         "wind_speed_10m",
-        "wind_direction_10m",
         "cape",
     ]:
         cmap = "Hot_r"
+    elif var in ["wind_direction_10m"]:
+        cmap = "IceFire"
     elif var == "sunshine_duration":
         cmap = "solar"
+    elif var in ["geopotential_height_500hPa", "geopotential_height_850hPa", "freezinglevel_height", "snowfall_height"]:
+        cmap = "viridis"
     elif var == "precipitation_type":
         # Custom discrete colormap for precipitation types
         # 1=Rain (blue), 2=Snow (purple), 3=Freezing (red/purple), 4=Hail (orange)

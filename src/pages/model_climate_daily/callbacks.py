@@ -3,7 +3,8 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from utils.openmeteo_api import compute_yearly_accumulation, compute_yearly_comparison
 from utils.custom_logger import logging
-from utils.settings import images_config, REANALYSIS_MODELS, validate_model_selection
+from utils.constants import images_config, REANALYSIS_MODELS
+from utils.settings import validate_model_selection
 from .figures import make_acc_figure, make_daily_figure
 import pandas as pd
 from io import StringIO

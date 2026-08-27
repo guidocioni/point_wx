@@ -6,7 +6,8 @@ from utils.openmeteo_api import (
     compute_climatology_zarr,
 )
 from utils.custom_logger import logging
-from utils.settings import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, CLIMATOLOGY_VARS, get_valid_values
+from utils.constants import DETERMINISTIC_MODELS, DETERMINISTIC_VARS, CLIMATOLOGY_VARS
+from utils.settings import get_valid_values
 from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_heatmap, make_lineplot
 import pandas as pd

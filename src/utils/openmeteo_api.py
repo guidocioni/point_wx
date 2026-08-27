@@ -3,7 +3,8 @@ import requests as r
 import numpy as np
 import re
 from functools import reduce
-from .settings import cache, OPENMETEO_KEY, ENSEMBLE_VARS, MODEL_META_MAP, TEMPORAL_RESOLUTION_SPEC
+from .settings import cache, OPENMETEO_KEY
+from .constants import ENSEMBLE_VARS, MODEL_META_MAP, TEMPORAL_RESOLUTION_SPEC
 from .custom_logger import logging, time_this_func
 
 

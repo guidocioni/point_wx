@@ -2,7 +2,7 @@ from dash import dcc
 import plotly.express as px
 import pandas as pd
 import numpy as np
-from utils.settings import images_config
+from utils.constants import images_config
 from utils.figures_utils import add_attribution, blank_figure
 from copy import deepcopy
 

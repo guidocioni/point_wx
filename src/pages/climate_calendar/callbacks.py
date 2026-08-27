@@ -2,7 +2,8 @@ from dash import callback, Output, Input, State, no_update, clientside_callback
 from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_historical_daily_data, compute_climatology
 from utils.custom_logger import logging
-from utils.settings import REANALYSIS_MODELS, validate_model_selection
+from utils.constants import REANALYSIS_MODELS
+from utils.settings import validate_model_selection
 from datetime import date, timedelta
 from .figures import make_calendar_figure
 import pandas as pd

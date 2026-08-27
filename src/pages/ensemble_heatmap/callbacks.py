@@ -8,7 +8,8 @@ from utils.openmeteo_api import (
     compute_climatology_zarr,
 )
 from utils.custom_logger import logging
-from utils.settings import ENSEMBLE_MODELS, ENSEMBLE_VARS, CLIMATOLOGY_VARS, validate_model_selection
+from utils.constants import ENSEMBLE_MODELS, ENSEMBLE_VARS, CLIMATOLOGY_VARS
+from utils.settings import validate_model_selection
 from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_heatmap, make_lineplot
 import pandas as pd

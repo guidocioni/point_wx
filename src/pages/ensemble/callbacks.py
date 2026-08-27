@@ -8,7 +8,8 @@ from utils.openmeteo_api import (
 )
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
-from utils.settings import ENSEMBLE_MODELS, validate_model_selection
+from utils.constants import ENSEMBLE_MODELS
+from utils.settings import validate_model_selection
 from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_subplot_figure, make_barpolar_figure
 from components import location_selector_callbacks

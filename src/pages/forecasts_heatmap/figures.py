@@ -1,7 +1,8 @@
 from copy import deepcopy
 from dash import dcc
 import pandas as pd
-from utils.settings import images_config, DEFAULT_TEMPLATE
+from utils.constants import images_config
+from utils.settings import DEFAULT_TEMPLATE
 from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, wrap_comma_separated,
     estimate_legend_rows, blank_figure,
@@ -15,21 +16,27 @@ import plotly.io as pio
 def make_heatmap(df, var, models, title=None):
     # Create readable variable name for hover
     var_display = var.replace("_", " ").title()
-    if var in ['temperature_2m', 'temperature_850hPa', 'dew_point_2m', 'apparent_temperature', 'surface_temperature', 'temperature_500hPa', 'soil_temperature_0cm', 'soil_temperature_6cm', 'soil_temperature_18cm', 'soil_temperature_54cm']:
+    if var in ['temperature_2m', 'temperature_850hPa', 'temperature_500hPa', 'temperature_250hPa', 'temperature_100hPa', 'temperature_50hPa', 'temperature_30hPa', 'dew_point_2m', 'apparent_temperature', 'surface_temperature', 'soil_temperature_0cm', 'soil_temperature_6cm', 'soil_temperature_18cm', 'soil_temperature_54cm']:
         cmap = 'RdBu_r'
     elif var in ['cloudcover', 'cloud_cover_low', 'cloud_cover_mid', 'cloud_cover_high']:
         cmap = 'YlGnBu_r'
-    elif var in ['relative_humidity_2m', 'relative_humidity_850hPa', 'relative_humidity_500hPa']:
+    elif var in ['relative_humidity_2m', 'relative_humidity_850hPa', 'relative_humidity_500hPa', 'total_column_integrated_water_vapour']:
         cmap = 'YlGnBu'
-    elif var in ['rain', 'precipitation',
+    elif var in ['rain', 'precipitation', 'precipitation_probability',
                  'accumulated_precip', 'accumulated_liquid', 'showers', 'soil_moisture_0_to_1cm', 'soil_moisture_1_to_3cm' ,'soil_moisture_3_to_9cm', 'soil_moisture_9_to_27cm', 'soil_moisture_27_to_81cm']:
         cmap = 'dense'
     elif var in ['snowfall', 'snow_depth', 'accumulated_snow']:
         cmap = 'Burgyl'
-    elif var in ['windgusts_10m', 'pressure_msl', 'wind_speed_10m' ,'wind_direction_10m', 'wind_speed_120m', 'wind_direction_120m', 'cape']:
+    elif var in ['windgusts_10m', 'pressure_msl', 'wind_speed_10m','wind_speed_120m', 'cape']:
         cmap = 'Hot_r'
+    elif var in ["wind_direction_10m", 'wind_direction_120m']:
+        cmap = "IceFire"
     elif var in ['sunshine_duration', 'visibility']:
         cmap = 'solar'
+    elif var in ['geopotential_height_850hPa', 'geopotential_height_500hPa', 'geopotential_height_250hPa', 'geopotential_height_100hPa', 'geopotential_height_50hPa', 'geopotential_height_30hPa', 'freezing_level_height', 'boundary_layer_height']:
+        cmap = 'viridis'
+    elif var in ['lifted_index', 'convective_inhibition']:
+        cmap = 'RdYlBu_r'
     else:
         cmap = 'RdBu_r'
 

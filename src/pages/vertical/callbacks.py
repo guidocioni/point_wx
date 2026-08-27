@@ -2,7 +2,8 @@ from dash import callback, Output, Input, State, no_update, clientside_callback
 from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_vertical_data, get_model_meta
 from utils.custom_logger import logging
-from utils.settings import DETERMINISTIC_MODELS, validate_model_selection
+from utils.constants import DETERMINISTIC_MODELS
+from utils.settings import validate_model_selection
 from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_figure_vertical, make_figure_skewt
 import pandas as pd

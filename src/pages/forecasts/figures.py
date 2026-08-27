@@ -3,7 +3,8 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
-from utils.settings import images_config, DEFAULT_TEMPLATE, ASSETS_DIR
+from utils.constants import images_config
+from utils.settings import DEFAULT_TEMPLATE, ASSETS_DIR
 from utils.figures_utils import (
     attach_alpha_to_hex_color, hex2rgba, add_attribution, estimate_legend_rows,
     get_precip_yaxis_max, blank_figure,

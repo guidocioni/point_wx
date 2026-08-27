@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import numpy as np
 from plotly.subplots import make_subplots
 import pandas as pd
-from utils.settings import images_config
+from utils.constants import images_config
 from utils.figures_utils import add_attribution, get_precip_yaxis_max, blank_figure
 
 

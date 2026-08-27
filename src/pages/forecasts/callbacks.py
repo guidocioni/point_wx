@@ -3,7 +3,8 @@ from dash.exceptions import PreventUpdate
 from utils.openmeteo_api import get_forecast_data
 from utils.suntimes import find_suntimes
 from utils.custom_logger import logging
-from utils.settings import DEFAULT_TEMPLATE, DETERMINISTIC_MODELS, get_valid_values
+from utils.constants import DETERMINISTIC_MODELS
+from utils.settings import DEFAULT_TEMPLATE, get_valid_values
 from utils.location_model_filter import create_location_model_filter_callback
 from .figures import make_subplot_figure
 import pandas as pd
