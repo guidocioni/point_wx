@@ -13,7 +13,6 @@ except ImportError:
     parcel_profile = moist_lapse = dry_lapse = units = None
     logging.warning(
         "metpy is not installed; the vertical page's skew-T diagram will not work. "
-        "Install with `pip install metpy` to enable it."
     )
 
 
@@ -230,7 +229,7 @@ def make_figure_vertical(time_axis, vertical_levels, arrs, title=None):
 def make_figure_skewt(df, title=None):
     if units is None:
         raise RuntimeError(
-            "metpy is not installed; install with `pip install metpy` to use this feature"
+            "metpy is not installed"
         )
 
     skew = 100.0

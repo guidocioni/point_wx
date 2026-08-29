@@ -1245,12 +1245,19 @@ def compute_yearly_accumulation(latitude=53.55,
     # Only compute quantiles on a subset of data
     period = (daily['time'] >= '1991-01-01') & (daily['time'] <= '2020-12-31')
 
+    # q01/q99 are computed the same way as q1/q2/q3 (exact-day quantile, then a
+    # smoothed curve) rather than pooled across a day window: the accumulated
+    # value trends within any window (it grows by roughly a day's flux each
+    # day), so pooling raw values from neighboring days would mix in
+    # systematically lower/higher totals and bias the percentile - unlike the
+    # stationary per-day-of-year variable in `compute_yearly_comparison`, where
+    # window-pooling is the correct approach.
     quantiles = (
         daily.loc[period]
         .groupby([daily.loc[period].time.dt.day, daily.loc[period].time.dt.month])[f'{var}_yearly_acc']
-        .quantile([q1, q2, q3])
+        .quantile([0.01, q1, q2, q3, 0.99])
         .unstack()
-        .rename(columns={q1: 'q1', q2: 'q2', q3: 'q3'})
+        .rename(columns={0.01: 'q01', q1: 'q1', q2: 'q2', q3: 'q3', 0.99: 'q99'})
         .rename_axis(index=['day', 'month'])  # Rename index levels
         .reset_index()  # Reset index to convert 'day' and 'month' into columns
         .assign(
@@ -1262,7 +1269,7 @@ def compute_yearly_accumulation(latitude=53.55,
     )
 
     # Smooth quantiles with a centered 15-day rolling window, extend to avoid gaps
-    for col in ['q1', 'q2', 'q3']:
+    for col in ['q01', 'q1', 'q2', 'q3', 'q99']:
         quantiles[col] = quantiles[col].rolling(window=10, center=True, min_periods=1).mean()
 
     # Filter to the target year first
@@ -1422,12 +1429,36 @@ def compute_yearly_comparison(
     daily['doy'] = daily.time.dt.strftime("%m%d")
     period = daily.loc[(daily.time >= '1991-01-01') & (daily.time <= '2020-12-31')]
     clima = period.groupby('doy')[var].mean().to_frame().add_suffix("_clima")
-    clima['q05'] = period.groupby('doy')[var].quantile(q=0.05).values
-    clima['q95'] = period.groupby('doy')[var].quantile(q=0.95).values
 
-    # Smooth quantiles with a centered 15-day rolling window, extend to avoid gaps
-    for col in ['q05', 'q95']:
-        clima[col] = pd.Series(clima[col]).rolling(window=10, center=True, min_periods=1).mean().values
+    # A single calendar day only has ~30 raw samples (one per year), far too few to
+    # estimate tail quantiles like the 1st/99th percentile directly - quantile() on
+    # 30 points just interpolates the top/bottom couple of values. Pool raw values
+    # from a +/-10-day window across all years first (~630 samples per calendar day),
+    # then take the quantile of the pooled sample once - the standard approach for
+    # climatological percentiles (same pattern as the threshold quantile in
+    # `compute_yearly_accumulation`). This also naturally smooths the resulting
+    # curve, so no separate rolling-mean-of-quantiles pass is needed afterwards.
+    calendar = pd.date_range('2001-01-01', '2001-12-31').strftime("%m%d")
+    n_days = len(calendar)
+    ordinal = period['time'].dt.strftime("%m%d").map(
+        {d: i for i, d in enumerate(calendar)})
+    window_half = 10
+    pooled = pd.concat([
+        pd.DataFrame({
+            'target': (ordinal + offset) % n_days,
+            'value': period[var].values,
+        })
+        for offset in range(-window_half, window_half + 1)
+    ], ignore_index=True)
+    pooled_quantiles = (
+        pooled.groupby('target')['value']
+        .quantile([0.01, 0.05, 0.95, 0.99])
+        .unstack()
+        .reindex(range(n_days))
+    )
+    pooled_quantiles.columns = ['q01', 'q05', 'q95', 'q99']
+    pooled_quantiles.index = calendar
+    clima = clima.join(pooled_quantiles)
 
     clima['dummy_date'] = pd.to_datetime(
         str(year) + clima.index, format='%Y%m%d')
@@ -1740,11 +1771,8 @@ def compute_climatology_zarr(latitude=53.55, longitude=9.99):
     try:
         import xarray as xr
     except ImportError:
-        logging.warning(
-            "xarray is not installed; compute_climatology_zarr is unavailable. "
-        )
         raise RuntimeError(
-            "xarray is not installed; install with `pip install xarray` to use this feature"
+            "xarray is not installed"
         )
     ds = xr.open_zarr("/home/guidocioni/point_wx/data/zarr2")
     ds = (

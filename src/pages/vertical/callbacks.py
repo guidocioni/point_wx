@@ -17,7 +17,6 @@ except ImportError:
     dewpoint_from_relative_humidity = units = None
     logging.warning(
         "metpy is not installed; the vertical page's skew-T diagram will not work. "
-        "Install with `pip install metpy` to enable it."
     )
 
 @callback(
@@ -65,7 +64,7 @@ def generate_figure(n_clicks, locations, location, model, from_now_, heatmap_, d
         else:
             if units is None:
                 raise RuntimeError(
-                    "metpy is not installed; install with `pip install metpy` to use this feature"
+                    "metpy is not installed"
                 )
             variables=['temperature', 'relative_humidity', 'windspeed', 'winddirection']
             df, _, time_axis, vertical_levels, arrs = get_vertical_data(

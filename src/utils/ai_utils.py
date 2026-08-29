@@ -9,7 +9,6 @@ except ImportError:
     OpenAI = None
     logging.warning(
         "openai is not installed; the AI report (/report route) will not work. "
-        "Install with `pip install openai` to enable it."
     )
 
 system_prompt = """
@@ -131,7 +130,7 @@ def create_weather_data(location, date):
 def create_ai_report(location, date, additional_prompt):
     if OpenAI is None:
         raise RuntimeError(
-            "openai is not installed; install with `pip install openai` to enable the AI report"
+            "openai is not installed"
         )
 
     weather_data = create_weather_data(location, date)

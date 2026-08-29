@@ -13,7 +13,6 @@ except ImportError:
     OpenAI = None
     logging.warning(
         "openai is not installed; the chatbot page will not work. "
-        "Install with `pip install openai` to enable it."
     )
 
 client = OpenAI(api_key=OPENAI_KEY) if OpenAI is not None else None

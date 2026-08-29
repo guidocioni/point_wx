@@ -46,6 +46,31 @@ def make_acc_figure(df, year, var, title=None):
         ),
     )
 
+    # 1st/99th percentile lines: two traces sharing a legendgroup so the single
+    # legend entry toggles both together.
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
+            y=df["q01"],
+            mode="lines",
+            name="1-99th percentiles",
+            line=dict(width=0.6, color="rgba(0, 0, 0, 0.35)", dash="dash"),
+            legendgroup="tail_percentiles",
+            showlegend=False,
+        ),
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df.dummy_date,
+            y=df["q99"],
+            mode="lines",
+            name="1-99th percentiles",
+            line=dict(width=0.6, color="rgba(0, 0, 0, 0.35)", dash="dash"),
+            legendgroup="tail_percentiles",
+            showlegend=True,
+        ),
+    )
+
     # Only plot the yearly accumulation where we have actual data (not NaN)
     df_with_data = df[df[f"{var}_yearly_acc"].notna()]
     fig.add_trace(
@@ -63,8 +88,8 @@ def make_acc_figure(df, year, var, title=None):
         try:
             fig.add_vline(
                 x=pd.to_datetime("now", utc=True),
-                line_width=2,
-                line_dash="dash",
+                line_width=3,
+                line_dash="longdash",
                 line_color="rgba(1, 1, 1, 0.2)",
             )
             fig.add_annotation(
@@ -320,6 +345,23 @@ def make_daily_figure(df, year, var, title=None):
         showlegend=True, fill="tonexty",
     ))
 
+    # 1st/99th percentile lines: two traces sharing a legendgroup so the single
+    # legend entry toggles both together.
+    fig.add_trace(go.Scatter(
+        x=df.dummy_date, y=df["q01"],
+        mode="lines", name="1-99th percentiles",
+        line=dict(width=0.6, color="rgba(0, 0, 0, 0.35)", dash="dash"),
+        legendgroup="tail_percentiles",
+        showlegend=False,
+    ))
+    fig.add_trace(go.Scatter(
+        x=df.dummy_date, y=df["q99"],
+        mode="lines", name="1-99th percentiles",
+        line=dict(width=0.6, color="rgba(0, 0, 0, 0.35)", dash="dash"),
+        legendgroup="tail_percentiles",
+        showlegend=True,
+    ))
+
     # Seasonal forecast ensemble: 15-95th percentile range (faint fill) plus a mean
     # line, extending beyond the actual/short-range forecast data. Uses the same
     # variable-based color as the above/below fills, at low opacity, to signal
@@ -368,7 +410,7 @@ def make_daily_figure(df, year, var, title=None):
             ))
         fig.add_vline(
             x=pd.to_datetime("now", utc=True),
-            line_width=2, line_dash="dash",
+            line_width=3, line_dash="longdash",
             line_color="rgba(1, 1, 1, 0.2)",
         )
         fig.add_annotation(
