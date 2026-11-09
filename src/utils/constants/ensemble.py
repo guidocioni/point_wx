@@ -5,7 +5,7 @@ ENSEMBLE_MODELS = [
         "group": "Seamless",
         "items": [
             # {"label": "Best Match 🌍", "value": "best_match"}, # Disabled until it is fixed upstream in openmeteo
-            {"label": "ICON Seamless 🌍", "value": "icon_seamless"},
+            {"label": "ICON Seamless 🌍", "value": "dwd_icon_seamless_eps"},
             {"label": "GFS Seamless 🌍", "value": "gfs_seamless"},
         ],
     },
@@ -15,7 +15,7 @@ ENSEMBLE_MODELS = [
             {"label": "IFS (🌍, 25km, 🎲 51)", "value": "ecmwf_ifs025"},
             {"label": "AIFS (🌍, 25km, 🎲 51)", "value": "ecmwf_aifs025"},
             {"label": "GEM (🌍, 25km, 🎲 21)", "value": "gem_global"},
-            {"label": "ICON-EPS (🌍, 26km, 🎲 40)", "value": "icon_global"},
+            {"label": "ICON-EPS (🌍, 20km, 🎲 40)", "value": "dwd_icon_global_eps"},
             {"label": "GFS ENS (🌍, 25km, 🎲 31)", "value": "gfs025"},
             {"label": "GFS ENS (🌍, 50km, 🎲 31)", "value": "gfs05"},
             {"label": "AIGFS (🌍, 25km, 🎲 31)", "value": "ncep_aigefs025"},
@@ -24,23 +24,20 @@ ENSEMBLE_MODELS = [
                 "label": "MOGREPS-G (🌍, 20km, 🎲 18)",
                 "value": "ukmo_global_ensemble_20km",
             },
-            {
-                "label": "ACCESS-GE (🌍, 40km, 🎲 18)",
-                "value": "bom_access_global_ensemble",
-            },
         ],
     },
     {
         "group": "Regional",
         "items": [
 
-            {"label": "ICON-EU-EPS (🇪🇺, 13km, 🎲 40)", "value": "icon_eu"},
+            {"label": "ICON-EU-EPS (🇪🇺, 6.5km, 🎲 40)", "value": "dwd_icon_eu_eps"},
             {"label": "IFS Europe (🇪🇺, 9km, 🎲 51)", "value": "ecmwf_ifs_europe_ensemble"},
             {"label": "AIFS Europe (🇪🇺, 31km, 🎲 51)", "value": "ecmwf_aifs_europe_ensemble"},
-            {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "icon_d2"},
+            {"label": "ICON-D2-EPS (🇩🇪, 2km, 🎲 20)", "value": "dwd_icon_d2_eps"},
             {"label": "ICON-CH1-EPS (🇨🇭, 1km, 🎲 11)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2-EPS (🇨🇭, 2km, 🎲 21)", "value": "meteoswiss_icon_ch2"},
             {"label": "MOGREPS-UK (🌍, 2km, 🎲 3)", "value": "ukmo_uk_ensemble_2km"},
+            {"label": "RRFS CONUS (🇺🇸, 3km, 🎲 5)", "value": "ncep_rrfs_conus_ensemble"},
         ],
     },
 ]

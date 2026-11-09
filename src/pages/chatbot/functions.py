@@ -303,7 +303,7 @@ def get_ensemble_forecast(location, var, start_date, end_date):
         "longitude": location["longitude"],
         "hourly": var,
         "timezone": "auto",
-        "models": "icon_seamless",
+        "models": "dwd_icon_seamless_eps",
         "start_date": start_date,
         "end_date": end_date,
     }

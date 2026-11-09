@@ -12,12 +12,14 @@ DETERMINISTIC_MODELS = [
             {"label": "JMA Seamless 🌍", "value": "jma_seamless"},
             {"label": "GEM Seamless 🌍", "value": "gem_seamless"},
             {"label": "UKMO Seamless 🌍", "value": "ukmo_seamless"},
+            {"label": "Geosphere Seamless 🌍", "value": "geosphere_seamless"},
         ],
     },
     {
         "group": "Global",
         "items": [
-            {"label": "ICON Global (🌍, 11km)", "value": "icon_global"},
+            {"label": "ICON Global (🌍, 13km)", "value": "dwd_icon_global_native"},
+            {"label": "AICON Global (🌍, 13km)", "value": "dwd_aicon_global_native"},
             {"label": "IFS (🌍, 9km)", "value": "ecmwf_ifs"},
             {"label": "AIFS single (🌍, 25km)", "value": "ecmwf_aifs025_single"},
             {"label": "GFS (🌍, 25/13km)", "value": "gfs_global"},
@@ -28,13 +30,12 @@ DETERMINISTIC_MODELS = [
             {"label": "GSM (🌍, 55km)", "value": "jma_gsm"},
             {"label": "CMA GRAPES (🌍, 15km)", "value": "cma_grapes_global"},
             {"label": "GEM Global (🌍, 15km)", "value": "gem_global"},
-            {"label": "ACCESS-G (🌍, 15km)", "value": "bom_access_global"},
         ],
     },
     {
         "group": "Regional (🇪🇺)",
         "items": [
-            {"label": "ICON-EU (🇪🇺, 7km)", "value": "icon_eu"},
+            {"label": "ICON-EU (🇪🇺, 7km)", "value": "dwd_icon_eu_native"},
             {"label": "MeteoFrance Arpege (🇪🇺, 11km)", "value": "meteofrance_arpege_europe"},
             {"label": "DMI Harmonie (🇪🇺, 2km)", "value": "dmi_harmonie_arome_europe"},
             {
@@ -42,8 +43,8 @@ DETERMINISTIC_MODELS = [
                 "value": "knmi_harmonie_arome_europe",
             },
             {"label": "CHMI Aladin (🇪🇺, 2km)", "value": "chmi_aladin_central_europe_2km"},
-            {"label": "ICON-D2 (🇩🇪, 2km)", "value": "icon_d2"},
-            {"label": "Geosphere AROME (🇦🇹, 2.5km)", "value": "geosphere_arome_austria"},
+            {"label": "ICON-D2 (🇩🇪, 2km)", "value": "dwd_icon_d2_native"},
+            {"label": "ICON-D2 RUC (🇩🇪, 2km)", "value": "dwd_icon_d2_ruc_native"},
             {"label": "ICON-CH1 (🇨🇭, 1km)", "value": "meteoswiss_icon_ch1"},
             {"label": "ICON-CH2 (🇨🇭, 2km)", "value": "meteoswiss_icon_ch2"},
             {"label": "MetNo (🇳🇴🇸🇪🇫🇮, 1km)", "value": "metno_nordic"},
@@ -61,9 +62,9 @@ DETERMINISTIC_MODELS = [
     {
         "group": "Regional (others)",
         "items": [
-            {"label": "HRRR (🇺🇸, 3km)", "value": "gfs_hrrr"},
             {"label": "NBM (🇺🇸, 2.5km)", "value": "ncep_nbm_conus"},
-            {"label": "NAM (🇺🇸, 3km)", "value": "ncep_nam_conus"},
+            {"label": "RRFS CONUS (🇺🇸, 3km)", "value": "ncep_rrfs_conus"},
+            {"label": "RRFS North America (🇺🇸🇨🇦, 3km)", "value": "ncep_rrfs_north_america"},
             {"label": "MSM (🇯🇵, 5km)", "value": "jma_msm"},
             {"label": "GEM Regional (🇺🇸, 10km)", "value": "gem_regional"},
             {"label": "HRDPS (🇨🇦, 2.5km)", "value": "gem_hrdps_continental"},

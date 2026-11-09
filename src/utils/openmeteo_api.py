@@ -346,7 +346,7 @@ def get_ensemble_daily_data(latitude=53.55,
                             longitude=9.99,
                             variables="precipitation_sum",
                             timezone='auto',
-                            model="icon_seamless",
+                            model="dwd_icon_seamless_eps",
                             forecast_days=None,
                             past_days=None,
                             start_date=None,
@@ -355,13 +355,13 @@ def get_ensemble_daily_data(latitude=53.55,
                             elevation=None):
     if not forecast_days and not start_date and not end_date:
         # Adjust forecast_days depending on the model
-        if model == "icon_eu":
+        if model == "dwd_icon_eu_eps":
             forecast_days = 6
-        elif model == "icon_d2":
+        elif model == "dwd_icon_d2_eps":
             forecast_days = 3
         elif model in ["gfs_seamless", "gfs05", "gem_global", "ecmwf_ifs_europe_ensemble", "ecmwf_aifs_europe_ensemble"]:
             forecast_days = 16
-        elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025", "bom_access_global_ensemble"]:
+        elif model in ["ecmwf_ifs04", "ecmwf_ifs025", "gfs025"]:
             forecast_days = 11
         else: # icon_seamlss and global fall in this category!
             forecast_days = 8
@@ -607,7 +607,7 @@ def get_ensemble_data(
     longitude=9.99,
     variables="temperature_2m",
     timezone="auto",
-    model="icon_seamless",
+    model="dwd_icon_seamless_eps",
     from_now=False,
     decimate=False,
     cell_selection="land",
@@ -621,15 +621,15 @@ def get_ensemble_data(
     """
     if not forecast_days and not start_date and not end_date:
         # Adjust forecast_days depending on the model
-        if model == "icon_eu":
+        if model == "dwd_icon_eu_eps":
             forecast_days = 6
-        elif model in ["icon_d2",  "ukmo_uk_ensemble_2km"]:
+        elif model in ["dwd_icon_d2_eps", "ukmo_uk_ensemble_2km", "ncep_rrfs_conus_ensemble"]:
             forecast_days = 3
         elif model == "gfs05":
             forecast_days = 35
         elif model in ["gfs_seamless", "gem_global", "ncep_aigefs025", "google_weathernext2_ensemble", "ecmwf_ifs025", "ecmwf_aifs025", "ecmwf_ifs_europe_ensemble", "ecmwf_aifs_europe_ensemble"]:
             forecast_days = 16
-        elif model in ["gfs025", "bom_access_global_ensemble"]:
+        elif model == "gfs025":
             forecast_days = 11
         elif model == "meteoswiss_icon_ch1":
             forecast_days = 2
@@ -1496,8 +1496,16 @@ def compute_daily_ensemble_meteogram(latitude=53.55,
     # Best match ensemble/deterministic models
     # when the naming is different
     deterministic_model = model
-    if model == "bom_access_global_ensemble":
-        deterministic_model = "bom_access_global"
+    if model == "dwd_icon_seamless_eps":
+        deterministic_model = "icon_seamless"
+    elif model == "dwd_icon_global_eps":
+        deterministic_model = "dwd_icon_global_native"
+    elif model == "dwd_icon_eu_eps":
+        deterministic_model = "dwd_icon_eu_native"
+    elif model == "dwd_icon_d2_eps":
+        deterministic_model = "dwd_icon_d2_native"
+    elif model == "ncep_rrfs_conus_ensemble":
+        deterministic_model = "ncep_rrfs_conus"
     elif model in ["gfs025", "gfs05"]:
         deterministic_model = "gfs_seamless"
     elif model == "ukmo_global_ensemble_20km":

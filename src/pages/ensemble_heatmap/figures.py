@@ -106,7 +106,7 @@ def make_heatmap(df, var, title=None):
         n_members = len(members_vars)
 
         # Adaptive resampling based on data size and number of members
-        if df.attrs["request"]["models"] == "icon_d2":
+        if df.attrs["request"]["models"] == "dwd_icon_d2_eps":
             freq = "2h"
         elif (df.shape[0] > 47) & (df.shape[0] <= 100):
             freq = "6h"

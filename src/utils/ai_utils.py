@@ -115,7 +115,7 @@ def create_weather_data(location, date):
         "longitude": location["longitude"].item(),
         "hourly": "temperature_2m,precipitation,rain,snowfall",
         "timezone": "auto",
-        "models": "icon_seamless",
+        "models": "dwd_icon_seamless_eps",
         "start_date": date,
         "end_date": date,
     }

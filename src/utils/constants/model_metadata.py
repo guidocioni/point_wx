@@ -7,37 +7,38 @@
 # For seamless we expose the highest res. model available in the chain (e.g. icon-d2 for icon-seamless)
 MODEL_META_MAP = {
     "ensemble": {
-        "icon_seamless": "dwd_icon_d2_eps",
+        "dwd_icon_seamless_eps": "dwd_icon_d2_eps_native",
         "gfs_seamless": "ncep_gefs025",
         "ecmwf_ifs025": "ecmwf_ifs025_ensemble",
         "ecmwf_aifs025": "ecmwf_aifs025_ensemble",
         "ecmwf_ifs_europe_ensemble": "ecmwf_ifs_europe_ensemble",
         "ecmwf_aifs_europe_ensemble": "ecmwf_aifs_europe_ensemble",
         "gem_global": "cmc_gem_geps",
-        "icon_global": "dwd_icon_eps",
+        "dwd_icon_global_eps": "dwd_icon_global_eps_native",
         "gfs025": "ncep_gefs025",
         "gfs05": "ncep_gefs05",
         "ncep_aigefs025": "ncep_aigefs025",
         "ukmo_global_ensemble_20km": "ukmo_global_ensemble_20km",
-        "bom_access_global_ensemble": "bom_access_global_ensemble",
-        "icon_eu": "dwd_icon_eu_eps",
+        "dwd_icon_eu_eps": "dwd_icon_eu_eps_native",
         "meteoswiss_icon_ch1": "meteoswiss_icon_ch1_ensemble",
         "meteoswiss_icon_ch2": "meteoswiss_icon_ch2_ensemble",
-        "icon_d2": "dwd_icon_d2_eps",
+        "dwd_icon_d2_eps": "dwd_icon_d2_eps_native",
         "ukmo_uk_ensemble_2km": "ukmo_uk_ensemble_2km",
     },
     "deterministic": {
         # Seamless models - map to highest resolution component
-        "best_match": "dwd_icon_d2",  # Could vary, using ICON-D2 as default
-        "icon_seamless": "dwd_icon_d2",
+        "best_match": "dwd_icon_d2_native",  # Could vary, using ICON-D2 as default
+        "icon_seamless": "dwd_icon_d2_native",
         "gfs_seamless": "ncep_hrrr_conus",
         "meteofrance_seamless": "meteofrance_arome_france_hd",
         "meteoswiss_icon_seamless": "meteoswiss_icon_ch1",
         "jma_seamless": "jma_msm",
         "gem_seamless": "cmc_gem_hrdps",
         "ukmo_seamless": "ukmo_uk_deterministic_2km",
+        "geosphere_seamless": "geosphere_claef_austria",
         # Global models
-        "icon_global": "dwd_icon",
+        "dwd_icon_global_native": "dwd_icon_global_native",
+        "dwd_aicon_global_native": "dwd_aicon_global_native",
         "ecmwf_ifs": "ecmwf_ifs",
         "ecmwf_aifs025_single": "ecmwf_aifs025_single",
         "gfs_global": "ncep_gfs013",
@@ -48,15 +49,14 @@ MODEL_META_MAP = {
         "jma_gsm": "jma_gsm",
         "cma_grapes_global": "cma_grapes_global",
         "gem_global": "cmc_gem_gdps_15km",
-        "bom_access_global": "bom_access_global",
         # Regional European models
-        "icon_eu": "dwd_icon_eu",
+        "dwd_icon_eu_native": "dwd_icon_eu_native",
         "meteofrance_arpege_europe": "meteofrance_arpege_europe",
         "dmi_harmonie_arome_europe": "dmi_harmonie_arome_europe",
         "knmi_harmonie_arome_europe": "knmi_harmonie_arome_europe",
         "chmi_aladin_central_europe_2km": "chmi_aladin_central_europe_2km",
-        "icon_d2": "dwd_icon_d2",
-        "geosphere_arome_austria": "geosphere_arome_austria",
+        "dwd_icon_d2_native": "dwd_icon_d2_native",
+        "dwd_icon_d2_ruc_native": "dwd_icon_d2_ruc_native",
         "meteoswiss_icon_ch1": "meteoswiss_icon_ch1",
         "meteoswiss_icon_ch2": "meteoswiss_icon_ch2",
         "metno_nordic": "metno_nordic_pp",
@@ -67,9 +67,9 @@ MODEL_META_MAP = {
         "ukmo_uk_deterministic_2km": "ukmo_uk_deterministic_2km",
         "chmi_aladin_cz_1km": "chmi_aladin_cz_1km",
         # Regional other models
-        "gfs_hrrr": "ncep_hrrr_conus",
         "ncep_nbm_conus": "ncep_nbm_conus",
-        "ncep_nam_conus": "ncep_nam_conus",
+        "ncep_rrfs_conus": "ncep_rrfs_conus",
+        "ncep_rrfs_north_america": "ncep_rrfs_north_america",
         "jma_msm": "jma_msm",
         "gem_regional": "cmc_gem_rdps_10km",
         "gem_hrdps_continental": "cmc_gem_hrdps",
@@ -81,13 +81,14 @@ MODEL_META_MAP = {
 # Models not listed here have constant resolution and don't need decimation
 # Format: model -> list of (start_hour, end_hour, resolution)
 TEMPORAL_RESOLUTION_SPEC = {
-    # ICON models - varying resolution
-    "icon_eu": [
+    # ICON models - varying resolution. Matches the steps of the DWD open data files
+    # (open-meteo serves an hourly, interpolated series on top of these).
+    "dwd_icon_eu_eps": [
         (0, 48, "1h"),    # Hourly 0-48h
         (48, 72, "3h"),   # 3-hourly 48-72h
         (72, 120, "6h"),  # 6-hourly 72-120h
     ],
-    "icon_global": [
+    "dwd_icon_global_eps": [
         (0, 48, "1h"),     # Hourly 0-48h
         (48, 72, "3h"),    # 3-hourly 48-72h
         (72, 120, "6h"),   # 6-hourly 72-120h
@@ -119,7 +120,7 @@ TEMPORAL_RESOLUTION_SPEC = {
     ],
 
     # Seamless models - reconstructed from components
-    "icon_seamless": [
+    "dwd_icon_seamless_eps": [
         # Combines icon-d2 (0-48h hourly) + icon-eu (up to 120h) + icon-global
         (0, 48, "1h"),     # From ICON-D2
         (48, 72, "3h"),    # From ICON-EU

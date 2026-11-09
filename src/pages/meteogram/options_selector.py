@@ -8,7 +8,7 @@ from utils.settings import filter_options
 # ?model= is allowed to select.
 METEOGRAM_MODELS = filter_options(
     [
-        "icon_seamless",
+        "dwd_icon_seamless_eps",
         "gfs_seamless",
         "ecmwf_ifs025",
         "ecmwf_aifs025",
@@ -16,8 +16,8 @@ METEOGRAM_MODELS = filter_options(
         "ecmwf_aifs_europe_ensemble",
         "ncep_aigefs025",
         "google_weathernext2_ensemble",
-        "icon_global",
-        "icon_eu",
+        "dwd_icon_global_eps",
+        "dwd_icon_eu_eps",
         "ukmo_global_ensemble_20km",
     ],
     ENSEMBLE_MODELS,
@@ -29,7 +29,7 @@ opts_selector = dbc.Card(
             label="Model",
             id="models-selection-meteogram",
             data=METEOGRAM_MODELS,
-            value="icon_seamless",
+            value="dwd_icon_seamless_eps",
             persistence="true",
             className="mb-2",
             allowDeselect=False,
